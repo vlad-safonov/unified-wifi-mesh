@@ -17,9 +17,11 @@ jobs:
           - openssl-version: '1.1'
             container: 'ubuntu:20.04'
             setup-cmd: 'apt-get update && apt-get install -y libssl1.1 libssl-dev'
+            ccache-path: '/github/home/.ccache'
           - openssl-version: '3.0'
             container: 'ubuntu:latest'
             setup-cmd: 'apt-get update && apt-get install -y libssl-dev'
+            ccache-path: '/github/home/.cache/ccache'
       # Add this to continue jobs even if one matrix job fails
       fail-fast: false
     
@@ -50,11 +52,15 @@ jobs:
       uses: actions/checkout@v4
       with:
         path: 'unified-wifi-mesh'
+        fetch-depth: 1
 
     - name: Clone OneWiFi repository
       run: |
         mkdir -p easymesh_project
-        git clone https://github.com/rdkcentral/OneWifi.git easymesh_project/OneWifi
+        git clone --depth=5 https://github.com/rdkcentral/OneWifi.git easymesh_project/OneWifi
+        cd easymesh_project/OneWifi
+        git checkout 7cafbd124493b6ff587521343d673094677c7d88
+        cd -
         mv unified-wifi-mesh easymesh_project/unified-wifi-mesh
 
     - name: Set up dependencies
@@ -66,6 +72,7 @@ jobs:
                                 cmake \
                                 python3 \
                                 python3-pip \
+                                ccache \
                                 git \
                                 wget \
                                 vim \
@@ -89,12 +96,45 @@ jobs:
                                 libperl-dev \
                                 libjson-c-dev
 
-        # Steps for ucode installation required for hostapd compilation
-        git clone https://github.com/jow-/ucode.git ucode
-        cd ucode
-        mkdir build && cd build
-        cmake -DUBUS_SUPPORT=OFF -DUCI_SUPPORT=OFF -DULOOP_SUPPORT=OFF ..
-        make -j$(nproc)
+    - name: Cache ccache
+      uses: actions/cache@v4
+      with:
+        path: ${{ matrix.ccache-path }}
+        # New unique key every run so the cache is always saved/updated.
+        # restore-keys falls back to the most recent cache for this container.
+        key: ccache-${{ matrix.openssl-version }}-${{ github.run_id }}
+        restore-keys: |
+          ccache-${{ matrix.openssl-version }}-
+
+    - name: Configure ccache
+      run: |
+        ccache --get-config cache_dir
+        ccache --set-config=compiler_check=content
+        ccache --set-config=max_size=2G
+        ccache --set-config=compression=true
+        ln -sf /usr/bin/ccache /usr/local/bin/gcc
+        ln -sf /usr/bin/ccache /usr/local/bin/g++
+        ln -sf /usr/bin/ccache /usr/local/bin/cc
+        ln -sf /usr/bin/ccache /usr/local/bin/c++
+        echo "PATH=/usr/local/bin:$PATH" >> $GITHUB_ENV
+
+    - name: Cache ucode build
+      id: cache-ucode
+      uses: actions/cache@v4
+      with:
+        path: /tmp/ucode-src
+        key: ucode-${{ matrix.openssl-version }}
+
+    - name: Build and install ucode
+      run: |
+        if [ "${{ steps.cache-ucode.outputs.cache-hit }}" != "true" ]; then
+          git clone --depth=1 https://github.com/jow-/ucode.git /tmp/ucode-src
+          cd /tmp/ucode-src
+          mkdir build && cd build
+          cmake -DUBUS_SUPPORT=OFF -DUCI_SUPPORT=OFF -DULOOP_SUPPORT=OFF ..
+          make -j$(nproc)
+        fi
+        cd /tmp/ucode-src/build
         sudo make install
         sudo ldconfig
 
@@ -103,27 +143,61 @@ jobs:
       uses: actions/setup-go@v5
       with:
           go-version: '1.23.4'
-    
+
+    - name: Cache cJSON build
+      id: cache-cjson
+      uses: actions/cache@v4
+      with:
+        path: /tmp/cjson
+        key: cjson-1.7.18-${{ matrix.openssl-version }}
+
     # Make sure we use a consistent version of cJSON between Ubuntu 20.04 and Ubuntu 22.04
     - name: Install cJSON 1.7.18
       run: |
-        # Create temporary directory for cJSON
-        mkdir -p /tmp/cjson && cd /tmp/cjson
-        
-        # Download cJSON 1.7.18
-        wget https://github.com/DaveGamble/cJSON/archive/refs/tags/v1.7.18.tar.gz
-        tar -xzf v1.7.18.tar.gz
-        cd cJSON-1.7.18
-        
-        # Build and install cJSON
-        mkdir build && cd build
-        cmake .. -DENABLE_CJSON_UTILS=On -DENABLE_CJSON_TEST=Off -DCMAKE_INSTALL_PREFIX=/usr
-        make
+        if [ "${{ steps.cache-cjson.outputs.cache-hit }}" != "true" ]; then
+          mkdir -p /tmp/cjson && cd /tmp/cjson
+          wget https://github.com/DaveGamble/cJSON/archive/refs/tags/v1.7.18.tar.gz
+          tar -xzf v1.7.18.tar.gz
+          cd cJSON-1.7.18
+          mkdir build && cd build
+          cmake .. -DENABLE_CJSON_UTILS=On -DENABLE_CJSON_TEST=Off -DCMAKE_INSTALL_PREFIX=/usr
+          make
+        fi
+        cd /tmp/cjson/cJSON-1.7.18/build
         make install
-        
         # Update dynamic linker run-time bindings
         ldconfig
+
+    - name: ccache stats - tools
+      run: ccache --show-stats -z
+
+    - name: Get OneWiFi setup cache key
+      id: onewifi-cache-key
+      run: |
+        cd easymesh_project/OneWifi
+        ONEWIFI_COMMIT=$(git rev-parse HEAD)
+        SETUP_HASH=$(sha256sum build/linux/bpi/setup.sh | cut -d' ' -f1)
+        echo "key=onewifi-setup-${ONEWIFI_COMMIT}-${SETUP_HASH}" >> $GITHUB_OUTPUT
+
+    - name: Cache OneWiFi setup
+      # if: false
+      id: cache-onewifi-setup
+      uses: actions/cache@v4
+      with:
+        # Cache everything that setup clones/builds:
+        #   rdk-wifi-hal, halinterface, trower-base64 — cloned from GitHub
+        #   rdk-wifi-libhostap — hostap patched with meta-cmf-bananapi + meta-filogic
+        # Note: meta-filogic (git01.mediatek.com) may not be reachable from GitHub
+        # runners, so caching this output is critical for reliable CI.
+        path: |
+          easymesh_project/rdk-wifi-hal
+          easymesh_project/halinterface
+          easymesh_project/trower-base64
+          easymesh_project/rdk-wifi-libhostap
+        key: ${{ steps.onewifi-cache-key.outputs.key }}
+
     - name: Setup OneWiFi
+      if: steps.cache-onewifi-setup.outputs.cache-hit != 'true'
       working-directory: easymesh_project/OneWifi
       run: |
         git config --global user.email "${{ github.actor }}@users.noreply.github.com"
@@ -132,40 +206,74 @@ jobs:
       env:
         GITHUB_ACTOR: ${{ github.actor }}
 
+    - name: Build - OneWiFi (hebus)
+      working-directory: easymesh_project/OneWifi
+      run: |
+        # setup.sh creates install/bin and install/lib, but when setup is
+        # loaded from cache those steps are skipped — create them explicitly
+        mkdir -p install/bin install/lib
+        make -f build/linux/bpi/makefile "$(pwd)/install/lib/libhebus.a"
+
     - name: Build - OneWiFi
       working-directory: easymesh_project/OneWifi
       continue-on-error: true
       run: make -f build/linux/bpi/makefile all
 
+    - name: Ccache stats - OneWiFi
+      run: ccache --show-stats -z
+
     - name: Build - Controller
       working-directory: easymesh_project/unified-wifi-mesh/build/ctrl
-      continue-on-error: true
-      run: |
-        make clean
-        make -j all
-        
-    - name: Confirm Linking - Controller
-      working-directory: easymesh_project/unified-wifi-mesh/build/ctrl
       run: make -j all
+
+    - name: Ccache stats - Controller
+      run: ccache --show-stats -z
 
     - name: Build - Agent
       working-directory: easymesh_project/unified-wifi-mesh/build/agent
-      continue-on-error: true
-      run: |
-        make clean
-        make -j all
-        
-    - name: Confirm Linking - Agent
-      working-directory: easymesh_project/unified-wifi-mesh/build/agent
       run: make -j all
+
+    - name: Ccache stats - Agent
+      run: ccache --show-stats -z
 
     - name: Build - CLI
       working-directory: easymesh_project/unified-wifi-mesh/build/cli
-      continue-on-error: true
-      run: |
-        make clean
-        make -j all
-        
-    - name: Confirm Linking - CLI
-      working-directory: easymesh_project/unified-wifi-mesh/build/cli
       run: make -j all
+
+    - name: Ccache stats - CLI
+      run: ccache --show-stats -z
+
+    - name: Install GTest
+      working-directory: easymesh_project/unified-wifi-mesh
+      run: make -C build/ctrl install_gtest
+
+    - name: Build - Test Binary
+      #if: false  # Set to false to skip test binary build
+      #continue-on-error: true
+      working-directory: easymesh_project/unified-wifi-mesh/build/ctrl
+      run: make -j $(nproc) build_test
+
+    - name: Ccache stats - Test Binary
+      run: ccache --show-stats -z
+
+    - name: Collect test artifact
+      run: |
+        echo "nproc=$(nproc)"
+        mkdir -p test-artifact/lib
+        cp easymesh_project/unified-wifi-mesh/install/bin/onewifi_em_ctrl_test test-artifact/ 2>/dev/null || echo "Warning: test binary not found"
+        cp easymesh_project/unified-wifi-mesh/install/bin/test-report.xml test-artifact/ 2>/dev/null || echo "Warning: test binary not found"
+        # Include any local shared libraries needed at runtime
+        cp -r easymesh_project/unified-wifi-mesh/install/lib/. test-artifact/lib/ 2>/dev/null || true
+        cp -r easymesh_project/OneWifi/install/lib/. test-artifact/lib/ 2>/dev/null || true
+
+    - name: Upload test artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-binary-openssl-${{ matrix.openssl-version }}
+        path: test-artifact/
+        if-no-files-found: warn
+        retention-days: 3
+
+    - name: ccache stats
+      run: ccache --show-stats
+

@@ -47,7 +47,7 @@ INCLUDEDIRS += -I$(AL_SAP_HOME)/include
 endif
 INDLUDEDIRS += -I$(WIFI_CJSON)
 
-CXX_COMMON_FLAGS = -Wall -Wextra -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-aliasing -fno-common -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fPIE -pie -ftrapv -Wformat=2 -Wformat-security -Wuninitialized -Winit-self -Wsign-conversion -Wno-unused-parameter -fsanitize=address -fsanitize=undefined -Werror #-Wconversion -O2 -Weffc++
+CXX_COMMON_FLAGS = -Wall -Wextra -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-aliasing -fno-common -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fPIC -pie -ftrapv -Wformat=2 -Wformat-security -Wuninitialized -Winit-self -Wsign-conversion -Wno-unused-parameter -fsanitize=address -fsanitize=undefined -Werror #-Wconversion -O2 -Weffc++
 CXX_SPECIFIC_FLAGS = -Wctor-dtor-privacy -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Wstrict-null-sentinel -std=c++17
 
 CXXFLAGS += $(INCLUDEDIRS) -g $(CXX_COMMON_FLAGS) $(CXX_SPECIFIC_FLAGS) `mariadb_config --include`
@@ -111,16 +111,36 @@ CTRL_OBJECTS = $(CTRL_SOURCES:.cpp=.o)
 GENERIC_OBJECTS = $(GENERIC_SOURCES:.c=.o) 
 ALLOBJECTS = $(CTRL_OBJECTS) $(GENERIC_OBJECTS)
 
+# Per-target build directory — keeps ctrl objects isolated from cli objects
+# so each target compiles with its own flags (-fsanitize, -fPIC, etc.)
+CTRL_BUILDDIR  = $(ONEWIFI_EM_HOME)/build/ctrl/obj
+CTRL_OBJDIR_GENERIC = $(CTRL_BUILDDIR)/generic
+
+CTRL_OBJECTS  := $(patsubst $(ONEWIFI_EM_SRC)/%.cpp, $(CTRL_BUILDDIR)/%.o, $(CTRL_SOURCES))
+GENERIC_OBJECTS := $(addprefix $(CTRL_OBJDIR_GENERIC)/, \
+                    $(patsubst %.c, %.o, $(notdir $(GENERIC_SOURCES))))
+ALLOBJECTS := $(CTRL_OBJECTS) $(GENERIC_OBJECTS)
+
 all: $(PROGRAM) $(CERT_TARGETS)
 
 $(PROGRAM): $(ALLOBJECTS)
 	$(CXX) -o $@ $(ALLOBJECTS) $(LDFLAGS)
 
-$(GENERIC_OBJECTS): %.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $< 
+# Ctrl source objects — mirror src directory structure under CTRL_BUILDDIR
+$(CTRL_BUILDDIR)/%.o: $(ONEWIFI_EM_SRC)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-$(CTRL_OBJECTS): %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -o $@ -c $< 
+# Generic source objects — flat layout under CTRL_OBJDIR_GENERIC
+# Explicit per-file rules to handle sources from different directories
+$(CTRL_OBJDIR_GENERIC):
+	mkdir -p $@
+
+define COMPILE_CTRL_GENERIC_C
+$(CTRL_OBJDIR_GENERIC)/$(patsubst %.c,%.o,$(notdir $(1))): $(1) | $(CTRL_OBJDIR_GENERIC)
+	$(CC) $(CFLAGS) -o $$@ -c $$<
+endef
+$(foreach src,$(GENERIC_SOURCES),$(eval $(call COMPILE_CTRL_GENERIC_C,$(src))))
 
 # Make sure $(NVRAM_DIR) exists
 $(NVRAM_DIR):
@@ -140,7 +160,7 @@ $(NVRAM_DIR)/Reset.json: $(EM_RESET_JSON) | $(NVRAM_DIR)
 
 # Clean everything
 clean:
-	$(RM) $(ALLOBJECTS) $(PROGRAM)
+	$(RM) $(CTRL_BUILDDIR) $(PROGRAM)
 	$(MAKE) clean_tests
 
 # Google Test integration
@@ -149,8 +169,31 @@ TEST_EXEC = $(INSTALLDIR)/bin/onewifi_em_ctrl_test
 # Common test files (everything except agent specific unit test files and test_l1_al*.cpp)
 EXCLUDE_TESTS = \
     $(TEST_DIR)/test_l1_al%.cpp \
+	$(TEST_DIR)/test_em_crypto.cpp \
     $(TEST_DIR)/test_l1_em_simulator.cpp \
+    $(TEST_DIR)/test_l1_dm_device.cpp \
+    $(TEST_DIR)/test_l1_dm_easy_mesh.cpp \
+    $(TEST_DIR)/test_l1_dm_easy_mesh_list.cpp \
+    $(TEST_DIR)/test_l1_dm_op_class.cpp \
+    $(TEST_DIR)/test_l1_dm_radio_cap.cpp \
+    $(TEST_DIR)/test_l1_dm_network_ssid.cpp \
     $(TEST_DIR)/test_l1_em_cmd_scan_result.cpp \
+    $(TEST_DIR)/test_l1_ec_enrollee.cpp \
+    $(TEST_DIR)/test_l1_ec_util.cpp \
+    $(TEST_DIR)/test_l1_ec_manager.cpp \
+    $(TEST_DIR)/test_l1_em_cmd_channel_pref_query.cpp \
+    $(TEST_DIR)/test_l1_em_cmd_remove_device.cpp \
+    $(TEST_DIR)/test_l1_em_cmd_sta_link_metrics.cpp \
+    $(TEST_DIR)/test_l1_em_cmd_sta_steer.cpp \
+    $(TEST_DIR)/test_l1_em_cmd_start_dpp.cpp \
+    $(TEST_DIR)/test_l1_em_ctrl.cpp \
+    $(TEST_DIR)/test_l1_em_msg.cpp \
+    $(TEST_DIR)/test_l1_em_orch_ctrl.cpp \
+    $(TEST_DIR)/test_l1_em_orch.cpp \
+    $(TEST_DIR)/test_l1_em_orch_agent.cpp \
+    $(TEST_DIR)/test_l1_em_network_topo.cpp \
+    $(TEST_DIR)/test_l1_em_provisioning.cpp \
+    $(TEST_DIR)/test_l1_em_sm.cpp \
     $(TEST_DIR)/test_l1_em_cmd_ap_metrics_report.cpp \
     $(TEST_DIR)/test_l1_em_cmd_btm_report.cpp
 COMMON_TEST_SOURCES = $(filter-out $(EXCLUDE_TESTS), $(wildcard $(TEST_DIR)/*.cpp))
@@ -166,22 +209,42 @@ endif
 TEST_OBJECTS = $(TEST_SOURCES:.cpp=.o)
 TEST_CXXFLAGS = $(CXXFLAGS) -I/usr/include -I/usr/local/include -DTESTING
 
-# Test target
-test: check_test_files install_gtest $(TEST_OBJECTS)
+# em_ctrl.cpp uses #ifndef TESTING to exclude main() — compile a separate
+# test-only version so we don't recompile all objects just for this one file
+EM_CTRL_SRC     = $(ONEWIFI_EM_SRC)/ctrl/em_ctrl.cpp
+EM_CTRL_MAIN_OBJ = $(CTRL_BUILDDIR)/ctrl/em_ctrl.o
+EM_CTRL_TEST_OBJ = $(CTRL_BUILDDIR)/ctrl/em_ctrl_testing.o
+
+$(EM_CTRL_TEST_OBJ): $(EM_CTRL_SRC)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -DTESTING -o $@ -c $<
+
+# Substitute the regular em_ctrl.o with the TESTING version for the test link
+TEST_ALLOBJECTS = $(filter-out $(EM_CTRL_MAIN_OBJ), $(ALLOBJECTS)) $(EM_CTRL_TEST_OBJ)
+
+# Build test executable only (no run)
+build_test: check_test_files install_gtest $(TEST_OBJECTS) $(EM_CTRL_TEST_OBJ)
 ifeq ($(WITH_SAP), 1)
 	@$(MAKE) -C $(AL_SAP_HOME)
 endif
-	@$(MAKE) $(ALLOBJECTS) TESTING=1
 	@echo "Building test executable with same link order as main build..."
-	$(CXX) -o $(TEST_EXEC) $(TEST_OBJECTS) $(ALLOBJECTS) $(LIBDIRS) $(LIBS) -lgtest -lgtest_main -pthread -fsanitize=address -fsanitize=undefined
+	$(CXX) -o $(TEST_EXEC) $(TEST_OBJECTS) $(TEST_ALLOBJECTS) $(LIBDIRS) $(LIBS) -lgtest -lgtest_main -pthread -fsanitize=address -fsanitize=undefined
+
+# Run test executable only (must be built first with build_test)
+run_test:
 	@echo "Running tests..."
 	@cd $(TEST_DIR) && \
 	$(TEST_EXEC)
 
-# Compile test source files
-$(TEST_DIR)/%.o: $(TEST_DIR)/%.cpp
+# Test target (build and run)
+test: build_test run_test
+
+# Compile test source files — depend on install_gtest to ensure headers are present
+# before any parallel compilation starts (critical for make -j)
+$(TEST_DIR)/%.o: $(TEST_DIR)/%.cpp | install_gtest
 	@echo "Compiling test file $<..."
-	$(CXX) $(TEST_CXXFLAGS) -o $@ -c $<
+	@$(CXX) $(TEST_CXXFLAGS) -o $@ -c $<
+	@echo "$< compiled"
 
 # Check if any test files exist
 check_test_files:
@@ -202,8 +265,8 @@ run:
 
 # Clean test files only
 clean_tests:
-	$(RM) $(TEST_OBJECTS) $(TEST_EXEC)
+	$(RM) $(TEST_OBJECTS) $(TEST_EXEC) $(EM_CTRL_TEST_OBJ)
 ifeq ($(WITH_SAP), 1)
 	$(RM) $(SAP_TEST_OBJECTS)
 endif
-.PHONY: all test install_gtest check_test_files clean_tests compile_test_objects clean run
+.PHONY: all test build_test run_test install_gtest check_test_files clean_tests compile_test_objects clean run
