@@ -4165,6 +4165,7 @@ TEST(em_cmd_t, get_radio_data_valid_match)
     EXPECT_NE(radio, nullptr);
     std::cout << "Returned radio pointer: " << radio << std::endl;
     free(cmd.m_data_model.m_wifi_data);
+    cmd.m_data_model.m_wifi_data = nullptr;
     std::cout << "Exiting get_radio_data_valid_match test" << std::endl;
 }
 /**
@@ -4193,6 +4194,7 @@ TEST(em_cmd_t, get_radio_data_null_interface_crashes)
     rdk_wifi_radio_t *ptr = cmd.m_data_model.get_radio_data(nullptr);
 	EXPECT_EQ(ptr, nullptr);
     free(cmd.m_data_model.m_wifi_data);
+    cmd.m_data_model.m_wifi_data = nullptr;
     std::cout << "Exiting get_radio_data_null_interface_crashes test" << std::endl;
 }
 /**
@@ -4234,6 +4236,7 @@ TEST(em_cmd_t, get_radio_data_no_radios_returns_null)
     rdk_wifi_radio_t *radio = cmd.m_data_model.get_radio_data(&iface);
     EXPECT_EQ(radio, nullptr);
     free(cmd.m_data_model.m_wifi_data);
+    cmd.m_data_model.m_wifi_data = nullptr;
     std::cout << "Exiting get_radio_data_no_radios_returns_null test" << std::endl;
 }
 /**
