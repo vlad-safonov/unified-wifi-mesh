@@ -1,4 +1,4 @@
-name: Fast Build Check 
+name: Fast Build Check
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   Build:
-    name: Build (OpenSSL ${{ matrix.openssl-version }})
+    name: Fast Build (OpenSSL ${{ matrix.openssl-version }})
     strategy:
       matrix:
         openssl-version: ['1.1', '3.0']
@@ -24,32 +24,32 @@ jobs:
             ccache-path: '/github/home/.cache/ccache'
       # Add this to continue jobs even if one matrix job fails
       fail-fast: false
-    
+
     runs-on: ubuntu-latest
     container:
       image: ${{ matrix.container }}
-    
+
     steps:
     - name: Setup container environment
       run: |
         # Set non-interactive mode for apt
         export DEBIAN_FRONTEND=noninteractive
-        
+
         apt-get update
         apt-get install -y git
-        
+
         # Create a fake sudo command
         echo '#!/bin/bash' > /usr/bin/sudo
         echo 'export DEBIAN_FRONTEND=noninteractive; exec "$@"' >> /usr/bin/sudo
         chmod +x /usr/bin/sudo
-        
+
         ${{ matrix.setup-cmd }}
-    
+
     - name: Check OpenSSL version
       run: openssl version
-    
+
     - name: Checkout current repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         path: 'unified-wifi-mesh'
         fetch-depth: 1
@@ -62,6 +62,9 @@ jobs:
         git checkout 7cafbd124493b6ff587521343d673094677c7d88
         cd -
         mv unified-wifi-mesh easymesh_project/unified-wifi-mesh
+        ln -s easymesh_project/unified-wifi-mesh/go.mod go.mod
+        pwd
+        ls
 
     - name: Set up dependencies
       run: |
@@ -97,7 +100,7 @@ jobs:
                                 libjson-c-dev
 
     - name: Cache ccache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ${{ matrix.ccache-path }}
         # New unique key every run so the cache is always saved/updated.
@@ -120,7 +123,7 @@ jobs:
 
     - name: Cache ucode build
       id: cache-ucode
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: /tmp/ucode-src
         key: ucode-${{ matrix.openssl-version }}
@@ -140,13 +143,13 @@ jobs:
 
     # Install specific version of Go for the CLI
     - name: Install Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
           go-version: '1.23.4'
 
     - name: Cache cJSON build
       id: cache-cjson
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: /tmp/cjson
         key: cjson-1.7.18-${{ matrix.openssl-version }}
@@ -182,7 +185,7 @@ jobs:
     - name: Cache OneWiFi setup
       # if: false
       id: cache-onewifi-setup
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         # Cache everything that setup clones/builds:
         #   rdk-wifi-hal, halinterface, trower-base64 — cloned from GitHub
@@ -267,7 +270,7 @@ jobs:
         cp -r easymesh_project/OneWifi/install/lib/. test-artifact/lib/ 2>/dev/null || true
 
     - name: Upload test artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: test-binary-openssl-${{ matrix.openssl-version }}
         path: test-artifact/

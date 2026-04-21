@@ -99,7 +99,7 @@ jobs:
 
     - name: Cache cJSON build
       id: cache-cjson
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: /tmp/cjson
         key: cjson-1.7.18-${{ matrix.openssl-version }}
@@ -120,12 +120,12 @@ jobs:
         ldconfig
 
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 1
 
     - name: Download test artifact
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         name: test-binary-openssl-${{ matrix.openssl-version }}
         # For workflow_run use the triggering run's ID; for workflow_dispatch use the input
@@ -157,7 +157,7 @@ jobs:
 
     - name: Upload test report
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: uwm-test-report-${{ matrix.openssl-version }}
         path: test-report.xml
@@ -166,7 +166,7 @@ jobs:
 
     - name: Test Report
       if: always()
-      uses: dorny/test-reporter@v1
+      uses: dorny/test-reporter@v3
       with:
          name: Test results
          path: test-report.xml
