@@ -122,14 +122,14 @@ jobs:
         ln -sf /usr/bin/ccache /usr/local/bin/c++
         echo "PATH=/usr/local/bin:$PATH" >> $GITHUB_ENV
 
-    - name: Cache ucode build
+    - name: Cache tools build - ucode
       id: cache-ucode
       uses: actions/cache@v5
       with:
         path: /tmp/ucode-src
         key: ucode-${{ matrix.openssl-version }}
 
-    - name: Build and install ucode
+    - name: Build and install - ucode
       run: |
         if [ "${{ steps.cache-ucode.outputs.cache-hit }}" != "true" ]; then
           git clone --depth=1 https://github.com/jow-/ucode.git /tmp/ucode-src
@@ -140,15 +140,10 @@ jobs:
         fi
         cd /tmp/ucode-src/build
         sudo make install
+        # Update dynamic linker run-time bindings
         sudo ldconfig
 
-    # Install specific version of Go for the CLI
-    - name: Install Go
-      uses: actions/setup-go@v6
-      with:
-          go-version: '1.23.4'
-
-    - name: Cache cJSON build
+    - name: Cache tools build - cJSON 1.7.18
       id: cache-cjson
       uses: actions/cache@v5
       with:
@@ -156,7 +151,7 @@ jobs:
         key: cjson-1.7.18-${{ matrix.openssl-version }}
 
     # Make sure we use a consistent version of cJSON between Ubuntu 20.04 and Ubuntu 22.04
-    - name: Install cJSON 1.7.18
+    - name: Build and install - cJSON 1.7.18
       run: |
         if [ "${{ steps.cache-cjson.outputs.cache-hit }}" != "true" ]; then
           mkdir -p /tmp/cjson && cd /tmp/cjson
@@ -168,12 +163,39 @@ jobs:
           make
         fi
         cd /tmp/cjson/cJSON-1.7.18/build
-        make install
+        sudo make install
         # Update dynamic linker run-time bindings
-        ldconfig
+        sudo ldconfig
+
+    - name: Cache tools build - Gtest
+      id: cache-gtest
+      uses: actions/cache@v5
+      with:
+        path: /tmp/gtest-src
+        key: gtest-${{ matrix.openssl-version }}
+
+    - name: Build and install - Gtest
+      run: |
+        if [ "${{ steps.cache-gtest.outputs.cache-hit }}" != "true" ]; then
+          git clone --depth=1 https://github.com/google/googletest.git /tmp/gtest-src
+          cd /tmp/gtest-src
+          mkdir build && cd build
+          cmake .. -DCMAKE_CXX_STANDARD=17
+          make -j$(nproc)
+        fi
+        cd /tmp/gtest-src/build
+        sudo make install
+        # Update dynamic linker run-time bindings
+        sudo ldconfig
 
     - name: ccache stats - tools
       run: ccache --show-stats -z
+
+    # Install specific version of Go for the CLI
+    - name: Install Go
+      uses: actions/setup-go@v6
+      with:
+          go-version: '1.23.4'
 
     - name: Get OneWiFi setup cache key
       id: onewifi-cache-key
@@ -246,10 +268,6 @@ jobs:
 
     - name: Ccache stats - CLI
       run: ccache --show-stats -z
-
-    - name: Install GTest
-      working-directory: easymesh_project/unified-wifi-mesh
-      run: make -C build/ctrl install_gtest
 
     - name: Build - Test Binary
       #if: false  # Set to false to skip test binary build
