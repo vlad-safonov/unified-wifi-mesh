@@ -1,14 +1,18 @@
-name: Build Check 
+name: Fast Unit Tests
 
 on:
-  push:
-    branches: [ "develop" ]
-  pull_request:
-    branches: [ "develop" ]
+  #push:
+  #  branches: [ "develop-II" ]
+  #pull_request:
+  #  branches: [ "develop-II" ]
+  workflow_run:
+    workflows: ["Fast Build Check"]
+    types: [completed]
+  workflow_dispatch:
 
 jobs:
-  Build:
-    name: Build (OpenSSL ${{ matrix.openssl-version }})
+  Unit-Tests:
+    name: Unit Tests (OpenSSL ${{ matrix.openssl-version }})
     strategy:
       matrix:
         openssl-version: ['1.1', '3.0']
@@ -19,8 +23,6 @@ jobs:
           - openssl-version: '3.0'
             container: 'ubuntu:latest'
             setup-cmd: 'apt-get update && apt-get install -y libssl-dev'
-      # Add this to continue jobs even if one matrix job fails
-      fail-fast: false
     
     runs-on: ubuntu-latest
     container:
@@ -84,25 +86,8 @@ jobs:
                                 libmariadb-dev \
                                 gnupg \
                                 file \
-                                pkg-config \
-                                libperl-dev \
-                                libjson-c-dev
+                                golang
 
-        # Steps for ucode installation required for hostapd compilation
-        git clone https://github.com/jow-/ucode.git ucode
-        cd ucode
-        mkdir build && cd build
-        cmake -DUBUS_SUPPORT=OFF -DUCI_SUPPORT=OFF -DULOOP_SUPPORT=OFF ..
-        make -j$(nproc)
-        sudo make install
-        sudo ldconfig
-
-    # Install specific version of Go for the CLI
-    - name: Install Go
-      uses: actions/setup-go@v5
-      with:
-          go-version: '1.23.4'
-    
     # Make sure we use a consistent version of cJSON between Ubuntu 20.04 and Ubuntu 22.04
     - name: Install cJSON 1.7.18
       run: |
@@ -134,37 +119,22 @@ jobs:
     - name: Build - OneWiFi
       working-directory: easymesh_project/OneWifi
       continue-on-error: true
+      run: make -j -f build/linux/bpi/makefile all
+      
+    - name: Confirm Linking - Controller
+      working-directory: easymesh_project/OneWifi
       run: make -f build/linux/bpi/makefile all
 
-    - name: Build - Controller
-      working-directory: easymesh_project/unified-wifi-mesh/build/ctrl
-      continue-on-error: true
+    - name: Install GTest
+      working-directory: easymesh_project/unified-wifi-mesh/
+      timeout-minutes: 5 
       run: |
-        make clean
-        make -j all
-        
-    - name: Confirm Linking - Controller
-      working-directory: easymesh_project/unified-wifi-mesh/build/ctrl
-      run: make -j all
+        make -C build/ctrl install_gtest
 
-    - name: Build - Agent
-      working-directory: easymesh_project/unified-wifi-mesh/build/agent
-      continue-on-error: true
+    - name: Make test
+      working-directory: easymesh_project/unified-wifi-mesh/
+      timeout-minutes: 5 
       run: |
-        make clean
-        make -j all
-        
-    - name: Confirm Linking - Agent
-      working-directory: easymesh_project/unified-wifi-mesh/build/agent
-      run: make -j all
-
-    - name: Build - CLI
-      working-directory: easymesh_project/unified-wifi-mesh/build/cli
-      continue-on-error: true
-      run: |
-        make clean
-        make -j all
-        
-    - name: Confirm Linking - CLI
-      working-directory: easymesh_project/unified-wifi-mesh/build/cli
-      run: make -j all
+        export ASAN_OPTIONS="detect_leaks=1:fast_unwind_on_malloc=0:leak_check_at_exit=1:symbolize=1:print_stacktrace=1:print_legend=1"
+        export LSAN_OPTIONS="report_objects=1:max_leaks=0:verbosity=1"
+        make -j -C build/ctrl test

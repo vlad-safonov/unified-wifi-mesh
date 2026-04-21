@@ -1,10 +1,11 @@
-name: Build Check 
+name: Fast Build Check 
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "develop-II" ]
   pull_request:
-    branches: [ "develop" ]
+    branches: [ "develop-II" ]
+  workflow_dispatch:
 
 jobs:
   Build:
