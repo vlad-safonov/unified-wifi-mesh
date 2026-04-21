@@ -21,6 +21,12 @@
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
 
+	std::string cur_filter = ::testing::GTEST_FLAG(filter);
+// Apply default filter if ther is no filter from user
+if (!cur_filter.empty()) {
+	 std::cout << "Running with user ilter: " << ::testing::GTEST_FLAG(filter) << std::endl;
+}
+else
 ::testing::GTEST_FLAG(filter) =
     "-dm_ap_mld_t_Test.DecodeValidJsonObjectWithNullParentID:"
     "dm_ap_mld_t_Test.DecodeNullJsonObjectWithValidParentID:"
