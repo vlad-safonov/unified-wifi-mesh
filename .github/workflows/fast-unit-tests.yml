@@ -65,6 +65,7 @@ jobs:
     - name: Setup container environment
       run: |
         export DEBIAN_FRONTEND=noninteractive
+
         apt-get update
         apt-get install -y git
 
@@ -81,6 +82,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           cmake \
+          git \
           wget \
           libev-dev \
           libjansson-dev \
@@ -97,14 +99,14 @@ jobs:
           libmariadb3 \
           libmariadb-dev
 
-    - name: Cache cJSON build
+    - name: Cache tools build - cJSON 1.7.18
       id: cache-cjson
       uses: actions/cache@v5
       with:
         path: /tmp/cjson
         key: cjson-1.7.18-${{ matrix.openssl-version }}
 
-    - name: Install cJSON 1.7.18
+    - name: Build and install - cJSON 1.7.18
       run: |
         if [ "${{ steps.cache-cjson.outputs.cache-hit }}" != "true" ]; then
           mkdir -p /tmp/cjson && cd /tmp/cjson
@@ -117,6 +119,7 @@ jobs:
         fi
         cd /tmp/cjson/cJSON-1.7.18/build
         make install
+        # Update dynamic linker run-time bindings
         ldconfig
 
     - name: Checkout repository
