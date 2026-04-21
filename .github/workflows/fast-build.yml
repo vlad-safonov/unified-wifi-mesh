@@ -1,15 +1,17 @@
-name: Fast Build Check 
+name: Fast Build Check
 
 on:
   push:
     branches: [ "develop-II" ]
   pull_request:
     branches: [ "develop-II" ]
+  schedule:
+    - cron: '17 2 * * *'
   workflow_dispatch:
 
 jobs:
-  Build:
-    name: Build (OpenSSL ${{ matrix.openssl-version }})
+  fast-build:
+    name: Fast Build (OpenSSL ${{ matrix.openssl-version }})
     strategy:
       matrix:
         openssl-version: ['1.1', '3.0']
@@ -19,37 +21,37 @@ jobs:
             setup-cmd: 'apt-get update && apt-get install -y libssl1.1 libssl-dev'
             ccache-path: '/github/home/.ccache'
           - openssl-version: '3.0'
-            container: 'ubuntu:latest'
+            container: 'ubuntu:24.04' #'ubuntu:latest'
             setup-cmd: 'apt-get update && apt-get install -y libssl-dev'
             ccache-path: '/github/home/.cache/ccache'
       # Add this to continue jobs even if one matrix job fails
       fail-fast: false
-    
+
     runs-on: ubuntu-latest
     container:
       image: ${{ matrix.container }}
-    
+
     steps:
     - name: Setup container environment
       run: |
         # Set non-interactive mode for apt
         export DEBIAN_FRONTEND=noninteractive
-        
+
         apt-get update
         apt-get install -y git
-        
+
         # Create a fake sudo command
         echo '#!/bin/bash' > /usr/bin/sudo
         echo 'export DEBIAN_FRONTEND=noninteractive; exec "$@"' >> /usr/bin/sudo
         chmod +x /usr/bin/sudo
-        
+
         ${{ matrix.setup-cmd }}
-    
+
     - name: Check OpenSSL version
       run: openssl version
-    
+
     - name: Checkout current repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         path: 'unified-wifi-mesh'
         fetch-depth: 1
@@ -58,17 +60,21 @@ jobs:
       run: |
         mkdir -p easymesh_project
         git clone --depth=5 https://github.com/rdkcentral/OneWifi.git easymesh_project/OneWifi
-        cd easymesh_project/OneWifi
-        git checkout 7cafbd124493b6ff587521343d673094677c7d88
-        cd -
+
+        # Freeze OneWifi revision in order to build Easymesh (need to update on rebase)
+        # git -C easymesh_project/OneWifi checkout e950dfb8fd1809a4e07cffbad43b8b8a46a2a32a
+
         mv unified-wifi-mesh easymesh_project/unified-wifi-mesh
+
+        # Create link to allow go find go.mod and cache deps properly
+        ln -s easymesh_project/unified-wifi-mesh/go.mod go.mod
 
     - name: Set up dependencies
       run: |
         # Ensure non-interactive installation
         export DEBIAN_FRONTEND=noninteractive
-        sudo apt-get update
-        sudo apt-get install -y build-essential \
+        apt-get update
+        apt-get install -y build-essential \
                                 cmake \
                                 python3 \
                                 python3-pip \
@@ -97,7 +103,7 @@ jobs:
                                 libjson-c-dev
 
     - name: Cache ccache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ${{ matrix.ccache-path }}
         # New unique key every run so the cache is always saved/updated.
@@ -118,14 +124,14 @@ jobs:
         ln -sf /usr/bin/ccache /usr/local/bin/c++
         echo "PATH=/usr/local/bin:$PATH" >> $GITHUB_ENV
 
-    - name: Cache ucode build
+    - name: Cache tools build - ucode
       id: cache-ucode
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: /tmp/ucode-src
         key: ucode-${{ matrix.openssl-version }}
 
-    - name: Build and install ucode
+    - name: Build and install - ucode
       run: |
         if [ "${{ steps.cache-ucode.outputs.cache-hit }}" != "true" ]; then
           git clone --depth=1 https://github.com/jow-/ucode.git /tmp/ucode-src
@@ -135,24 +141,19 @@ jobs:
           make -j$(nproc)
         fi
         cd /tmp/ucode-src/build
-        sudo make install
-        sudo ldconfig
+        make install
+        # Update dynamic linker run-time bindings
+        ldconfig
 
-    # Install specific version of Go for the CLI
-    - name: Install Go
-      uses: actions/setup-go@v5
-      with:
-          go-version: '1.23.4'
-
-    - name: Cache cJSON build
+    - name: Cache tools build - cJSON 1.7.18
       id: cache-cjson
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: /tmp/cjson
         key: cjson-1.7.18-${{ matrix.openssl-version }}
 
     # Make sure we use a consistent version of cJSON between Ubuntu 20.04 and Ubuntu 22.04
-    - name: Install cJSON 1.7.18
+    - name: Build and install - cJSON 1.7.18
       run: |
         if [ "${{ steps.cache-cjson.outputs.cache-hit }}" != "true" ]; then
           mkdir -p /tmp/cjson && cd /tmp/cjson
@@ -168,8 +169,35 @@ jobs:
         # Update dynamic linker run-time bindings
         ldconfig
 
+    - name: Cache tools build - Gtest
+      id: cache-gtest
+      uses: actions/cache@v5
+      with:
+        path: /tmp/gtest-src
+        key: gtest-${{ matrix.openssl-version }}
+
+    - name: Build and install - Gtest
+      run: |
+        if [ "${{ steps.cache-gtest.outputs.cache-hit }}" != "true" ]; then
+          git clone --depth=1 https://github.com/google/googletest.git /tmp/gtest-src
+          cd /tmp/gtest-src
+          mkdir build && cd build
+          cmake .. -DCMAKE_CXX_STANDARD=17
+          make -j$(nproc)
+        fi
+        cd /tmp/gtest-src/build
+        make install
+        # Update dynamic linker run-time bindings
+        ldconfig
+
     - name: ccache stats - tools
       run: ccache --show-stats -z
+
+    # Install specific version of Go for the CLI
+    - name: Install Go
+      uses: actions/setup-go@v6
+      with:
+          go-version: '1.23.4'
 
     - name: Get OneWiFi setup cache key
       id: onewifi-cache-key
@@ -182,7 +210,7 @@ jobs:
     - name: Cache OneWiFi setup
       # if: false
       id: cache-onewifi-setup
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         # Cache everything that setup clones/builds:
         #   rdk-wifi-hal, halinterface, trower-base64 — cloned from GitHub
@@ -243,10 +271,6 @@ jobs:
     - name: Ccache stats - CLI
       run: ccache --show-stats -z
 
-    - name: Install GTest
-      working-directory: easymesh_project/unified-wifi-mesh
-      run: make -C build/ctrl install_gtest
-
     - name: Build - Test Binary
       #if: false  # Set to false to skip test binary build
       #continue-on-error: true
@@ -267,7 +291,7 @@ jobs:
         cp -r easymesh_project/OneWifi/install/lib/. test-artifact/lib/ 2>/dev/null || true
 
     - name: Upload test artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: test-binary-openssl-${{ matrix.openssl-version }}
         path: test-artifact/
