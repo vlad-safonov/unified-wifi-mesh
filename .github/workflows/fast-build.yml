@@ -58,13 +58,14 @@ jobs:
       run: |
         mkdir -p easymesh_project
         git clone --depth=5 https://github.com/rdkcentral/OneWifi.git easymesh_project/OneWifi
-        cd easymesh_project/OneWifi
-        git checkout 7cafbd124493b6ff587521343d673094677c7d88
-        cd -
+        
+        # This is w/a to freeze OneWifi revision in order to build Easymesh
+        git -C easymesh_project/OneWifi checkout 7cafbd124493b6ff587521343d673094677c7d88
+
         mv unified-wifi-mesh easymesh_project/unified-wifi-mesh
+
+        # Create link to allow go find it and cache
         ln -s easymesh_project/unified-wifi-mesh/go.mod go.mod
-        pwd
-        ls
 
     - name: Set up dependencies
       run: |
