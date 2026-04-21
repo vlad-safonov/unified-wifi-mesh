@@ -169,7 +169,10 @@ TEST_EXEC = $(INSTALLDIR)/bin/onewifi_em_ctrl_test
 # Common test files (everything except agent specific unit test files and test_l1_al*.cpp)
 EXCLUDE_TESTS = \
     $(TEST_DIR)/test_l1_al%.cpp \
-	$(TEST_DIR)/test_em_crypto.cpp \
+    $(TEST_DIR)/test_em_crypto.cpp \
+    $(TEST_DIR)/test_l1_em_cmd_em_config.cpp \
+    $(TEST_DIR)/test_l1_em_cmd_set_channel.cpp \
+    $(TEST_DIR)/test_l1_em_cmd.cpp \
     $(TEST_DIR)/test_l1_em_simulator.cpp \
     $(TEST_DIR)/test_l1_dm_device.cpp \
     $(TEST_DIR)/test_l1_dm_easy_mesh.cpp \
