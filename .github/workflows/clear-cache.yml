@@ -9,21 +9,21 @@ jobs:
         permissions:
             actions: write
             contents: read
-        
+
         steps:
           - name: Clear Cache
             env:
               GH_TOKEN: ${{ github.token }}
               GH_REPO: ${{ github.repository }}
             run: |
-                ids=$(gh cache list --limit 100 --json id --jq '.[].id')
-                
-                if [ -z "$ids"]; then
+                keys=$(gh cache list --limit 100 --json key --jq '.[].key')
+
+                if [ -z "$keys" ]; then
                     echo "No caches found"
                     exit 0
                 fi
 
-                for id in $ids; do
-                    echo "Deleting cache with ID: $id"
-                    gh cache delete "$id"
+                for key in $keys; do
+                    echo "Deleting cache with Name: $key"
+                    gh cache delete "$key"
                 done
