@@ -171,24 +171,9 @@ EXCLUDE_TESTS = \
     $(TEST_DIR)/test_l1_al%.cpp \
     $(TEST_DIR)/test_l1_em_simulator.cpp \
     $(TEST_DIR)/test_l1_em_cmd_scan_result.cpp \
-    $(TEST_DIR)/test_l1_ec_enrollee.cpp \
-    $(TEST_DIR)/test_l1_ec_util.cpp \
-    $(TEST_DIR)/test_l1_ec_manager.cpp \
-    $(TEST_DIR)/test_l1_em_cmd_channel_pref_query.cpp \
-    $(TEST_DIR)/test_l1_em_cmd_remove_device.cpp \
-    $(TEST_DIR)/test_l1_em_cmd_sta_link_metrics.cpp \
-    $(TEST_DIR)/test_l1_em_cmd_sta_steer.cpp \
-    $(TEST_DIR)/test_l1_em_cmd_start_dpp.cpp \
-    $(TEST_DIR)/test_l1_em_ctrl.cpp \
-    $(TEST_DIR)/test_l1_em_msg.cpp \
-    $(TEST_DIR)/test_l1_em_orch_ctrl.cpp \
-    $(TEST_DIR)/test_l1_em_orch.cpp \
     $(TEST_DIR)/test_l1_em_orch_agent.cpp \
-    $(TEST_DIR)/test_l1_em_network_topo.cpp \
-    $(TEST_DIR)/test_l1_em_provisioning.cpp \
-    $(TEST_DIR)/test_l1_em_sm.cpp \
+    $(TEST_DIR)/test_l1_em_ctrl.cpp \
     $(TEST_DIR)/test_l1_em_cmd_ap_metrics_report.cpp \
-    $(TEST_DIR)/test_l1_em_metrics.cpp \
     $(TEST_DIR)/test_l1_em_cmd_btm_report.cpp
 COMMON_TEST_SOURCES = $(filter-out $(EXCLUDE_TESTS), $(wildcard $(TEST_DIR)/*.cpp))
 
