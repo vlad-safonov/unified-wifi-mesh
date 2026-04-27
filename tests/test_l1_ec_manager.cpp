@@ -528,7 +528,6 @@ TEST(ec_manager_t, cfg_onboard_enrollee_null_data_enrollee)
     std::cout << "Entering cfg_onboard_enrollee_null_data_enrollee test" << std::endl;
     ec_ops_t ops = make_dummy_ops();    
     handshake_completed_handler handler = [](uint8_t[ETH_ALEN], bool) {};
-    ec_persistent_sec_ctx_t sec_ctx = make_dummy_sec_ctx();
     ec_manager_t mgr("00:11:22:33:44:55", ops, false, std::nullopt, handler);
     ec_data_t* data = nullptr;
     std::cout << "Invoking cfg_onboard_enrollee with data=nullptr" << std::endl;
@@ -784,7 +783,6 @@ TEST(ec_manager_t, start_secure_1905_layer_enrollee_Nullmac)
 {
     std::cout << "Entering start_secure_1905_layer_enrollee_Nullmac test" << std::endl;
     ec_ops_t ops = make_dummy_ops();
-    ec_persistent_sec_ctx_t sec_ctx = make_dummy_sec_ctx();
     handshake_completed_handler handler = [](uint8_t[ETH_ALEN], bool) {};
     ec_manager_t mgr("66:77:88:99:aa:bb", ops, false, std::nullopt, handler);
     std::cout << "Invoking start_secure_1905_layer with configurator present, dest_al_mac=" << "66:77:88:99:aa:bb" << std::endl;

@@ -151,8 +151,6 @@ em_tlv_type_t types[] = {
     em_tlv_eht_operations,
     em_tlv_type_avail_spectrum_inquiry_reg,
     em_tlv_type_avail_spectrum_inquiry_rsp,
-    em_tlv_type_vendor_sta_metrics,
-    em_tlv_vendor_plolicy_cfg,
     em_tlv_type_vendor_operational_bss,
 };
 

@@ -333,7 +333,7 @@ TEST_F(em_ctrl_t_Test, orch_init_default)
  */
 TEST_F(em_ctrl_t_Test, handle_500ms_tick_default) {
     std::cout << "Entering handle_500ms_tick_default test" << std::endl;
-    EXPECT_NO_THROW(ctrl.handle_500ms_tick());
+    EXPECT_NO_THROW(ctrl.handle_250ms_tick());
     std::cout << "Exiting handle_500ms_tick_default test" << std::endl;
 }
 /**
