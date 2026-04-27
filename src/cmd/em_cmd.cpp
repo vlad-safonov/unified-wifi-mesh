@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <cjson/cJSON.h>
+#include <type_traits>
 #include "em_cmd.h"
 
 bool em_cmd_t::validate()
@@ -884,7 +885,9 @@ int em_cmd_t::dump_bus_event(em_bus_event_t *evt)
 
 em_cmd_t::em_cmd_t(em_cmd_type_t type, em_cmd_params_t param, dm_easy_mesh_t& dm) : m_evt(NULL)
 {
-    m_type = type;
+    auto raw = static_cast<std::underlying_type_t<em_cmd_type_t>>(type);
+    m_type = (raw >= static_cast<decltype(raw)>(em_cmd_type_max))
+             ? em_cmd_type_max : type;
     m_db_cfg_type = db_cfg_type_none;
     memcpy(&m_param, &param, sizeof(em_cmd_params_t));
     init(dm);
@@ -893,7 +896,9 @@ em_cmd_t::em_cmd_t(em_cmd_type_t type, em_cmd_params_t param, dm_easy_mesh_t& dm
 
 em_cmd_t::em_cmd_t(em_cmd_type_t type, em_cmd_params_t param) : m_evt(NULL)
 {
-    m_type = type;
+    auto raw = static_cast<std::underlying_type_t<em_cmd_type_t>>(type);
+    m_type = (raw >= static_cast<decltype(raw)>(em_cmd_type_max))
+             ? em_cmd_type_max : type;
     m_db_cfg_type = db_cfg_type_none;
     memcpy(&m_param, &param, sizeof(em_cmd_params_t));
     init();
