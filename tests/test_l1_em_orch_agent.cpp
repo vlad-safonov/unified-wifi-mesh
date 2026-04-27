@@ -1075,7 +1075,7 @@ TEST_F(em_orch_agent_t_TEST, is_em_ready_for_orch_exec_valid_inputs_return_true)
         em_agent_t mgr{};
         em_t em(&ruid ,em_freq_band_5, &dm, &mgr, em_profile_type_1, em_service_type_agent, false);
         cmd.m_type = cmdTypes[i];
-        std::cout << "Invoking is_em_ready_for_orch_exec with valid em_cmd_t object with m_type " << cmd.m_type << "and em object pointers" << std::endl;
+        std::cout << "Invoking is_em_ready_for_orch_exec with valid em_cmd_t object with m_type " << static_cast<int>(cmd.m_type) << "and em object pointers" << std::endl;
         bool result = orch->is_em_ready_for_orch_exec(&cmd, &em);
         std::cout << "Method returned: " << result << std::endl;
         EXPECT_TRUE(result);

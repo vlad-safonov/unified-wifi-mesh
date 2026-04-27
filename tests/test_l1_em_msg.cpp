@@ -22,8 +22,8 @@
 #include "em_msg.h"
 #include <cstring>
 
-#define TLV_HEADER_SIZE 3  // type (1) + len (2)
-#define MAC_LEN 6
+#define TLV_HEADER_SIZE 3u  // type (1) + len (2)
+#define MAC_LEN 6u
 
 em_profile_type_t profiles[] = {
     em_profile_type_reserved,

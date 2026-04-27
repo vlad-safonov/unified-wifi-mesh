@@ -926,7 +926,7 @@ TEST_F(em_orch_ctrl_t_TEST, build_candidates_UnsupportedCommandType)
     std::cout << "Entering build_candidates_UnsupportedCommandType test" << std::endl;
     em_cmd_t cmd;
     cmd.m_type = static_cast<em_cmd_type_t>(em_cmd_type_max + 1);
-    std::cout << "Setting command type to unsupported value: " << static_cast<em_cmd_type_t>(em_cmd_type_max + 1) << std::endl;
+    std::cout << "Setting command type to unsupported value: " << static_cast<int>(static_cast<em_cmd_type_t>(em_cmd_type_max + 1)) << std::endl;
     unsigned int candidateCount = orch->build_candidates(&cmd);
     std::cout << "build_candidates returned candidateCount: " << candidateCount << std::endl;
     EXPECT_EQ(0u, candidateCount);
@@ -971,7 +971,7 @@ TEST_F(em_orch_ctrl_t_TEST, build_candidates_valid_cmdTypes)
     for (size_t i = 0; i < totalTypes; i++) {
 	    em_cmd_t cmd;
         cmd.m_type = cmdTypes[i];
-        std::cout << "Testing cmdType=" << cmd.m_type << std::endl;
+        std::cout << "Testing cmdType=" << static_cast<int>(cmd.m_type) << std::endl;
         unsigned int candidateCount = orch->build_candidates(&cmd);
         EXPECT_EQ(candidateCount, 0u);
     }
@@ -1075,7 +1075,7 @@ TEST_F(em_orch_ctrl_t_TEST, is_em_ready_for_orch_exec_valid_inputs_return_true)
         em_ctrl_t mgr;
         em_t em(&ruid ,em_freq_band_5, &dm, &mgr, em_profile_type_1, em_service_type_ctrl, false);
         cmd.m_type = cmdTypes[i];
-        std::cout << "Invoking is_em_ready_for_orch_exec with valid em_cmd_t object with m_type " << cmd.m_type << "and em object pointers" << std::endl;
+        std::cout << "Invoking is_em_ready_for_orch_exec with valid em_cmd_t object with m_type " << static_cast<int>(cmd.m_type) << "and em object pointers" << std::endl;
         bool result = orch->is_em_ready_for_orch_exec(&cmd, &em);
         std::cout << "Method returned: " << result << std::endl;
         EXPECT_TRUE(result);
@@ -1121,7 +1121,7 @@ TEST_F(em_orch_ctrl_t_TEST, is_em_ready_for_orch_exec_valid_mtype_state)
     em_t em(&ruid ,em_freq_band_5, &dm, &mgr, em_profile_type_1, em_service_type_ctrl, false);
     em.set_state(em_state_ctrl_wsc_m1_pending);        
     cmd.m_type = em_cmd_type_cfg_renew;
-    std::cout << "Invoking is_em_ready_for_orch_exec with valid em_cmd_t object with m_type " << cmd.m_type << "and em object pointers" << std::endl;
+    std::cout << "Invoking is_em_ready_for_orch_exec with valid em_cmd_t object with m_type " << static_cast<int>(cmd.m_type) << "and em object pointers" << std::endl;
     bool result = orch->is_em_ready_for_orch_exec(&cmd, &em);
     std::cout << "Method returned: " << result << std::endl;
     EXPECT_FALSE(result);
@@ -1162,7 +1162,7 @@ TEST_F(em_orch_ctrl_t_TEST, is_em_ready_for_orch_exec_mtype_none)
     em_t em(&ruid ,em_freq_band_5, &dm, &mgr, em_profile_type_1, em_service_type_ctrl, false);
     em.set_state(em_state_ctrl_configured);        
     cmd.m_type = em_cmd_type_none;
-    std::cout << "Invoking is_em_ready_for_orch_exec with valid em_cmd_t object with m_type " << cmd.m_type << "and em object pointers" << std::endl;
+    std::cout << "Invoking is_em_ready_for_orch_exec with valid em_cmd_t object with m_type " << static_cast<int>(cmd.m_type) << "and em object pointers" << std::endl;
     bool result = orch->is_em_ready_for_orch_exec(&cmd, &em);
     std::cout << "Method returned: " << result << std::endl;
 	EXPECT_FALSE(result);
