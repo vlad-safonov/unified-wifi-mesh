@@ -218,8 +218,9 @@ TEST_F(em_ctrl_t_Test, is_network_topology_initialized_valid)
     unsigned char mac[6] = {0x11,0x22,0x33,0x04,0x05,0x01};
     setup_interface(intf, "eth0", mac);
     dm_easy_mesh_t* dm = ctrl.create_data_model("Network2", &intf, em_profile_type_1);
-    dm->m_colocated = true;
     ASSERT_NE(dm, nullptr);
+    dm->m_colocated = true;
+    dm->set_controller(true);
     ctrl.init_network_topology();
     EXPECT_TRUE(ctrl.is_network_topology_initialized());
     std::cout << "Exiting is_network_topology_initialized_valid test" << std::endl;
