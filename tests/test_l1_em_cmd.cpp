@@ -4625,7 +4625,7 @@ TEST(em_cmd_t, set_db_cfg_type_TypicalPositiveValue) {
  */
 TEST(em_cmd_t, set_db_cfg_type_MaximumUnsignedIntValue) {
     std::cout << "Entering set_db_cfg_type_MaximumUnsignedIntValue test" << std::endl;
-#if 0
+#if 1
     em_cmd_t obj;
     unsigned int test_type = UINT_MAX;
     std::cout << "Invoking set_db_cfg_type with type: " << test_type << std::endl;    

@@ -2978,6 +2978,7 @@ typedef enum {
 	db_cfg_type_policy_list_delete = (1 << 20),
 	db_cfg_type_scan_result_list_update = (1 << 21),
 	db_cfg_type_scan_result_list_delete = (1 << 22),
+	db_cfg_type_max = (UINT_MAX),
 } db_cfg_type_t;
 
 typedef struct {
