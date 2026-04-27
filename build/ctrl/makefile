@@ -171,7 +171,6 @@ EXCLUDE_TESTS = \
     $(TEST_DIR)/test_l1_al%.cpp \
     $(TEST_DIR)/test_l1_em_simulator.cpp \
     $(TEST_DIR)/test_l1_dm_radio_cap.cpp \
-    $(TEST_DIR)/test_l1_dm_network_ssid.cpp \
     $(TEST_DIR)/test_l1_em_cmd_scan_result.cpp \
     $(TEST_DIR)/test_l1_ec_enrollee.cpp \
     $(TEST_DIR)/test_l1_ec_util.cpp \
