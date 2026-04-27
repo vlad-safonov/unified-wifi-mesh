@@ -1438,12 +1438,16 @@ TEST(ec_manager_t, handle_autoconf_resp_chirp_enrollee_valid_chirp)
     ec_ops_t ops = make_dummy_ops();
     handshake_completed_handler handler = [](uint8_t[ETH_ALEN], bool) {};
     ec_manager_t mgr("00:11:22:33:44:55", ops, false, std::nullopt, handler);
-    em_dpp_chirp_value_t chirp{};
-    chirp.hash_valid = true;
-    size_t len = sizeof(em_dpp_chirp_value_t);
+    // Allocate enough space for the base struct plus a SHA256 hash (32 bytes)
+    // to avoid buffer overflow when the code reads chirp->data
+    constexpr size_t chirp_data_len = 32; // SHA256_DIGEST_LENGTH
+    uint8_t chirp_buf[sizeof(em_dpp_chirp_value_t) + chirp_data_len] = {};
+    em_dpp_chirp_value_t *chirp = reinterpret_cast<em_dpp_chirp_value_t*>(chirp_buf);
+    chirp->hash_valid = true;
+    size_t len = sizeof(chirp_buf);
     uint8_t src_mac[ETH_ALEN] = {0xde,0xad,0xbe,0xef,0x00,0x01};
     std::cout << "Invoking handle_autoconf_resp_chirp with valid chirp" << std::endl;
-    bool ret = mgr.handle_autoconf_resp_chirp(&chirp, len, src_mac);
+    bool ret = mgr.handle_autoconf_resp_chirp(chirp, len, src_mac);
     std::cout << "Returned value: " << ret << std::endl;
     EXPECT_FALSE(ret);
     std::cout << "Exiting handle_autoconf_resp_chirp_enrollee_valid_chirp test" << std::endl;
