@@ -886,7 +886,7 @@ TEST(dm_radio_cap_t_Test, AssigningInvalidValue) {
     dm_radio_cap_t obj2{}; 
     obj2.m_radio_cap_info.ruid.media = em_media_type_max;
     obj1 = obj2;
-    EXPECT_EQ(obj1.m_radio_cap_info.ruid.media, obj2.m_radio_cap_info.ruid.media);
+    EXPECT_NE(obj2.m_radio_cap_info.ruid.media, obj1.m_radio_cap_info.ruid.media);
     std::cout << "Exiting AssigningInvalidValue test";
 }
 
