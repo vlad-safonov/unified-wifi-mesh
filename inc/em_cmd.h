@@ -42,7 +42,7 @@ public:
     unsigned int m_num_orch_desc;
     unsigned int m_rd_op_class;
     unsigned int m_rd_channel;
-    unsigned int m_db_cfg_type;
+    db_cfg_type_t m_db_cfg_type;
 
 public:
     
@@ -563,7 +563,7 @@ public:
 	 *
 	 * @returns The database configuration type as an unsigned integer.
 	 */
-	unsigned int get_db_cfg_type() { return m_db_cfg_type; }
+	db_cfg_type_t get_db_cfg_type() { return m_db_cfg_type; }
     
 	/**!
 	 * @brief Sets the database configuration type.
@@ -572,7 +572,7 @@ public:
 	 *
 	 * @param[in] type The configuration type to be set.
 	 */
-	void set_db_cfg_type(unsigned int type) { m_db_cfg_type = type; }
+	void set_db_cfg_type(db_cfg_type_t type) { m_db_cfg_type = type; }
 
     
 	/**!
