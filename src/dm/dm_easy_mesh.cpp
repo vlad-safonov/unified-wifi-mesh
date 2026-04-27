@@ -2065,7 +2065,10 @@ dm_radio_t *dm_easy_mesh_t::find_matching_radio(dm_radio_t *radio)
 
 dm_op_class_t *dm_easy_mesh_t::get_curr_op_class(unsigned int index)
 {
-        return &m_op_class[index];
+    if (index >= EM_MAX_OPCLASS) {
+        return nullptr;
+    }
+    return &m_op_class[index];
 }
 
 dm_device_t *dm_easy_mesh_t::find_matching_device(dm_device_t *dev)
