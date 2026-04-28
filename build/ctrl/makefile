@@ -171,6 +171,7 @@ EXCLUDE_TESTS = \
     $(TEST_DIR)/test_l1_al%.cpp \
     $(TEST_DIR)/test_l1_em_simulator.cpp \
     $(TEST_DIR)/test_l1_em_orch_agent.cpp \
+    $(TEST_DIR)/test_l1_em_ctrl.cpp \
     $(TEST_DIR)/test_l1_em_cmd_scan_result.cpp \
     $(TEST_DIR)/test_l1_em_cmd_ap_metrics_report.cpp \
     $(TEST_DIR)/test_l1_em_cmd_btm_report.cpp

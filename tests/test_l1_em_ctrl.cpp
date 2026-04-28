@@ -213,6 +213,7 @@ TEST_F(em_ctrl_t_Test, is_data_model_initialized_default) {
  */
 TEST_F(em_ctrl_t_Test, is_network_topology_initialized_valid)
 {
+    GTEST_SKIP() << "skip is_network_topology_initialized_valid test, requires real device." << std::endl;
     std::cout << "Entering is_network_topology_initialized_valid test" << std::endl;
     em_interface_t intf;
     unsigned char mac[6] = {0x11,0x22,0x33,0x04,0x05,0x01};
@@ -1125,6 +1126,8 @@ TEST_F(em_ctrl_t_Test, handle_bsta_cap_req_null_event_pointer)
  */
 TEST_F(em_ctrl_t_Test, init_network_topology_default)
 {
+    GTEST_SKIP() << "skip init_network_topology_default test, requires real device." << std::endl;
+/*
     std::cout << "Entering init_network_topology_default test" << std::endl;
     em_interface_t intf;
     unsigned char mac[6] = {0x01,0x02,0x03,0x04,0x05,0x01};
@@ -1134,6 +1137,7 @@ TEST_F(em_ctrl_t_Test, init_network_topology_default)
     ASSERT_NE(dm, nullptr);
     EXPECT_NO_THROW(ctrl.init_network_topology());
     std::cout << "Exiting init_network_topology_default test" << std::endl;
+*/
 }
 /**
  * @brief Ensure that update_network_topology works correctly for a colocated network topology scenario
@@ -1160,6 +1164,8 @@ TEST_F(em_ctrl_t_Test, init_network_topology_default)
  */
 TEST_F(em_ctrl_t_Test, update_network_topology_colocated)
 {
+    GTEST_SKIP() << "skip update_network_topology_colocated test, requires real device." << std::endl;
+/*
     std::cout << "Entering update_network_topology_colocated test" << std::endl;
     em_interface_t intf;
     unsigned char mac[6] = {0x11,0x22,0x33,0x44,0x55,0x01};
@@ -1172,6 +1178,7 @@ TEST_F(em_ctrl_t_Test, update_network_topology_colocated)
         ctrl.update_network_topology();
     });
     std::cout << "Exiting update_network_topology_colocated test" << std::endl;
+*/
 }
 /**
  * @brief Test to update network topology in a non-colocated scenario
@@ -1196,6 +1203,7 @@ TEST_F(em_ctrl_t_Test, update_network_topology_colocated)
  */
 TEST_F(em_ctrl_t_Test, update_network_topology_non_colocated)
 {
+    GTEST_SKIP() << "skip update_network_topology_non_colocated test, requires real device." << std::endl;
     std::cout << "Entering update_network_topology_non_colocated test" << std::endl;
     em_interface_t intf1;
     unsigned char mac1[6] = {0x11,0x22,0x33,0x44,0x55,0x01};
@@ -1698,6 +1706,7 @@ TEST_F(em_ctrl_t_Test, create_data_model_max_length_netid) {
  */
 TEST_F(em_ctrl_t_Test, delete_data_model_valid_params)
 {
+    GTEST_SKIP() << "skip delete_data_model_valid_params test, requires real device." << std::endl;
     std::cout << "Entering delete_data_model_valid_params test" << std::endl;
     const char* net_id = "Net1";
     unsigned char mac[6] = {0x00,0x1A,0x2B,0x3C,0x4D,0x5E};
