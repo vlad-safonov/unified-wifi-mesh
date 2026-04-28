@@ -41,7 +41,7 @@ bool em_simulator_t::run(dm_easy_mesh_agent_t& dm)
 	unsigned int i, j, k;
 	em_scan_result_t	scan_result;
 	dm_scan_result_t *res;
-	em_long_string_t key;
+	em_2xlong_string_t key;
 	mac_addr_str_t dev_mac_str, scanner_mac_str;
 	mac_address_t nbr_mac_base = {0x00, 0x01, 0x03, 0x04, 0x05, 0x06};
 
@@ -63,10 +63,10 @@ bool em_simulator_t::run(dm_easy_mesh_agent_t& dm)
 			dm_easy_mesh_t::macbytes_to_string(dm.m_device.m_device_info.id.dev_mac, dev_mac_str);
 			dm_easy_mesh_t::macbytes_to_string(m_param.u.scan_params.ruid, scanner_mac_str);
 
-			snprintf(key, sizeof(em_long_string_t), "%s@%s@%s@%d@%d@%d", scan_result.id.net_id, dev_mac_str, scanner_mac_str,
+			snprintf(key, sizeof(em_2xlong_string_t), "%s@%s@%s@%d@%d@%d", scan_result.id.net_id, dev_mac_str, scanner_mac_str,
 				scan_result.id.op_class, scan_result.id.channel, scan_result.id.scanner_type);
 
-			if ((res = (dm_scan_result_t *)hash_map_get(dm.m_scan_result_map, key)) == NULL) {
+			if ((res = reinterpret_cast<dm_scan_result_t *>(hash_map_get(dm.m_scan_result_map, key))) == NULL) {
 				res = new dm_scan_result_t(&scan_result);
 				hash_map_put(dm.m_scan_result_map, strdup(key), res);
 			}
