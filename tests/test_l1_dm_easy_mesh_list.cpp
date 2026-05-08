@@ -140,7 +140,7 @@ protected:
 	    list.delete_data_model("Network1", mac2);
 	    list.delete_data_model("Network2", mac3);
 	    list.delete_data_model("Network2", mac4);
-
+#if 0
         if (dm1->m_wifi_data != NULL) {
             free(dm1->m_wifi_data);
             dm1->m_wifi_data = nullptr;
@@ -157,6 +157,7 @@ protected:
             free(dm4->m_wifi_data);
             dm4->m_wifi_data = nullptr;
         }
+#endif
 	__lsan_enable();
     }
 };
