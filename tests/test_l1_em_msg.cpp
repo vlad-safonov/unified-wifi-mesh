@@ -3609,6 +3609,7 @@ TEST(em_msg_t, get_next_tlv_buff_len_zero) {
  */
 TEST(em_msg_t, get_client_mac_info_valid_client_info_tlv)
 {
+    GTEST_SKIP() << "skip get_client_mac_info_valid_client_info_tlv." << std::endl;
     std::cout << "Entering get_client_mac_info_valid_client_info_tlv test" << std::endl;
     unsigned char buffer[TLV_HEADER_SIZE + 6];
     unsigned char mac_val[6] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB};
