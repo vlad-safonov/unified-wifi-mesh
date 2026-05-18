@@ -29,11 +29,10 @@ extern "C" const char* __asan_default_options() {
     return "detect_leaks=0";
 }
 
-// Helper: Print hash map contents
-void PrintStaMap(const char* map_name, hash_map_t* map) {
+// Helper: Print sta_map contents
+void PrintStaMap(const char* map_name, const sta_map_t& map) {
     std::cout << map_name << " contents:\n";
-    dm_sta_t* sta = static_cast<dm_sta_t*>(hash_map_get_first(map));
-    while (sta != nullptr) {
+    for (auto& [k, sta] : map) {
         char sta_str[18], bss_str[18], radio_str[18];
         dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.id, sta_str);
         dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.bssid, bss_str);
@@ -41,7 +40,6 @@ void PrintStaMap(const char* map_name, hash_map_t* map) {
         std::cout << "  STA: " << sta_str
                   << ", BSS: " << bss_str
                   << ", Radio: " << radio_str << "\n";
-        sta = static_cast<dm_sta_t*>(hash_map_get_next(map, sta));
     }
 }
 
@@ -12706,7 +12704,7 @@ TEST(dm_easy_mesh_t, Positive_AssignmentOperator) {
     EXPECT_EQ(dst.m_num_radios, src.m_num_radios);
     EXPECT_EQ(dst.m_num_bss, src.m_num_bss);
     EXPECT_EQ(dst.m_bss[0].m_bss_info.vap_index, 42);
-    EXPECT_NE(hash_map_get_first(dst.m_sta_map), nullptr);
+    EXPECT_NE(dst.m_sta_map.empty() ? nullptr : dst.m_sta_map.begin()->second, nullptr);
     src.deinit();
     dst.deinit();
     std::cout << "Exiting Positive_AssignmentOperator test\n";
@@ -12746,10 +12744,8 @@ TEST(dm_easy_mesh_t, Negative_Assignment_NoSharedStaObjects) {
     src.put_sta_info(&sta, em_target_sta_map_consolidated);
     std::cout << "Invoking operator=\n";
     dst = src;
-    dm_sta_t *src_sta =
-        static_cast<dm_sta_t*>(hash_map_get_first(src.m_sta_map));
-    dm_sta_t *dst_sta =
-        static_cast<dm_sta_t*>(hash_map_get_first(dst.m_sta_map));
+    dm_sta_t *src_sta = src.m_sta_map.empty() ? nullptr : src.m_sta_map.begin()->second;
+    dm_sta_t *dst_sta = dst.m_sta_map.empty() ? nullptr : dst.m_sta_map.begin()->second;
     std::cout << "Source STA present=" << (src_sta != nullptr) << "\n";
     std::cout << "Dest   STA present=" << (dst_sta != nullptr) << "\n";
     EXPECT_NE(src_sta, nullptr);
@@ -21764,16 +21760,16 @@ TEST(dm_easy_mesh_t, CloneHashMapsTest_positive_CloneMaps)
     em_sta_info_t sta2 = CreateSta(0x02, 0x11, 0x21);
     src.put_sta_info(&sta1, em_target_sta_map_consolidated);
     src.put_sta_info(&sta2, em_target_sta_map_assoc);
-    dm_sta_t* src_sta = static_cast<dm_sta_t*>(hash_map_get_first(src.m_sta_map));
-    dm_sta_t* src_assoc = static_cast<dm_sta_t*>(hash_map_get_first(src.m_sta_assoc_map));
+    dm_sta_t* src_sta = src.m_sta_map.empty() ? nullptr : src.m_sta_map.begin()->second;
+    dm_sta_t* src_assoc = src.m_sta_assoc_map.empty() ? nullptr : src.m_sta_assoc_map.begin()->second;
     ASSERT_NE(src_sta, nullptr);
     ASSERT_NE(src_assoc, nullptr);
     src.clone_hash_maps(dst);
-    dm_sta_t* dst_sta = static_cast<dm_sta_t*>(hash_map_get_first(dst.m_sta_map));
-    dm_sta_t* dst_assoc = static_cast<dm_sta_t*>(hash_map_get_first(dst.m_sta_assoc_map));
+    dm_sta_t* dst_sta = dst.m_sta_map.empty() ? nullptr : dst.m_sta_map.begin()->second;
+    dm_sta_t* dst_assoc = dst.m_sta_assoc_map.empty() ? nullptr : dst.m_sta_assoc_map.begin()->second;
     EXPECT_EQ(dst_sta, src_sta);
     EXPECT_EQ(dst_assoc, src_assoc);
-    EXPECT_EQ(hash_map_get_first(dst.m_sta_dassoc_map), nullptr);
+    EXPECT_TRUE(dst.m_sta_dassoc_map.empty());
     src.deinit();
     dst.deinit();
     std::cout << "Exiting CloneHashMapsTest_positive_CloneMaps test\n";
@@ -21820,9 +21816,9 @@ TEST(dm_easy_mesh_t, CloneHashMapsTest_negative_EmptySource) {
     PrintStaMap("Assoc Map", dst.m_sta_assoc_map);
     PrintStaMap("Dissoc Map", dst.m_sta_dassoc_map);
     // Assertions: Destination maps should remain empty
-    EXPECT_EQ(hash_map_get_first(dst.m_sta_map), nullptr);
-    EXPECT_EQ(hash_map_get_first(dst.m_sta_assoc_map), nullptr);
-    EXPECT_EQ(hash_map_get_first(dst.m_sta_dassoc_map), nullptr);
+    EXPECT_TRUE(dst.m_sta_map.empty());
+    EXPECT_TRUE(dst.m_sta_assoc_map.empty());
+    EXPECT_TRUE(dst.m_sta_dassoc_map.empty());
     src.deinit();
     dst.deinit();
     std::cout << "Exiting CloneHashMapsTest_negative_EmptySource test\n";
@@ -21864,15 +21860,15 @@ TEST(dm_easy_mesh_t, CloneHashMapsTest_edge_DestinationNonEmpty)
     em_sta_info_t sta_dst = CreateSta(0xFF, 0xEE, 0xDD);
     src.put_sta_info(&sta_src, em_target_sta_map_consolidated);
     dst.put_sta_info(&sta_dst, em_target_sta_map_consolidated);
-    dm_sta_t* dst_before = static_cast<dm_sta_t*>(hash_map_get_first(dst.m_sta_map));
+    dm_sta_t* dst_before = dst.m_sta_map.empty() ? nullptr : dst.m_sta_map.begin()->second;
     ASSERT_NE(dst_before, nullptr);
     dst.clone_hash_maps(src);
-    dm_sta_t* dst_after = static_cast<dm_sta_t*>(hash_map_get_first(dst.m_sta_map));
+    dm_sta_t* dst_after = dst.m_sta_map.empty() ? nullptr : dst.m_sta_map.begin()->second;
     ASSERT_NE(dst_after, nullptr);
     // Destination entry must still exist
     EXPECT_TRUE(
         dst_after == dst_before ||
-        dst_after == static_cast<dm_sta_t*>(hash_map_get_first(src.m_sta_map))
+        dst_after == (src.m_sta_map.empty() ? nullptr : src.m_sta_map.begin()->second)
     );
     src.deinit();
     dst.deinit();

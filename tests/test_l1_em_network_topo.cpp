@@ -1014,22 +1014,16 @@ TEST(em_network_topo_t, find_topology_by_bh_associated_sta_in_root) {
     mac_address_t bssid = {0x02, 0x10, 0x00, 0x00, 0x00, 0x01};
     memcpy(root_dm->m_bss[0].m_bss_info.id.bssid, bssid, sizeof(mac_address_t));
     root_dm->m_bss[0].m_bss_info.id.haul_type = em_haul_type_backhaul;
-    root_dm->m_sta_map = hash_map_create();
     dm_sta_t* sta = new dm_sta_t();
     mac_address_t sta_mac = {0x02, 0x10, 0x01, 0x00, 0x00, 0x01};
     memcpy(sta->m_sta_info.id, sta_mac, sizeof(mac_address_t));
     memcpy(sta->m_sta_info.bssid, bssid, sizeof(mac_address_t));
-    char* sta_key = static_cast<char*>(malloc(18));
-    snprintf(sta_key, 18, "%02X:%02X:%02X:%02X:%02X:%02X",
-             sta_mac[0], sta_mac[1], sta_mac[2],
-             sta_mac[3], sta_mac[4], sta_mac[5]);
-    hash_map_put(root_dm->m_sta_map, sta_key, sta);
+    root_dm->m_sta_map[dm_easy_mesh_t::make_sta_key(sta_mac, bssid, sta->m_sta_info.radiomac)] = sta;
     em_network_topo_t topo_root(root_dm);
     em_network_topo_t* found = topo_root.find_topology_by_bh_associated(sta_mac);
     EXPECT_EQ(found, &topo_root);
-    hash_map_remove(root_dm->m_sta_map, sta_key);
+    root_dm->m_sta_map.clear();
     delete sta;
-    hash_map_destroy(root_dm->m_sta_map);
     delete root_dm;
     std::cout << "Exiting find_topology_by_bh_associated_sta_in_root test" << std::endl;
 }
@@ -1069,22 +1063,16 @@ TEST(em_network_topo_t, find_topology_by_bh_associated_sta_in_child) {
     mac_address_t bssid = {0x02, 0x20, 0x00, 0x00, 0x00, 0x01};
     memcpy(child_dm->m_bss[0].m_bss_info.id.bssid, bssid, sizeof(mac_address_t));
     child_dm->m_bss[0].m_bss_info.id.haul_type = em_haul_type_backhaul;
-    child_dm->m_sta_map = hash_map_create();
     dm_sta_t* sta = new dm_sta_t();
     mac_address_t sta_mac = {0x02, 0x20, 0x01, 0x00, 0x00, 0x01};
     memcpy(sta->m_sta_info.id, sta_mac, sizeof(mac_address_t));
     memcpy(sta->m_sta_info.bssid, bssid, sizeof(mac_address_t));
-    char* sta_key = static_cast<char*>(malloc(18));
-    snprintf(sta_key, 18, "%02X:%02X:%02X:%02X:%02X:%02X",
-             sta_mac[0], sta_mac[1], sta_mac[2],
-             sta_mac[3], sta_mac[4], sta_mac[5]);
-    hash_map_put(child_dm->m_sta_map, sta_key, sta);
+    child_dm->m_sta_map[dm_easy_mesh_t::make_sta_key(sta_mac, bssid, sta->m_sta_info.radiomac)] = sta;
     em_network_topo_t* found = topo_root->find_topology_by_bh_associated(sta_mac);
     EXPECT_EQ(found->get_data_model(), child_dm);
     // Cleanup
-    hash_map_remove(child_dm->m_sta_map, sta_key);
+    child_dm->m_sta_map.clear();
     delete sta;
-    hash_map_destroy(child_dm->m_sta_map);
     topo_root->remove(child_dm, nullptr, nullptr);
     delete child_dm;
     delete topo_root;
@@ -1132,7 +1120,6 @@ TEST(em_network_topo_t, find_topology_by_bh_associated_sta_in_grandchild) {
     em_network_topo_t* grandchild_topo = new em_network_topo_t(grandchild_dm);
     em_network_topo_t* grandchildren[1] = { grandchild_topo };
     topo_root->add_network_topo(child_dm, grandchildren, 1);
-    grandchild_dm->m_sta_map = hash_map_create();
     dm_sta_t* sta = new dm_sta_t();
     mac_address_t bssid = {0x02, 0x30, 0x00, 0x00, 0x00, 0x01};
     memcpy(grandchild_dm->m_bss[0].m_bss_info.id.bssid, bssid, sizeof(mac_address_t));
@@ -1140,17 +1127,12 @@ TEST(em_network_topo_t, find_topology_by_bh_associated_sta_in_grandchild) {
     mac_address_t sta_mac = {0x02, 0x30, 0x00, 0x00, 0x00, 0x01};
     memcpy(sta->m_sta_info.id, sta_mac, sizeof(mac_address_t));
     memcpy(sta->m_sta_info.bssid, bssid, sizeof(mac_address_t));
-    char* sta_key = static_cast<char*>(malloc(18));
-    snprintf(sta_key, 18, "%02X:%02X:%02X:%02X:%02X:%02X",
-             sta_mac[0], sta_mac[1], sta_mac[2],
-             sta_mac[3], sta_mac[4], sta_mac[5]);
-    hash_map_put(grandchild_dm->m_sta_map, sta_key, sta);
+    grandchild_dm->m_sta_map[dm_easy_mesh_t::make_sta_key(sta_mac, bssid, sta->m_sta_info.radiomac)] = sta;
     em_network_topo_t* found = topo_root->find_topology_by_bh_associated(sta_mac);
     EXPECT_EQ(found->get_data_model(), grandchild_dm);
     // Cleanup
-    hash_map_remove(grandchild_dm->m_sta_map, sta_key);
+    grandchild_dm->m_sta_map.clear();
     delete sta;
-    hash_map_destroy(grandchild_dm->m_sta_map);
     topo_root->remove(child_dm, nullptr, nullptr); // removes child and grandchild
     delete grandchild_topo;
     delete grandchild_dm;
@@ -1267,24 +1249,18 @@ TEST(em_network_topo_t, find_topology_by_bh_associated_root) {
     memcpy(root_dm->m_bss[0].m_bss_info.ruid.mac, radio_mac, 6);
     memcpy(root_dm->m_bss[0].m_bss_info.bssid.mac, bssid, 6);
     root_dm->m_bss[0].m_bss_info.vap_mode = em_vap_mode_sta;
-    root_dm->m_sta_map = hash_map_create();
     dm_sta_t* sta = new dm_sta_t();
     mac_address_t sta_mac = {0x02, 0x10, 0x01, 0x00, 0x00, 0x01};
     memcpy(sta->m_sta_info.id, sta_mac, sizeof(mac_address_t));
     memcpy(sta->m_sta_info.bssid, bssid, sizeof(mac_address_t));
-    char* sta_key = static_cast<char*>(malloc(18));
-    snprintf(sta_key, 18, "%02X:%02X:%02X:%02X:%02X:%02X",
-             sta_mac[0], sta_mac[1], sta_mac[2],
-             sta_mac[3], sta_mac[4], sta_mac[5]);
-    hash_map_put(root_dm->m_sta_map, sta_key, sta);
+    root_dm->m_sta_map[dm_easy_mesh_t::make_sta_key(sta_mac, bssid, sta->m_sta_info.radiomac)] = sta;
 
     em_network_topo_t* topo_root = new em_network_topo_t(root_dm);
     g_network_topology = topo_root;
     em_network_topo_t* found = topo_root->find_topology_by_bh_associated(root_dm);
     EXPECT_EQ(found, topo_root);
-    hash_map_remove(root_dm->m_sta_map, sta_key);
+    root_dm->m_sta_map.clear();
     delete sta;
-    hash_map_destroy(root_dm->m_sta_map);
     delete root_dm;
     delete topo_root;
     std::cout << "Exiting find_topology_by_bh_associated_root test" << std::endl;
