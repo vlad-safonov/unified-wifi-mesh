@@ -211,9 +211,6 @@ bool em_orch_agent_t::pre_process_orch_op(em_cmd_t *pcmd)
     mac_addr_str_t	mac_str;
     dm_easy_mesh_t *dm;
     em_commit_target_t config;
-    dm_sta_t *sta;
-    em_long_string_t key;
-    mac_addr_str_t sta_mac_str, bss_mac_str, radio_mac_str;
     em_freq_band_t band;
 
     ctx = pcmd->m_data_model.get_cmd_ctx();
@@ -263,39 +260,26 @@ bool em_orch_agent_t::pre_process_orch_op(em_cmd_t *pcmd)
                 dm = m_mgr->create_data_model(GLOBAL_NET_ID, intf);
             }
 
-            sta = static_cast<dm_sta_t *> (hash_map_get_first(pcmd->get_data_model()->m_sta_assoc_map));
-            while(sta != NULL) {
-                dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.id, sta_mac_str);
-                dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.bssid, bss_mac_str);
-                dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.radiomac, radio_mac_str);
-                snprintf(key, sizeof(em_long_string_t), "%s@%s@%s", sta_mac_str, bss_mac_str, radio_mac_str);
-
+            for (auto& [k, sta] : pcmd->get_data_model()->m_sta_assoc_map) {
                 em_sta_info_t *em_sta = dm->get_sta_info(sta->get_sta_info()->id, sta->get_sta_info()->bssid, sta->get_sta_info()->radiomac, em_target_sta_map_consolidated);
                 if (em_sta != NULL) {
-                    printf("Consolidated Map, sta exists; updating with key: %s\n", key);
+                    printf("Consolidated Map, sta exists; updating\n");
                     memcpy(em_sta, sta->get_sta_info(), sizeof(em_sta_info_t));
                 } else {
-                    printf("Consolidated map new addition with key: %s\n", key);
-                    hash_map_put(dm->m_sta_map, strdup(key), new dm_sta_t(*sta));
+                    printf("Consolidated map new addition\n");
+                    dm->m_sta_map[k] = new dm_sta_t(*sta);
                 }
-
-                sta = static_cast<dm_sta_t *> (hash_map_get_next(pcmd->get_data_model()->m_sta_assoc_map, sta));
             }
 
-            sta = static_cast<dm_sta_t *> (hash_map_get_first(pcmd->get_data_model()->m_sta_dassoc_map));
-            while(sta != NULL) {
-                dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.id, sta_mac_str);
-                dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.bssid, bss_mac_str);
-                dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.radiomac, radio_mac_str);
-                snprintf(key, sizeof(em_long_string_t), "%s@%s@%s", sta_mac_str, bss_mac_str, radio_mac_str);
-
+            for (auto& [k, sta] : pcmd->get_data_model()->m_sta_dassoc_map) {
                 em_sta_info_t *em_sta = dm->get_sta_info(sta->get_sta_info()->id, sta->get_sta_info()->bssid, sta->get_sta_info()->radiomac, em_target_sta_map_consolidated);
-                sta = static_cast<dm_sta_t *>(hash_map_get_next(pcmd->get_data_model()->m_sta_dassoc_map, sta));
                 if (em_sta != NULL) {
-                    printf("Consolidated Map removed with key: %s\n", key);
-                    dm_sta_t *tmp = sta;
-                    tmp = static_cast<dm_sta_t *>(hash_map_remove(dm->m_sta_map, key));
-                    delete tmp;
+                    printf("Consolidated Map removed\n");
+                    auto it = dm->m_sta_map.find(k);
+                    if (it != dm->m_sta_map.end()) {
+                        delete it->second;
+                        dm->m_sta_map.erase(it);
+                    }
                 }
             }
             break;
@@ -316,13 +300,11 @@ bool em_orch_agent_t::pre_process_orch_op(em_cmd_t *pcmd)
                 dm = m_mgr->create_data_model(GLOBAL_NET_ID, intf);
             }
 
-            sta = static_cast<dm_sta_t *> (hash_map_get_first(pcmd->get_data_model()->m_sta_assoc_map));
-            while(sta != NULL) {
+            for (auto& [k, sta] : pcmd->get_data_model()->m_sta_assoc_map) {
                 em_sta_info_t *em_sta = dm->get_sta_info(sta->get_sta_info()->id, sta->get_sta_info()->bssid, sta->get_sta_info()->radiomac, em_target_sta_map_consolidated);
                 if (em_sta != NULL) {
                     memcpy(em_sta, &sta->m_sta_info, sizeof(em_sta_info_t));
                 }
-                sta = static_cast<dm_sta_t *> (hash_map_get_next(pcmd->get_data_model()->m_sta_assoc_map, sta));
             }
             break;
 
@@ -375,7 +357,7 @@ unsigned int em_orch_agent_t::build_candidates(em_cmd_t *pcmd)
                 }
 
                 printf("%s:%d pcmd radio mac=%s\n", __func__, __LINE__, pcmd->m_param.u.args.args[0]);
-                if ((hash_map_count(pcmd->get_data_model()->m_sta_assoc_map) != 0) || (hash_map_count(pcmd->get_data_model()->m_sta_dassoc_map) != 0)) {
+                if ((!pcmd->get_data_model()->m_sta_assoc_map.empty()) || (!pcmd->get_data_model()->m_sta_dassoc_map.empty())) {
                     queue_push(pcmd->m_em_candidates, em);
                     count++;
                 }

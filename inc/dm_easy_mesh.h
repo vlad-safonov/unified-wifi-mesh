@@ -20,6 +20,10 @@
 #define DM_EM_H
 #include <vector>
 #include <atomic>
+#include <array>
+#include <cstdint>
+#include <cstring>
+#include <unordered_map>
 #include "em_base.h"
 #include "wifi_webconfig.h"
 #include "dm_device.h"
@@ -42,6 +46,22 @@
 #include "webconfig_external_proto.h"
 
 #define GLOBAL_NET_ID "OneWifiMesh"
+
+// Key type for STA maps: packs (sta_mac, bss_mac, radio_mac) as 3×6 bytes
+static constexpr std::size_t STA_MAP_KEY_LEN = 3 * sizeof(mac_address_t);
+using sta_map_key_t = std::array<uint8_t, STA_MAP_KEY_LEN>;
+
+struct sta_map_key_hash {
+    std::size_t operator()(const sta_map_key_t& k) const noexcept {
+        // FNV-1a over STA_MAP_KEY_LEN bytes
+        std::size_t h = 14695981039346656037ULL;
+        for (auto b : k) { h ^= static_cast<std::size_t>(b); h *= 1099511628211ULL; }
+        return h;
+    }
+};
+
+class dm_sta_t;
+using sta_map_t = std::unordered_map<sta_map_key_t, dm_sta_t*, sta_map_key_hash>;
 
 class em_t;
 
@@ -76,9 +96,9 @@ public:
 	unsigned int	m_num_policy;
 	dm_policy_t	m_policy[EM_MAX_POLICIES];
 	hash_map_t		*m_scan_result_map = NULL;
-    hash_map_t  	*m_sta_map = NULL;
-    hash_map_t      *m_sta_assoc_map = NULL;
-    hash_map_t      *m_sta_dassoc_map = NULL;
+    sta_map_t       m_sta_map;
+    sta_map_t       m_sta_assoc_map;
+    sta_map_t       m_sta_dassoc_map;
     dm_cac_comp_t	m_cac_comp;
     unsigned short           msg_id;
     em_db_cfg_param_t	m_db_cfg_param;
@@ -2340,6 +2360,20 @@ public:
 	 * @note Ensure that the `string` buffer is large enough to hold the MAC address string.
 	 */
 	static char *macbytes_to_string(mac_address_t mac, char* string);
+
+    /**!
+     * @brief Builds the binary STA-map key from three MAC addresses.
+     *
+     * The key packs sta_mac, bss_mac, and radio_mac (6 bytes each) into an
+     * 18-byte std::array that is used as the key for the unordered STA maps.
+     */
+    static sta_map_key_t make_sta_key(const mac_address_t sta, const mac_address_t bss, const mac_address_t radio) {
+        sta_map_key_t k;
+        std::memcpy(k.data(),      sta,   6);
+        std::memcpy(k.data() + 6,  bss,   6);
+        std::memcpy(k.data() + 12, radio, 6);
+        return k;
+    }
     
 	/**!
 	 * @brief Converts a string representation of a MAC address to a byte array.

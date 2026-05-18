@@ -577,48 +577,42 @@ void dm_easy_mesh_list_t::put_bss(const char *key, const dm_bss_t *bss)
 
 dm_sta_t *dm_easy_mesh_list_t::get_first_sta()
 {
-    dm_sta_t *sta = NULL;
     dm_easy_mesh_t *dm;
 
     dm = static_cast<dm_easy_mesh_t *> (hash_map_get_first(m_list));
     while (dm != NULL) {
-        sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
-        if (sta != NULL) {
-            return sta;
+        if (!dm->m_sta_map.empty()) {
+            return dm->m_sta_map.begin()->second;
         }
         dm = static_cast<dm_easy_mesh_t *> (hash_map_get_next(m_list, dm));
     }
 
-    return sta;
+    return nullptr;
 }
 
 dm_sta_t *dm_easy_mesh_list_t::get_next_sta(dm_sta_t *psta)
 {
-    dm_sta_t *sta = NULL;
     dm_easy_mesh_t *dm;
     bool return_next = false;
 
     dm = static_cast<dm_easy_mesh_t *> (hash_map_get_first(m_list));
     while (dm != NULL) {
-        sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
-        while (sta != NULL) {
+        for (auto& [k, sta] : dm->m_sta_map) {
             if (return_next == true) {
                 return sta;
             }
             if (sta == psta) {
                 return_next = true;
             }
-            sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
         }
         dm = static_cast<dm_easy_mesh_t *> (hash_map_get_next(m_list, dm));
     }
 
-    return NULL;
+    return nullptr;
 }   
     
 dm_sta_t *dm_easy_mesh_list_t::get_sta(const char *key)
-{   
-    dm_sta_t *sta;
+{
     dm_easy_mesh_t *dm;
     mac_address_t sta_mac, ruid;
     mac_addr_str_t	sta_mac_str, radio_mac_str, bssid_str;
@@ -651,10 +645,9 @@ dm_sta_t *dm_easy_mesh_list_t::get_sta(const char *key)
     dm_easy_mesh_t::macbytes_to_string(bssid, bssid_str);
     dm_easy_mesh_t::macbytes_to_string(ruid, radio_mac_str);
 
-    if ((sta = static_cast<dm_sta_t *> (hash_map_get(dm->m_sta_map, key))) != NULL) {
-        //printf("%s:%d: STA:%s found on BSS:%s of radio:%s\n", __func__, __LINE__,
-        //sta_mac_str, bssid_str, radio_mac_str);
-        return sta;
+    auto it = dm->m_sta_map.find(dm_easy_mesh_t::make_sta_key(sta_mac, bssid, ruid));
+    if (it != dm->m_sta_map.end()) {
+        return it->second;
     }
 
     return NULL;
@@ -700,15 +693,15 @@ void dm_easy_mesh_list_t::put_sta(const char *key, const dm_sta_t *sta)
         return;
     }
 
-    if ((psta = static_cast<dm_sta_t *> (hash_map_get(dm->m_sta_map, key))) != NULL) {
-        //printf("%s:%d: STA:%s already present on BSS:%s of radio:%s dm:%p dm_mac:%s\n", __func__, __LINE__,
-        //    sta_mac_str, bssid_str, radio_mac_str, dm, util::mac_to_string(dm->m_device.m_device_info.intf.mac).c_str());
-        memcpy(&psta->m_sta_info, &sta->m_sta_info, sizeof(em_sta_info_t));
+    auto skey = dm_easy_mesh_t::make_sta_key(sta_mac, bssid, ruid);
+    auto it = dm->m_sta_map.find(skey);
+    if (it != dm->m_sta_map.end()) {
+        memcpy(&it->second->m_sta_info, &sta->m_sta_info, sizeof(em_sta_info_t));
         return;
     }
 
     psta = new dm_sta_t(*sta);
-    hash_map_put(dm->m_sta_map, strdup(key), psta);
+    dm->m_sta_map[skey] = psta;
 
     //printf("%s:%d: STA:%s added to BSS:%s of radio:%s dm:%p dm_mac:%s\n", __func__, __LINE__,
     //        sta_mac_str, bssid_str, radio_mac_str, dm, util::mac_to_string(dm->m_device.m_device_info.intf.mac).c_str());
@@ -1349,13 +1342,13 @@ void dm_easy_mesh_list_t::remove_scan_result(const char *key)
         return;
     }
 
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
-        while (sta != NULL) {
-            if (memcmp(sta->m_sta_info.id, id.scanner_mac, sizeof(mac_address_t)) == 0) {
-                found_sta = true;
-                break;
-            }
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
+    sta = nullptr;
+    for (auto& [k, s] : dm->m_sta_map) {
+        if (memcmp(s->m_sta_info.id, id.scanner_mac, sizeof(mac_address_t)) == 0) {
+            sta = s;
+            found_sta = true;
+            break;
+        }
     }
 
     if (found_sta == false) {
@@ -1449,14 +1442,13 @@ void dm_easy_mesh_list_t::put_scan_result(const char *key, const dm_scan_result_
 		return;
 	} 
 
-	sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
-	while (sta != NULL) {
-
-		if (memcmp(sta->m_sta_info.id, id.scanner_mac, sizeof(mac_address_t)) == 0) {
+	sta = nullptr;
+	for (auto& [k, s] : dm->m_sta_map) {
+		if (memcmp(s->m_sta_info.id, id.scanner_mac, sizeof(mac_address_t)) == 0) {
+			sta = s;
 			found_sta = true;
 			break;
 		}
-		sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
 	}		
 
 	if (found_sta == false) {

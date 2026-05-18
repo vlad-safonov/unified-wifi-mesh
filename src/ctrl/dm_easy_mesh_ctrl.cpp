@@ -3510,73 +3510,51 @@ int dm_easy_mesh_ctrl_t::update_tables(dm_easy_mesh_t *dm)
     } 
 
     if (dm->db_cfg_type_is_set(db_cfg_type_sta_list_update)) {
-        sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_assoc_map));
-        while (sta != NULL) {
-			criteria = dm->db_cfg_type_get_criteria(db_cfg_type_sta_list_update);
+        for (auto& [k, sta] : dm->m_sta_assoc_map) {
+            criteria = dm->db_cfg_type_get_criteria(db_cfg_type_sta_list_update);
             if (dm_sta_list_t::set_config(m_db_client, *sta, NULL) == 0) {
                 dm->reset_db_cfg_type(db_cfg_type_sta_list_update);
             }
-            sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_assoc_map, sta));
         }
-
-        sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_assoc_map));
-        while (sta != NULL) {
-            tmp = sta;
-			criteria = dm->db_cfg_type_get_criteria(db_cfg_type_sta_list_update);
+        for (auto it = dm->m_sta_assoc_map.begin(); it != dm->m_sta_assoc_map.end(); ) {
+            sta = it->second;
+            criteria = dm->db_cfg_type_get_criteria(db_cfg_type_sta_list_update);
             if (dm_sta_list_t::set_config(m_db_client, *sta, NULL) == 0) {
                 dm->reset_db_cfg_type(db_cfg_type_sta_list_update);
             }
-
-            dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.id, sta_mac_str);
-            dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.bssid, bssid_str);
-            dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.radiomac, radio_mac_str);
-            snprintf(key, sizeof(em_2xlong_string_t), "%s@%s@%s", sta_mac_str, bssid_str, radio_mac_str);
-            sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_assoc_map, sta));
-            hash_map_remove(dm->m_sta_assoc_map, key);
-            delete tmp;
+            it = dm->m_sta_assoc_map.erase(it);
+            delete sta;
         }
             
 		dm->reset_db_cfg_type(db_cfg_type_sta_list_update);
     }
 
     if (dm->db_cfg_type_is_set(db_cfg_type_sta_list_delete)) {
-        sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_dassoc_map));
-        while (sta != NULL) {
-			criteria = dm->db_cfg_type_get_criteria(db_cfg_type_sta_list_delete);
+        for (auto& [k, sta] : dm->m_sta_dassoc_map) {
+            criteria = dm->db_cfg_type_get_criteria(db_cfg_type_sta_list_delete);
             if (dm_sta_list_t::update_db(m_db_client, dm_orch_type_db_delete, sta->get_sta_info()) != 0) {
                 dm->reset_db_cfg_type(db_cfg_type_sta_list_delete);
             }
-            sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_dassoc_map, sta));
         }
-
-        sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_dassoc_map));
-        while (sta != NULL) {
-            tmp = sta;
-			criteria = dm->db_cfg_type_get_criteria(db_cfg_type_sta_list_delete);
+        for (auto it = dm->m_sta_dassoc_map.begin(); it != dm->m_sta_dassoc_map.end(); ) {
+            sta = it->second;
+            criteria = dm->db_cfg_type_get_criteria(db_cfg_type_sta_list_delete);
             if (dm_sta_list_t::update_db(m_db_client, dm_orch_type_db_delete, sta->get_sta_info()) != 0) {
                 dm->reset_db_cfg_type(db_cfg_type_sta_list_delete);
             }
-            dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.id, sta_mac_str);
-            dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.bssid, bssid_str);
-            dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.radiomac, radio_mac_str);
-            snprintf(key, sizeof(em_2xlong_string_t), "%s@%s@%s", sta_mac_str, bssid_str, radio_mac_str);
-            sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_dassoc_map, sta));
-
-            hash_map_remove(dm->m_sta_dassoc_map, key);
-            delete tmp;
+            it = dm->m_sta_dassoc_map.erase(it);
+            delete sta;
         }
 		dm->reset_db_cfg_type(db_cfg_type_sta_list_delete);
 
     }
 
     if (dm->db_cfg_type_is_set(db_cfg_type_sta_metrics_update)) {
-        sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
-        while (sta != NULL) {
+        for (auto& [k, sta] : dm->m_sta_map) {
 			criteria = dm->db_cfg_type_get_criteria(db_cfg_type_sta_metrics_update);
             if (dm_sta_list_t::set_config(m_db_client, *sta, NULL) == 0) {
                 dm->reset_db_cfg_type(db_cfg_type_sta_metrics_update);
             }
-            sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
         }
 		dm->reset_db_cfg_type(db_cfg_type_sta_metrics_update);
     }
@@ -3788,18 +3766,14 @@ dm_sta_t *dm_easy_mesh_ctrl_t::get_dm_bh_sta(dm_easy_mesh_t *dm, dm_radio_t *rad
             continue;
         }
 
-        dm_sta_t *sta = static_cast<dm_sta_t *> (hash_map_get_first(sdm->m_sta_map));
-        while (sta != NULL) {
+        for (auto& [k, sta] : sdm->m_sta_map) {
             em_sta_info_t *si = sta->get_sta_info();
             if (si->associated == 0) {
-                sta = static_cast<dm_sta_t *> (hash_map_get_next(sdm->m_sta_map, sta));
                 continue;
             }
-            //si->radiomac; radio->m_radio_info.
             if (memcmp(di->backhaul_mac.mac, si->bssid, sizeof(si->bssid)) == 0) {
                 return sta;
             }
-            sta = static_cast<dm_sta_t *> (hash_map_get_next(sdm->m_sta_map, sta));
         }
 
         sdm = dm_ctrl->get_next_dm(sdm);
@@ -5610,22 +5584,19 @@ dm_sta_t* dm_easy_mesh_ctrl_t::get_dm_sta(dm_easy_mesh_t *dm, em_bss_info_t *bi,
     int scnt = 0;
     mac_addr_str_t bss_str, sta_str;
 
-    dm_sta_t *sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
-    while (sta != NULL) {
+    for (auto& [k, sta] : dm->m_sta_map) {
         em_sta_info_t *si = sta->get_sta_info();
         dm_easy_mesh_t::macbytes_to_string(bi->bssid.mac, bss_str);
         dm_easy_mesh_t::macbytes_to_string(si->bssid, sta_str);
         em_printfout("Comparing bss:%s sta:%s", bss_str, sta_str);
         if (si->associated == 0 ||
             memcmp(bi->bssid.mac, si->bssid, sizeof(si->bssid)) != 0) {
-            sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
             continue;
         }
         ++scnt;
         if (scnt == instance) {
             return sta;
         }
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
     }
 
     return NULL;
@@ -5868,12 +5839,10 @@ dm_sta_t *dm_easy_mesh_ctrl_t::get_dm_sta(dm_easy_mesh_t *dm, em_bss_info_t *bi,
         dm_easy_mesh_t::string_to_macbytes(instance, mac);
     }
 
-    dm_sta_t *sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
-    while (sta != NULL) {
+    for (auto& [k, sta] : dm->m_sta_map) {
         em_sta_info_t *si = sta->get_sta_info();
         if (si->associated == 0 ||
             memcmp(bi->bssid.mac, si->bssid, sizeof(mac_address_t)) != 0) {
-            sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
             continue;
         }
         ++scnt;
@@ -5886,7 +5855,6 @@ dm_sta_t *dm_easy_mesh_ctrl_t::get_dm_sta(dm_easy_mesh_t *dm, em_bss_info_t *bi,
                 return sta;
             }
         }
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
     }
 
     return NULL;
@@ -6088,12 +6056,10 @@ bus_error_t dm_easy_mesh_ctrl_t::sta_tget_params(dm_easy_mesh_t *dm, const char 
 
     unsigned int idx = 0;
     dm_easy_mesh_ctrl_t *dm_ctrl = em_ctrl_t::get_em_ctrl_instance()->get_dm_ctrl();
-    dm_sta_t *sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
-    while (sta != NULL) {
+    for (auto& [k, sta] : dm->m_sta_map) {
         em_sta_info_t *si = sta->get_sta_info();
         if (si->associated == 0 ||
             memcmp(bi->bssid.mac, si->bssid, sizeof(si->bssid)) != 0) {
-            sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
             continue;
         }
         ++idx;
@@ -6123,7 +6089,6 @@ bus_error_t dm_easy_mesh_ctrl_t::sta_tget_params(dm_easy_mesh_t *dm, const char 
         dm_ctrl->property_append_tail(property, root, idx, "PairwiseAKM", 0U);
         dm_ctrl->property_append_tail(property, root, idx, "PairwiseCipher", 0U);
         dm_ctrl->property_append_tail(property, root, idx, "RSNCapabilities", 0U);
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
     }
 
     return rc;
@@ -6582,15 +6547,15 @@ bus_error_t dm_easy_mesh_ctrl_t::stamld_get_inner(char *event_name, raw_data_t *
     }
     em_assoc_sta_mld_info_t *smi = sta_mld->get_assoc_sta_mld_info();
 
-    dm_sta_t *sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
+    dm_sta_t *sta = nullptr;
     em_sta_info_t *si = NULL;
-    while (sta != NULL) {
-        si = sta->get_sta_info();
-        if (si->associated && memcmp(smi->mac_addr, si->id, sizeof(mac_addr_t)) != 0) {
+    for (auto& [k, s] : dm->m_sta_map) {
+        em_sta_info_t *csi = s->get_sta_info();
+        if (csi->associated && memcmp(smi->mac_addr, csi->id, sizeof(mac_addr_t)) != 0) {
+            sta = s;
+            si = csi;
             break;
         }
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
-        si = NULL;
     }
 
     if (strcmp(param, "MLDMACAddress") == 0) {
@@ -6687,15 +6652,15 @@ bus_error_t dm_easy_mesh_ctrl_t::stamld_tget_params(dm_easy_mesh_t *dm, const ch
             continue;
         }
         /* Now find sta for this assoc_sta_mld */
-        dm_sta_t *sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
+        dm_sta_t *sta = nullptr;
         em_sta_info_t *si = NULL;
-        while (sta != NULL) {
-            si = sta->get_sta_info();
-            if (si->associated && memcmp(smi->mac_addr, si->id, sizeof(mac_addr_t)) != 0) {
+        for (auto& [k, s] : dm->m_sta_map) {
+            em_sta_info_t *csi = s->get_sta_info();
+            if (csi->associated && memcmp(smi->mac_addr, csi->id, sizeof(mac_addr_t)) != 0) {
+                sta = s;
+                si = csi;
                 break;
             }
-            sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
-            si = NULL;
         }
         ++idx;
 
@@ -6925,15 +6890,15 @@ bus_error_t dm_easy_mesh_ctrl_t::affsta_get_inner(char *event_name, raw_data_t *
     }
     em_affiliated_sta_info_t *asi = &smi->affiliated_sta[idx - 1];
 
-    dm_sta_t *sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
+    dm_sta_t *sta = nullptr;
     em_sta_info_t *si = NULL;
-    while (sta != NULL) {
-        si = sta->get_sta_info();
-        if (si->associated && memcmp(asi->mac_addr, si->id, sizeof(mac_addr_t)) != 0) {
+    for (auto& [k, s] : dm->m_sta_map) {
+        em_sta_info_t *csi = s->get_sta_info();
+        if (csi->associated && memcmp(asi->mac_addr, csi->id, sizeof(mac_addr_t)) != 0) {
+            sta = s;
+            si = csi;
             break;
         }
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
-        si = NULL;
     }
 
     if (strcmp(param, "MACAddress") == 0) {
@@ -7030,15 +6995,15 @@ bus_error_t dm_easy_mesh_ctrl_t::affsta_tget_params(dm_easy_mesh_t *dm, const ch
 
     for (unsigned int idx = 1; idx <= smi->num_affiliated_sta; idx++) {
         em_affiliated_sta_info_t *asi = &smi->affiliated_sta[idx - 1];
-        dm_sta_t *sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
+        dm_sta_t *sta = nullptr;
         em_sta_info_t *si = NULL;
-        while (sta != NULL) {
-            si = sta->get_sta_info();
-            if (si->associated && memcmp(asi->mac_addr, si->id, sizeof(mac_addr_t)) != 0) {
+        for (auto& [k, s] : dm->m_sta_map) {
+            em_sta_info_t *csi = s->get_sta_info();
+            if (csi->associated && memcmp(asi->mac_addr, csi->id, sizeof(mac_addr_t)) != 0) {
+                sta = s;
+                si = csi;
                 break;
             }
-            sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
-            si = NULL;
         }
 
         dm_ctrl->property_append_tail(property, root, idx, "MACAddress", asi->mac_addr);

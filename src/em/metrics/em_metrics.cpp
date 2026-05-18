@@ -675,29 +675,19 @@ int em_metrics_t::send_associated_sta_link_metrics_msg(mac_address_t sta_mac)
 
 void em_metrics_t::send_all_associated_sta_link_metrics_msg()
 {
-    dm_easy_mesh_t *dm;
-    dm_sta_t *sta;
-
-    dm = get_data_model();
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
-    while (sta != NULL) {
+    dm_easy_mesh_t *dm = get_data_model();
+    for (auto& [k, sta] : dm->m_sta_map) {
         if (sta->m_sta_info.associated == true) {
             send_associated_sta_link_metrics_msg(sta->m_sta_info.id);
         }
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
     }
 }
 
 void em_metrics_t::send_associated_sta_link_metrics_resp_msg()
 {
-    dm_easy_mesh_t *dm;
-    dm_sta_t *sta;
-
-    dm = get_current_cmd()->get_data_model();
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_assoc_map));
-    while (sta != NULL) {
+    dm_easy_mesh_t *dm = get_current_cmd()->get_data_model();
+    for (auto& [k, sta] : dm->m_sta_assoc_map) {
         send_associated_link_metrics_response(sta->m_sta_info.id, dm->get_msg_id());
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_assoc_map, sta));
     }
     set_state(em_state_agent_configured);
 }
@@ -715,16 +705,15 @@ int em_metrics_t::send_associated_link_metrics_response(mac_address_t sta_mac, u
     unsigned short type = htons(ETH_P_1905);
     dm_easy_mesh_t *dm = get_data_model();
     mac_addr_str_t mac_str;
+    dm_sta_t *sta = nullptr;
     bool sta_found = false;
-    dm_sta_t *sta;
 
-    sta = reinterpret_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
-    while(sta != NULL) {
-        if (memcmp(sta->m_sta_info.id, sta_mac, sizeof(mac_address_t)) == 0) {
+    for (auto& [k, s] : dm->m_sta_map) {
+        if (memcmp(s->m_sta_info.id, sta_mac, sizeof(mac_address_t)) == 0) {
+            sta = s;
             sta_found = true;
             break;
         }
-        sta = reinterpret_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
     }
 
     if (sta == NULL) {
@@ -897,9 +886,8 @@ int em_metrics_t::send_beacon_metrics_response()
     dm_easy_mesh_t *dm = get_data_model();
     mac_addr_str_t mac_str;
     bool sta_found = false;
-    dm_sta_t *sta;
-
-    sta = reinterpret_cast<dm_sta_t *> (hash_map_get_first(get_current_cmd()->get_data_model()->m_sta_map));
+    auto& cmd_sta_map = get_current_cmd()->get_data_model()->m_sta_map;
+    dm_sta_t *sta = cmd_sta_map.empty() ? nullptr : cmd_sta_map.begin()->second;
 
     memcpy(tmp, dm->get_ctl_mac(), sizeof(mac_address_t));
     tmp += sizeof(mac_address_t);
@@ -1102,10 +1090,8 @@ int em_metrics_t::send_ap_metrics_response()
         }
 
         //now search if this sta is associated to this
-        sta = reinterpret_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
-        while(sta != NULL) {
+        for (auto& [k, sta] : dm->m_sta_map) {
             if (memcmp(sta->get_sta_info()->bssid, dm->m_bss[bss_index].m_bss_info.bssid.mac, sizeof(mac_address_t)) != 0) {
-                sta = static_cast<dm_sta_t *>(hash_map_get_next(dm->m_sta_map, sta));
                 continue;
             }
             //Associated STA Traffic Stats TLV (17.2.35)
@@ -1157,8 +1143,6 @@ int em_metrics_t::send_ap_metrics_response()
 
             tmp += (sizeof(em_tlv_t) + static_cast<size_t> (sz));
             len += (sizeof(em_tlv_t) + static_cast<size_t> (sz));
-
-            sta = reinterpret_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
         }
     }
 
@@ -1341,18 +1325,17 @@ short em_metrics_t::create_beacon_metrics_query_tlv(unsigned char *buff, mac_add
     size_t len = 0;
     dm_easy_mesh_t *dm;
     ssid_t ssid;
-    dm_sta_t *sta;
     unsigned int j;
     unsigned char ap_channel_list[] = {1, 6, 11};
     
-	dm = get_data_model();
+    dm = get_data_model();
 
-    sta = reinterpret_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
-    while(sta != NULL) {
-        if (memcmp(sta->m_sta_info.id, sta_mac, sizeof(mac_address_t)) == 0) {
+    dm_sta_t *sta = nullptr;
+    for (auto& [k, s] : dm->m_sta_map) {
+        if (memcmp(s->m_sta_info.id, sta_mac, sizeof(mac_address_t)) == 0) {
+            sta = s;
             break;
         }
-        sta = reinterpret_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
     }
 
     for (j = 0; j < dm->get_num_bss(); j++) {
@@ -1435,8 +1418,8 @@ short em_metrics_t::create_beacon_metrics_response_tlv(unsigned char *buff)
     em_beacon_metrics_resp_t *response = reinterpret_cast<em_beacon_metrics_resp_t *> (buff);
 
     dm = get_current_cmd()->get_data_model();
-    dm_sta_t *sta;
-    sta = reinterpret_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
+    auto& bmap = dm->m_sta_map;
+    dm_sta_t *sta = bmap.empty() ? nullptr : bmap.begin()->second;
     if (sta != NULL) {
         memcpy(response->sta_mac_addr, sta->m_sta_info.id, sizeof(mac_addr_t));
         len += sizeof(response->sta_mac_addr);
@@ -1627,7 +1610,6 @@ short em_metrics_t::create_link_stats_alarm_tlv(unsigned char *buff)
     size_t len = 0;
     em_link_report_t *link_stats;
     unsigned char *tmp = buff;
-    dm_sta_t *sta;
     dm_easy_mesh_t  *dm = get_current_cmd()->get_data_model();
     size_t alarm_offset = offsetof(em_link_report_t, alarm_sample);
     size_t record_len = 0;
@@ -1646,8 +1628,7 @@ short em_metrics_t::create_link_stats_alarm_tlv(unsigned char *buff)
     len += sizeof(data->attr_id);
     tmp += sizeof(data->attr_id);
 
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
-    while (sta != NULL) {
+    for (auto& [k, sta] : dm->m_sta_map) {
         link_stats = reinterpret_cast<em_link_report_t *>(tmp);
         memcpy(link_stats->sta_mac, sta->m_sta_info.id, sizeof(mac_address_t));
         strncpy(reinterpret_cast<char*>(link_stats->reporting_timestamp),
@@ -1683,7 +1664,6 @@ short em_metrics_t::create_link_stats_alarm_tlv(unsigned char *buff)
         len += record_len;
         tmp += record_len;
         em_printfout("framed report len: %d", len);
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
     }
 
     em_printfout("create_link_stats_alarm_tlv done of len: %d", len);

@@ -216,16 +216,12 @@ void em_configuration_t::handle_state_topology_notify()
 
     dm = get_current_cmd()->get_data_model();
 
-    sta = static_cast<dm_sta_t *>(hash_map_get_first(dm->m_sta_assoc_map));
-    while (sta != NULL) {
+    for (auto& [k, sta] : dm->m_sta_assoc_map) {
         send_topology_notification_by_client(sta->m_sta_info.id, sta->m_sta_info.bssid, true);
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_assoc_map, sta));
     }
 
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_dassoc_map));
-    while (sta != NULL) {
+    for (auto& [k, sta] : dm->m_sta_dassoc_map) {
         send_topology_notification_by_client(sta->m_sta_info.id, sta->m_sta_info.bssid, false);
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_dassoc_map, sta));
     }
     set_state(em_state_agent_configured);
 }
@@ -1566,7 +1562,8 @@ int em_configuration_t::handle_topology_notification(unsigned char *buff, unsign
                 memcpy(sta_info.radiomac, get_radio_interface_mac(), sizeof(mac_address_t));
                 sta_info.associated = assoc_evt_tlv->assoc_event;
 
-                hash_map_put(dm->m_sta_assoc_map, strdup(key), new dm_sta_t(&sta_info));
+                auto skey = dm_easy_mesh_t::make_sta_key(sta_info.id, sta_info.bssid, get_radio_interface_mac());
+                dm->m_sta_assoc_map[skey] = new dm_sta_t(&sta_info);
 
                 dm->set_db_cfg_param(db_cfg_type_sta_list_update, "");
                 //em_printfout("Client updated to db: %s", key);

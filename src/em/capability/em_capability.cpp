@@ -333,16 +333,15 @@ short em_capability_t::create_client_cap_tlv(unsigned char *buff, mac_address_t 
     unsigned char *tmp = buff;
     unsigned char res = 0;
     dm_easy_mesh_t *dm;
-    dm_sta_t *dm_sta;
+    dm_sta_t *dm_sta = nullptr;
 
     dm = get_data_model();
 
-    dm_sta = reinterpret_cast<dm_sta_t *> (hash_map_get_first(dm->m_sta_map));
-    while(dm_sta != NULL) {
-        if (memcmp(dm_sta->get_sta_info()->id, sta, sizeof(mac_address_t)) == 0) {
+    for (auto& [k, s] : dm->m_sta_map) {
+        if (memcmp(s->get_sta_info()->id, sta, sizeof(mac_address_t)) == 0) {
+            dm_sta = s;
             break;
         }
-        dm_sta = reinterpret_cast<dm_sta_t *> (hash_map_get_next(dm->m_sta_map, sta));
     }
 
     //TODO; if dm_sta is null break; fill result 0?
@@ -802,8 +801,9 @@ int em_capability_t::handle_client_cap_report(unsigned char *buff, unsigned int 
     dm_easy_mesh_t::macbytes_to_string(get_radio_interface_mac(), radio_mac_str);
     snprintf(key, sizeof(em_long_string_t), "%s@%s@%s", sta_mac_str, bssid_str, radio_mac_str);
 
-    if (hash_map_get(dm->m_sta_assoc_map, key) == NULL) {
-        hash_map_put(dm->m_sta_assoc_map, strdup(key), new dm_sta_t(&sta_info));
+    auto skey = dm_easy_mesh_t::make_sta_key(sta_info.id, sta_info.bssid, get_radio_interface_mac());
+    if (dm->m_sta_assoc_map.find(skey) == dm->m_sta_assoc_map.end()) {
+        dm->m_sta_assoc_map[skey] = new dm_sta_t(&sta_info);
         dm->set_db_cfg_param(db_cfg_type_sta_list_update, "");
         em_printfout("New client updated to db: %s", key);
     }

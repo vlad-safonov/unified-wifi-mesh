@@ -142,34 +142,18 @@ int dm_easy_mesh_agent_t::analyze_sta_list(em_bus_event_t *evt, em_cmd_t *pcmd[]
 
         pcmd[num] = new em_cmd_sta_list_t(evt->params, dm);
 
-        sta = static_cast<dm_sta_t *> (hash_map_get_first(dm.m_sta_assoc_map));
-        while(sta != NULL) {
+        for (auto& [k, sta] : dm.m_sta_assoc_map) {
             if (memcmp(sta->get_sta_info()->radiomac, get_radio_by_ref(i).get_radio_interface_mac(), sizeof(mac_address_t)) != 0) {
-                sta = static_cast<dm_sta_t *> (hash_map_get_next(dm.m_sta_assoc_map, sta));
                 continue;
             }
-
-            dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.id, sta_mac_str);
-            dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.bssid, bss_mac_str);
-            dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.radiomac, radio_mac_str);
-            snprintf(key, sizeof(em_long_string_t), "%s@%s@%s", sta_mac_str, bss_mac_str, radio_mac_str);
-            hash_map_put(pcmd[num]->m_data_model.m_sta_assoc_map, strdup(key), new dm_sta_t(*sta));
-            sta = static_cast<dm_sta_t *> (hash_map_get_next(dm.m_sta_assoc_map, sta));
+            pcmd[num]->m_data_model.m_sta_assoc_map[k] = new dm_sta_t(*sta);
         }
 
-        sta = static_cast<dm_sta_t *> (hash_map_get_first(dm.m_sta_dassoc_map));
-        while(sta != NULL) {
+        for (auto& [k, sta] : dm.m_sta_dassoc_map) {
             if (memcmp(sta->get_sta_info()->radiomac, get_radio_by_ref(i).get_radio_interface_mac(), sizeof(mac_address_t)) != 0) {
-                sta = static_cast<dm_sta_t *> (hash_map_get_next(dm.m_sta_dassoc_map, sta));
                 continue;
-             }
-
-            dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.id, sta_mac_str);
-            dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.bssid, bss_mac_str);
-            dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.radiomac, radio_mac_str);
-            snprintf(key, sizeof(em_long_string_t), "%s@%s@%s", sta_mac_str, bss_mac_str, radio_mac_str);
-            hash_map_put(pcmd[num]->m_data_model.m_sta_dassoc_map, strdup(key), new dm_sta_t(*sta));
-            sta = static_cast<dm_sta_t *> (hash_map_get_next(dm.m_sta_dassoc_map, sta));
+            }
+            pcmd[num]->m_data_model.m_sta_dassoc_map[k] = new dm_sta_t(*sta);
         }
 
         tmp = pcmd[num];
@@ -934,7 +918,10 @@ int dm_easy_mesh_agent_t::analyze_beacon_report(em_bus_event_t *evt, em_cmd_t *p
 
     dm.translate_and_decode_onewifi_subdoc((char *)evt->u.raw_buff, webconfig_subdoc_type_beacon_report, "Beacon Report");
 
-    sta = (dm_sta_t *)hash_map_get_first((hash_map_t *)dm.m_sta_map);
+    {
+        auto it = dm.m_sta_map.begin();
+        sta = (it != dm.m_sta_map.end()) ? it->second : nullptr;
+    }
     if (sta != NULL) {
         evt_param->u.args.num_args = 2;
 
@@ -1053,13 +1040,14 @@ int dm_easy_mesh_agent_t::analyze_link_report(em_bus_event_t *evt, em_cmd_t *pcm
         "Link Stats Report");
 
     sta = NULL;
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(dm.m_sta_map));
-    while(sta != NULL) {
-        em_printfout("After translate sta %s and sample cnt: %d", util::mac_to_string(sta->m_sta_info.id).c_str(), sta->m_sta_info.link_stats_report.sample_count);
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(dm.m_sta_map, sta));
+    for (auto& [k, s] : dm.m_sta_map) {
+        em_printfout("After translate sta %s and sample cnt: %d", util::mac_to_string(s->m_sta_info.id).c_str(), s->m_sta_info.link_stats_report.sample_count);
     }
 
-    sta = (dm_sta_t *)hash_map_get_first((hash_map_t *)dm.m_sta_map);
+    {
+        auto it = dm.m_sta_map.begin();
+        sta = (it != dm.m_sta_map.end()) ? it->second : nullptr;
+    }
     if (sta != NULL) {
         evt_param->u.args.num_args = 2;
 

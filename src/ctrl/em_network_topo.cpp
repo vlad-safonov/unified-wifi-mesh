@@ -98,7 +98,6 @@ void em_network_topo_t::encode(cJSON *parent)
 em_network_topo_t *em_network_topo_t::find_topology_by_bh_associated(mac_address_t sta_mac)
 {
 	unsigned int i;
-	dm_sta_t *sta;
 	em_network_topo_t *topo;
 	std::string sta_mac_str, dev_mac_str;
 
@@ -106,21 +105,19 @@ em_network_topo_t *em_network_topo_t::find_topology_by_bh_associated(mac_address
 	dev_mac_str = util::mac_to_string(m_data_model->m_device.m_device_info.intf.mac);
 	for (i = 0; i < m_data_model->m_num_bss; i++) {
 		if (m_data_model->m_bss[i].m_bss_info.id.haul_type == em_haul_type_backhaul) {
-			sta = static_cast<dm_sta_t *> (hash_map_get_first(m_data_model->m_sta_map));
-			while (sta != NULL) {
-				if ((memcmp(sta->m_sta_info.id, sta_mac, sizeof(mac_address_t)) == 0) && 
+			for (auto& [k, sta] : m_data_model->m_sta_map) {
+				if ((memcmp(sta->m_sta_info.id, sta_mac, sizeof(mac_address_t)) == 0) &&
 					(memcmp(sta->m_sta_info.bssid, m_data_model->m_bss[i].m_bss_info.id.bssid, sizeof(mac_address_t)) == 0)) {
 					em_printfout("Found topology of sta mac: %s dev_mac:%s", sta_mac_str.c_str(), dev_mac_str.c_str());
 					return this;
 				}
-				sta = static_cast<dm_sta_t *> (hash_map_get_next(m_data_model->m_sta_map, sta));
-			}	
+			}
 		}
 	}
 
 	for (i = 0; i < m_num_topologies; i++) {
 		if ((topo = m_topology[i]->find_topology_by_bh_associated(sta_mac)) != NULL) {
-			return topo;	
+			return topo;
 		}
 	}
 

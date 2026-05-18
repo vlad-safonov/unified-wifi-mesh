@@ -52,10 +52,6 @@ std::atomic<int> dm_easy_mesh_t::s_counter{0};
 
 dm_easy_mesh_t& dm_easy_mesh_t::operator = (dm_easy_mesh_t const& obj)
 {
-    dm_sta_t *sta;
-    em_long_string_t key;
-    mac_addr_str_t radio_mac_str, bss_mac_str, sta_mac_str;
-
     // Self-assignment check
     if (this == &obj) {
         return *this;
@@ -105,14 +101,8 @@ dm_easy_mesh_t& dm_easy_mesh_t::operator = (dm_easy_mesh_t const& obj)
         m_ap_mld[i] = obj.m_ap_mld[i];
     }
 
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(obj.m_sta_map));
-    while (sta != NULL) {
-        dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.id, sta_mac_str);
-        dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.bssid, bss_mac_str);
-        dm_easy_mesh_t::macbytes_to_string(sta->m_sta_info.radiomac, radio_mac_str);
-        snprintf(key, sizeof(em_long_string_t), "%s@%s@%s", sta_mac_str, bss_mac_str, radio_mac_str);
-        hash_map_put(m_sta_map, strdup(key), new dm_sta_t(*sta));
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(obj.m_sta_map, sta));
+    for (auto& [k, sta] : obj.m_sta_map) {
+        m_sta_map[k] = new dm_sta_t(*sta);
     }
 
     m_em = obj.m_em;
@@ -2673,71 +2663,51 @@ em_op_class_info_t* dm_easy_mesh_t::get_opclass_info_for_bss(mac_address_t bssid
 
 em_sta_info_t *dm_easy_mesh_t::get_first_sta_info(em_target_sta_map_t target)
 {
-    hash_map_t *map;
-    dm_sta_t *sta = NULL;
+    sta_map_t *map;
 
     if (target == em_target_sta_map_assoc) {
-        map = m_sta_assoc_map;
+        map = &m_sta_assoc_map;
     } else if (target == em_target_sta_map_disassoc) {
-        map = m_sta_dassoc_map;
+        map = &m_sta_dassoc_map;
     } else {
-        map = m_sta_map;
+        map = &m_sta_map;
     }
 
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(map));
-    if (sta == NULL) {
+    auto it = map->begin();
+    if (it == map->end()) {
         return NULL;
     }
-
-    return &sta->m_sta_info;
+    return &it->second->m_sta_info;
 }
 
 em_sta_info_t *dm_easy_mesh_t::get_next_sta_info(em_sta_info_t *info, em_target_sta_map_t target)
 {
-    hash_map_t *map;
-    dm_sta_t *sta = NULL;
-    bool match_found = false;
+    sta_map_t *map;
 
     if (target == em_target_sta_map_assoc) {
-        map = m_sta_assoc_map;
+        map = &m_sta_assoc_map;
     } else if (target == em_target_sta_map_disassoc) {
-        map = m_sta_dassoc_map;
+        map = &m_sta_dassoc_map;
     } else {
-        map = m_sta_map;
+        map = &m_sta_map;
     }
 
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(map));
-    while ((sta != NULL) && (match_found == false)) {
-        if (&sta->m_sta_info == info) {
-            match_found = true;
+    for (auto it = map->begin(); it != map->end(); ++it) {
+        if (&it->second->m_sta_info == info) {
+            ++it;
+            return (it != map->end()) ? &it->second->m_sta_info : NULL;
         }
-
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(map, sta));
     }
-
-    if (match_found == false) {
-        return NULL;
-    }
-
-    if (sta == NULL) {
-        return NULL;
-    }
-
-    return &sta->m_sta_info;
+    return NULL;
 }
 
 bool dm_easy_mesh_t::has_at_least_one_associated_sta()
 {
-    dm_sta_t *sta;
-
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(m_sta_map));
-    while (sta != NULL) {
+    for (auto& [k, sta] : m_sta_map) {
         if (sta->m_sta_info.associated == true) {
             return true;
         }
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(m_sta_map, sta));
     }
-
     return false;
 }
 
@@ -2749,104 +2719,82 @@ bool dm_easy_mesh_t::is_sta_associated(bssid_t bssid, mac_address_t sta_mac)
 
 dm_sta_t *dm_easy_mesh_t::find_sta(mac_address_t sta_mac, bssid_t bssid)
 {
-    dm_sta_t *sta;
-
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(m_sta_map));
-    while (sta != NULL) {
+    for (auto& [k, sta] : m_sta_map) {
         if ((memcmp(sta->m_sta_info.id, sta_mac, sizeof(mac_address_t)) == 0) &&
-                        (memcmp(sta->m_sta_info.bssid, bssid, sizeof(mac_address_t)) == 0)) {
+                (memcmp(sta->m_sta_info.bssid, bssid, sizeof(mac_address_t)) == 0)) {
             return sta;
         }
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(m_sta_map, sta));
     }
-
     return NULL;
 }
 
 dm_sta_t *dm_easy_mesh_t::get_first_sta(mac_address_t sta_mac)
 {
-    dm_sta_t *sta;
-
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(m_sta_map));
-    while (sta != NULL) {
+    for (auto& [k, sta] : m_sta_map) {
         if (memcmp(sta->m_sta_info.id, sta_mac, sizeof(mac_address_t)) == 0) {
             return sta;
         }
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(m_sta_map, sta));
     }
-
     return NULL;
 }
 
 dm_sta_t *dm_easy_mesh_t::get_next_sta(mac_address_t sta_mac, dm_sta_t *psta)
 {
-    dm_sta_t *sta;
     bool return_next = false;
-
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(m_sta_map));
-    while (sta != NULL) {
+    for (auto& [k, sta] : m_sta_map) {
         if ((return_next == true) && (memcmp(sta->m_sta_info.id, sta_mac, sizeof(mac_address_t)) == 0)) {
             return sta;
         }
         if (sta == psta) {
             return_next = true;
         }
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(m_sta_map, sta));
     }
-
     return NULL;
 }
 
 em_sta_info_t *dm_easy_mesh_t::get_sta_info(mac_address_t sta_mac, bssid_t bssid, mac_address_t ruid, em_target_sta_map_t target)
 {
-    hash_map_t *map;
-    dm_sta_t *sta = NULL;
-    const char	*map_str;
-    mac_addr_str_t radio_str, bss_str, sta_str;
-    em_long_string_t key = {0};
+    sta_map_t *map;
+    const char *map_str;
+    mac_addr_str_t sta_str;
 
     if (target == em_target_sta_map_assoc) {
-        map = m_sta_assoc_map;
+        map = &m_sta_assoc_map;
         map_str = "Assoc Map";
     } else if (target == em_target_sta_map_disassoc) {
-        map = m_sta_dassoc_map;
+        map = &m_sta_dassoc_map;
         map_str = "Disssoc Map";
     } else {
-        map = m_sta_map;
+        map = &m_sta_map;
         map_str = "Consolidated Map";
     }
 
     dm_easy_mesh_t::macbytes_to_string(sta_mac, sta_str);
-    dm_easy_mesh_t::macbytes_to_string(bssid, bss_str);
-    dm_easy_mesh_t::macbytes_to_string(ruid, radio_str);
 
-    snprintf(key, sizeof(em_long_string_t), "%s@%s@%s", sta_str, bss_str, radio_str);
-    printf("%s:%d: key=%s\n", __func__, __LINE__,key);
-    sta = static_cast<dm_sta_t *> (hash_map_get(map, key));
-    if (sta == NULL) {
+    auto it = map->find(make_sta_key(sta_mac, bssid, ruid));
+    if (it == map->end()) {
         printf("%s:%d: sta: %s not found in %s\n", __func__, __LINE__, sta_str, map_str);
         return NULL;
     }
 
     printf("%s:%d: sta: %s found in %s\n", __func__, __LINE__, sta_str, map_str);
-    return &sta->m_sta_info;
+    return &it->second->m_sta_info;
 }
 
 void dm_easy_mesh_t::put_sta_info(em_sta_info_t *sta_info, em_target_sta_map_t target)
 {
-    hash_map_t *map;
-    const char	*map_str;
-    mac_addr_str_t radio_str, bss_str, sta_str;
-    em_2xlong_string_t key;
+    sta_map_t *map;
+    const char *map_str;
+    mac_addr_str_t sta_str;
 
     if (target == em_target_sta_map_assoc) {
-        map = m_sta_assoc_map;
+        map = &m_sta_assoc_map;
         map_str = "Assoc Map";
     } else if (target == em_target_sta_map_disassoc) {
-        map = m_sta_dassoc_map;
+        map = &m_sta_dassoc_map;
         map_str = "Disssoc Map";
     } else {
-        map = m_sta_map;
+        map = &m_sta_map;
         map_str = "Consolidated Map";
     }
 
@@ -2856,76 +2804,40 @@ void dm_easy_mesh_t::put_sta_info(em_sta_info_t *sta_info, em_target_sta_map_t t
         return;
     }
 
-    dm_easy_mesh_t::macbytes_to_string(sta_info->bssid, bss_str);
-    dm_easy_mesh_t::macbytes_to_string(sta_info->radiomac, radio_str);
-
-    snprintf(key, sizeof(em_2xlong_string_t), "%s@%s@%s", sta_str, bss_str, radio_str);
-    printf("%s:%d: Put sta key=%s\n", __func__, __LINE__,key);
-
-    hash_map_put(map, strdup(key), new dm_sta_t(sta_info));
+    printf("%s:%d: Put sta\n", __func__, __LINE__);
+    (*map)[make_sta_key(sta_info->id, sta_info->bssid, sta_info->radiomac)] = new dm_sta_t(sta_info);
 }
 
 int dm_easy_mesh_t::get_num_bss_for_associated_sta(mac_address_t sta_mac)
 {
-    dm_sta_t *sta;
     int num_bssids = 0;
-
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(m_sta_map));
-    while (sta != NULL) {
+    for (auto& [k, sta] : m_sta_map) {
         if (memcmp(sta->m_sta_info.id, sta_mac, sizeof(mac_address_t)) == 0) {
             num_bssids++;
         }
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(m_sta_map, sta));
     }
-
     return num_bssids;
 }
 
 void dm_easy_mesh_t::clone_hash_maps(dm_easy_mesh_t& obj)
 {
-    mac_addr_str_t  sta_mac_str, bss_mac_str, radio_mac_str;
-    dm_sta_t *sta;
-    em_long_string_t key;
-
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(m_sta_map));
-    while (sta != NULL) {
-        macbytes_to_string(sta->m_sta_info.id, sta_mac_str);
-        macbytes_to_string(sta->m_sta_info.bssid, bss_mac_str);
-        macbytes_to_string(sta->m_sta_info.radiomac, radio_mac_str);
-        snprintf(key, sizeof(em_long_string_t), "%s@%s@%s", sta_mac_str, bss_mac_str, radio_mac_str);
-        hash_map_put(obj.m_sta_map, strdup(key),sta);
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(m_sta_map, sta));
+    for (auto& [key, sta] : m_sta_map) {
+        obj.m_sta_map[key] = sta;
     }
-
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(m_sta_assoc_map));
-    while (sta != NULL) {
-        macbytes_to_string(sta->m_sta_info.id, sta_mac_str);
-        macbytes_to_string(sta->m_sta_info.bssid, bss_mac_str);
-        macbytes_to_string(sta->m_sta_info.radiomac, radio_mac_str);
-        snprintf(key, sizeof(em_long_string_t), "%s@%s@%s", sta_mac_str, bss_mac_str, radio_mac_str);
-        hash_map_put(obj.m_sta_assoc_map, strdup(key),sta);
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(m_sta_assoc_map, sta));
+    for (auto& [key, sta] : m_sta_assoc_map) {
+        obj.m_sta_assoc_map[key] = sta;
     }
-
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(m_sta_dassoc_map));
-    while (sta != NULL) {
-        macbytes_to_string(sta->m_sta_info.id, sta_mac_str);
-        macbytes_to_string(sta->m_sta_info.bssid, bss_mac_str);
-        macbytes_to_string(sta->m_sta_info.radiomac, radio_mac_str);
-        snprintf(key, sizeof(em_long_string_t), "%s@%s@%s", sta_mac_str, bss_mac_str, radio_mac_str);
-        hash_map_put(obj.m_sta_dassoc_map, strdup(key),sta);
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(m_sta_dassoc_map, sta));
+    for (auto& [key, sta] : m_sta_dassoc_map) {
+        obj.m_sta_dassoc_map[key] = sta;
     }
 }
 
 void dm_easy_mesh_t::deinit()
 {
-    dm_sta_t *sta = NULL;
-    dm_sta_t *tmp_sta = NULL;
 	dm_scan_result_t	*res = NULL;
 	dm_scan_result_t	*tmp_res = NULL;
     em_2xlong_string_t key;
-    mac_addr_str_t dev_mac_str, radio_mac_str, bss_mac_str, sta_mac_str, scanner_mac_str;
+    mac_addr_str_t dev_mac_str, scanner_mac_str;
 
     //destroy elements of m_scan_result_map
 	res = static_cast<dm_scan_result_t *> (hash_map_get_first(m_scan_result_map));
@@ -2944,50 +2856,13 @@ void dm_easy_mesh_t::deinit()
 	hash_map_destroy(m_scan_result_map);	
 
     //destroy elements of m_sta_map
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(m_sta_map));
-    while (sta != NULL) {
-        tmp_sta = sta;
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(m_sta_map, sta));
+    m_sta_map.clear();
 
-        dm_easy_mesh_t::macbytes_to_string(tmp_sta->m_sta_info.id, sta_mac_str);
-        dm_easy_mesh_t::macbytes_to_string(tmp_sta->m_sta_info.bssid, bss_mac_str);
-        dm_easy_mesh_t::macbytes_to_string(tmp_sta->m_sta_info.radiomac, radio_mac_str);
-        snprintf(key, sizeof(em_long_string_t), "%s@%s@%s", sta_mac_str, bss_mac_str, radio_mac_str);
+    //destroy elements of m_sta_assoc_map
+    m_sta_assoc_map.clear();
 
-        hash_map_remove(m_sta_map, key);
-    }
-    hash_map_destroy(m_sta_map);
-    sta = NULL;
-
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(m_sta_assoc_map));
-    while (sta != NULL)
-    {
-        tmp_sta = sta;
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(m_sta_assoc_map, sta));
-        dm_easy_mesh_t::macbytes_to_string(tmp_sta->m_sta_info.id, sta_mac_str);
-        dm_easy_mesh_t::macbytes_to_string(tmp_sta->m_sta_info.bssid, bss_mac_str);
-        dm_easy_mesh_t::macbytes_to_string(tmp_sta->m_sta_info.radiomac, radio_mac_str);
-        snprintf(key, sizeof(em_long_string_t), "%s@%s@%s", sta_mac_str, bss_mac_str, radio_mac_str);
-
-        hash_map_remove(m_sta_assoc_map, key);
-    }
-	hash_map_destroy(m_sta_assoc_map);
-    sta = NULL;
-
-    sta = static_cast<dm_sta_t *> (hash_map_get_first(m_sta_dassoc_map));
-    while (sta != NULL)
-    {
-        tmp_sta = sta;
-        sta = static_cast<dm_sta_t *> (hash_map_get_next(m_sta_dassoc_map, sta));
-
-        dm_easy_mesh_t::macbytes_to_string(tmp_sta->m_sta_info.id, sta_mac_str);
-        dm_easy_mesh_t::macbytes_to_string(tmp_sta->m_sta_info.bssid, bss_mac_str);
-        dm_easy_mesh_t::macbytes_to_string(tmp_sta->m_sta_info.radiomac, radio_mac_str);
-        snprintf(key, sizeof(em_long_string_t), "%s@%s@%s", sta_mac_str, bss_mac_str, radio_mac_str);
-
-        hash_map_remove(m_sta_dassoc_map, key);
-    }
-	hash_map_destroy(m_sta_dassoc_map);
+    //destroy elements of m_sta_dassoc_map
+    m_sta_dassoc_map.clear();
 	if (m_wifi_data != nullptr) {
         free(m_wifi_data);
         m_wifi_data = nullptr;
@@ -3381,9 +3256,7 @@ int dm_easy_mesh_t::init()
     }
 
     m_scan_result_map = hash_map_create();
-    m_sta_map = hash_map_create();
-    m_sta_assoc_map = hash_map_create();
-    m_sta_dassoc_map = hash_map_create();
+    // m_sta_map, m_sta_assoc_map, m_sta_dassoc_map are std::unordered_map — default-constructed
     m_wifi_data = static_cast<webconfig_subdoc_data_t*> (malloc(sizeof(webconfig_subdoc_data_t)));
 	memset(&m_db_cfg_param, 0, sizeof(em_db_cfg_param_t));
     return 0;
