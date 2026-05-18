@@ -41,6 +41,29 @@ AM_CONDITIONAL([EM_ASAN_CTRL], [test "x$EM_ASAN_CTRL" = "xtrue"])
 # Check for ASAN in em_agent
 AM_CONDITIONAL([EM_ASAN_AGENT], [test "x$EM_ASAN_AGENT" = "xtrue"])
 
+# Database backend selection: --with-sqlite uses SQLite3 instead of MariaDB (default)
+AC_ARG_WITH([sqlite],
+    [AS_HELP_STRING([--with-sqlite],
+        [use SQLite3 as the database backend instead of MariaDB (default: no)])],
+    [with_sqlite=$withval],
+    [with_sqlite=no])
+
+AM_CONDITIONAL([USE_SQLITE], [test "x$with_sqlite" = "xyes"])
+
+if test "x$with_sqlite" = "xyes"; then
+    AC_DEFINE([USE_SQLITE], [1], [Define to 1 to use the SQLite3 database backend])
+    PKG_CHECK_MODULES([SQLITE3], [sqlite3],
+        [AC_MSG_NOTICE([SQLite3 found via pkg-config])],
+        [AC_CHECK_LIB([sqlite3], [sqlite3_open],
+            [SQLITE3_LIBS="-lsqlite3"],
+            [AC_MSG_ERROR([SQLite3 library not found. Install libsqlite3-dev or equivalent.])])])
+    AC_SUBST([SQLITE3_CFLAGS])
+    AC_SUBST([SQLITE3_LIBS])
+    AC_MSG_NOTICE([Database backend: SQLite3])
+else
+    AC_MSG_NOTICE([Database backend: MariaDB (default)])
+fi
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX

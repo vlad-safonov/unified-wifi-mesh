@@ -103,7 +103,6 @@ onewifi_em_ctrl_SOURCES =  \
      $(top_srcdir)/src/ctrl/tr_181/wfa_data_model/tr_181.cpp \
      $(top_srcdir)/src/ctrl/tr_181/wfa_data_model/tr_181_method.cpp \
      $(top_srcdir)/src/ctrl/tr_181/wfa_data_model/tr_181_helper.cpp\
-     $(top_srcdir)/src/db/db_client.cpp \
      $(top_srcdir)/src/db/db_column.cpp \
      $(top_srcdir)/src/db/db_easy_mesh.cpp \
      $(top_srcdir)/src/dm/dm_ap_mld.cpp \
@@ -142,9 +141,21 @@ onewifi_em_ctrl_SOURCES =  \
      $(top_srcdir)/src/util_crypto/aes_siv.c \
      $(top_srcdir)/src/utils/util.cpp \
      $(top_srcdir)/src/utils/timer.cpp
- 
- 
-onewifi_em_ctrl_LDFLAGS = -lm -lpthread -ldl -luuid -lcjson -lssl -lcrypto -lrbus -lmariadb
+
+# Conditionally compile db_client backend
+if USE_SQLITE
+onewifi_em_ctrl_SOURCES += $(top_srcdir)/src/db/db_client_sqlite.cpp
+else
+onewifi_em_ctrl_SOURCES += $(top_srcdir)/src/db/db_client.cpp
+endif
+
+onewifi_em_ctrl_LDFLAGS = -lm -lpthread -ldl -luuid -lcjson -lssl -lcrypto -lrbus
+if USE_SQLITE
+onewifi_em_ctrl_LDFLAGS += $(SQLITE3_LIBS)
+onewifi_em_ctrl_CPPFLAGS += $(SQLITE3_CFLAGS)
+else
+onewifi_em_ctrl_LDFLAGS += -lmariadb
+endif
 if EM_ASAN_CTRL
 onewifi_em_ctrl_LDFLAGS += -fsanitize=address -fsanitize=undefined
 endif
@@ -176,8 +187,13 @@ onewifi_em_ctrl_test_SOURCES = $(onewifi_em_ctrl_SOURCES) \
 	$(top_srcdir)/tests/test_l1_dm_tid_to_link.cpp \
 	$(top_srcdir)/tests/test_l1_dm_network.cpp \
 	$(top_srcdir)/tests/test_l1_dm_op_class.cpp \
-	$(top_srcdir)/tests/test_l1_em_onewifi.cpp \
-	$(top_srcdir)/tests/test_l1_db_client.cpp \
+	$(top_srcdir)/tests/test_l1_em_onewifi.cpp
+if USE_SQLITE
+onewifi_em_ctrl_test_SOURCES += $(top_srcdir)/tests/test_l1_db_client_sqlite.cpp
+else
+onewifi_em_ctrl_test_SOURCES += $(top_srcdir)/tests/test_l1_db_client.cpp
+endif
+onewifi_em_ctrl_test_SOURCES += \
 	$(top_srcdir)/tests/test_l1_em_metrics.cpp \
 	$(top_srcdir)/tests/test_l1_em_orch.cpp \
 	$(top_srcdir)/tests/test_l1_em_provisioning.cpp \
@@ -242,7 +258,13 @@ onewifi_em_ctrl_test_CPPFLAGS = $(onewifi_em_ctrl_CPPFLAGS) \
                                 -DTESTING
 onewifi_em_ctrl_test_CXXFLAGS = $(INCLUDEDIRS) -g -DUNIT_TEST -fno-omit-frame-pointer
 onewifi_em_ctrl_test_CXXFLAGS += -fsanitize=address -fsanitize=undefined
-onewifi_em_ctrl_test_LDFLAGS = -lcjson -lgtest -lgtest_main -lgmock -lpthread -lssl -lcrypto -lm -luuid -lssl -lrbus -lmariadb
+onewifi_em_ctrl_test_LDFLAGS = -lcjson -lgtest -lgtest_main -lgmock -lpthread -lssl -lcrypto -lm -luuid -lssl -lrbus
+if USE_SQLITE
+onewifi_em_ctrl_test_LDFLAGS += $(SQLITE3_LIBS)
+onewifi_em_ctrl_test_CPPFLAGS += $(SQLITE3_CFLAGS)
+else
+onewifi_em_ctrl_test_LDFLAGS += -lmariadb
+endif
 onewifi_em_ctrl_test_LDFLAGS += -fsanitize=address -fsanitize=undefined
 onewifi_em_ctrl_test_LDADD = $(top_builddir)/src/al-sap/libalsap.la $(onewifi_em_ctrl_LDADD)
 endif  # EM_UNITTEST

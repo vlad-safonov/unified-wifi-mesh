@@ -19,6 +19,10 @@
 #ifndef DB_CLIENT_H
 #define DB_CLIENT_H
 
+#ifdef USE_SQLITE
+// SQLite3 header
+#include <sqlite3.h>
+#else
 #if defined(OPENWRT_BUILD) || defined(_PLATFORM_BANANAPI_R4_)
 // MariaDB C client header for cross compiled OpenWRT
 #include <mysql/mysql.h>
@@ -26,17 +30,24 @@
 // MariaDB C client header for a standard Linux install (Debian)
 #include <mariadb/mysql.h>
 #endif
+#endif /* USE_SQLITE */
 
  /**!
   * @brief Database client class to manage database connections and queries.
   *
   * This class provides methods for initializing, executing queries,
-  * and retrieving results from a database using the MariaDB C client library.
+  * and retrieving results from a database. Supports MariaDB and SQLite
+  * backends, selected at compile time via the USE_SQLITE preprocessor flag.
   *
   * @note This class is not thread-safe.
   */
  class db_client_t {
-	MYSQL *m_con;    ///< MariaDB connection instance
+#ifdef USE_SQLITE
+	sqlite3 *m_con;          ///< SQLite3 connection handle
+	char m_db_path[512];     ///< Path to the SQLite3 database file
+#else
+	MYSQL *m_con;            ///< MariaDB connection instance
+#endif
 
 
 	 /**!
