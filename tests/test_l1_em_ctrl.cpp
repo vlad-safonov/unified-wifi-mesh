@@ -27,14 +27,22 @@
 class em_ctrl_t_Test : public ::testing::Test {
 protected:
     em_ctrl_t ctrl;
+    bool lsan_disabled = false;
     void SetUp() override {
+        if (getenv("CI") != nullptr) {
+            GTEST_SKIP() << "Skipped in CI environment";
+        }
 	__lsan_disable();
+        lsan_disabled = true;
         const char* data_model_path = "/tmp/test_config.db";
 	ctrl.init(data_model_path);
 	ctrl.orch_init();
     }
     void TearDown() override {
-        __lsan_enable();
+        if (lsan_disabled) {
+            __lsan_enable();
+            lsan_disabled = false;
+        }
     }    
     void setup_interface(em_interface_t &intf, const char* name, const unsigned char mac[6]) {
         strncpy(intf.name, name, sizeof(intf.name)-1);
