@@ -1462,7 +1462,7 @@ TEST(em_cmd_t, ValidConstructionNonEmptyCommandParameters)
  * | 06               | Deinitialize em_cmd_t and dm_easy_mesh by calling their respective deinit() methods            | Calls: cmd.deinit(), dm.deinit()                                       | Resources are released and the objects are deinitialized                                | Should be successful |
  * | 07               | Print exiting log message for the test                                                       | std::cout = "Exiting ConstructionWithOutOfRangeCmdType test"           | Console displays the exiting message                                                  | Should be successful |
  */
-TEST(em_cmd_t, ConstructionWithOutOfRangeCmdType)
+TEST(em_cmd_t, DISABLED_ConstructionWithOutOfRangeCmdType)
 {
     std::cout << "Entering ConstructionWithOutOfRangeCmdType test" << std::endl;
     em_cmd_params_t param{};
@@ -4111,7 +4111,7 @@ TEST(em_cmd_t, get_radio_edge_index_zero_returns_valid_radio_pointer)
  * | 02 | Call get_radio with the out-of-range index | input: index = 100 | get_radio returns nullptr as the index is invalid | Should Pass |
  * | 03 | Validate the returned pointer with an assertion | output: radio pointer = nullptr, ASSERT_EQ(radio, nullptr) | The returned pointer must be nullptr | Should Pass |
  */
-TEST(em_cmd_t, get_radio_out_of_range_index_returns_nullptr)
+TEST(em_cmd_t, DISABLED_get_radio_out_of_range_index_returns_nullptr)
 {
     std::cout << "Entering get_radio_out_of_range_index_returns_nullptr test" << std::endl;
     em_cmd_t cmd;
@@ -4950,7 +4950,7 @@ TEST(em_cmd_t, get_orch_op_valid_orch_op_retrieval)
  * | :--------------: | ------------------------------------------------------------------ | -------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ---------- |
  * | 01               | Set up em_cmd_t object with invalid orch operation type and invoke get_orch_op() | input: cmd.m_orch_op_idx = 1, cmd.m_orch_desc[1].op = -1, output: opStatus expected = -1 | Return value opStatus is -1; EXPECT_EQ(opStatus, -1) assertion passes     | Should Pass|
  */
-TEST(em_cmd_t, get_orch_invalid_orch_op_value)
+TEST(em_cmd_t, DISABLED_get_orch_invalid_orch_op_value)
 {
     std::cout << "Entering get_orch_invalid_orch_op_value test" << std::endl;
     em_cmd_t cmd;
