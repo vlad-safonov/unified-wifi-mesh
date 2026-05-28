@@ -1462,7 +1462,7 @@ TEST(em_cmd_t, ValidConstructionNonEmptyCommandParameters)
  * | 06               | Deinitialize em_cmd_t and dm_easy_mesh by calling their respective deinit() methods            | Calls: cmd.deinit(), dm.deinit()                                       | Resources are released and the objects are deinitialized                                | Should be successful |
  * | 07               | Print exiting log message for the test                                                       | std::cout = "Exiting ConstructionWithOutOfRangeCmdType test"           | Console displays the exiting message                                                  | Should be successful |
  */
-TEST(em_cmd_t, DISABLED_ConstructionWithOutOfRangeCmdType)
+TEST(em_cmd_t, ConstructionWithOutOfRangeCmdType)
 {
     std::cout << "Entering ConstructionWithOutOfRangeCmdType test" << std::endl;
     em_cmd_params_t param{};
@@ -1470,7 +1470,7 @@ TEST(em_cmd_t, DISABLED_ConstructionWithOutOfRangeCmdType)
     dm_easy_mesh_t dm;
     dm.init();
     em_cmd_t cmd(static_cast<em_cmd_type_t>(-1), param, dm);
-    EXPECT_EQ(cmd.m_type, static_cast<em_cmd_type_t>(-1));
+    EXPECT_EQ(cmd.m_type, em_cmd_type_max);
     cmd.deinit();
     dm.deinit();
     std::cout << "Exiting ConstructionWithOutOfRangeCmdType test" << std::endl;
