@@ -32,12 +32,6 @@ static std::string mac_to_string(const unsigned char mac[6])
     return std::string(buff);
 }
 
-// Helper function to convert a MAC already stored as a string into std::string.
-static std::string mac_to_string(const char* mac)
-{
-    return std::string(mac);
-}
-
 /**
  * @brief Validate that em_cmd_start_dpp_t is properly constructed with valid arguments
  *
@@ -208,15 +202,15 @@ TEST(em_cmd_start_dpp_t, em_cmd_start_dpp_t_steer_valid) {
 TEST(em_cmd_start_dpp_t, em_cmd_start_dpp_t_btm_report_valid) {
     std::cout << "Entering em_cmd_start_dpp_t_btm_report_valid test" << std::endl;
     em_cmd_params_t param{};
-    const char* src   = "22:33:44:55:66:77";
-    const char* sta   = "FF:EE:DD:CC:BB:AA";
-    const char* tgt   = "77:66:55:44:33:22";
-    std::cout << "Setting source to: " << src << std::endl;
-    snprintf(reinterpret_cast<char*>(param.u.btm_report_params.source), sizeof(param.u.btm_report_params.source), "%s", src);
-    std::cout << "Setting sta_mac to: " << sta << std::endl;
-    snprintf(reinterpret_cast<char*>(param.u.btm_report_params.sta_mac), sizeof(param.u.btm_report_params.sta_mac), "%s", sta);
-    std::cout << "Setting target to: " << tgt << std::endl;
-    snprintf(reinterpret_cast<char*>(param.u.btm_report_params.target), sizeof(param.u.btm_report_params.target), "%s", tgt);
+    unsigned char src_bytes[6] = {0x22, 0x33, 0x44, 0x55, 0x66, 0x77};
+    unsigned char sta_bytes[6] = {0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA};
+    unsigned char tgt_bytes[6] = {0x77, 0x66, 0x55, 0x44, 0x33, 0x22};
+    std::cout << "Setting source to: " << mac_to_string(src_bytes) << std::endl;
+    memcpy(param.u.btm_report_params.source, src_bytes, sizeof(src_bytes));
+    std::cout << "Setting sta_mac to: " << mac_to_string(sta_bytes) << std::endl;
+    memcpy(param.u.btm_report_params.sta_mac, sta_bytes, sizeof(sta_bytes));
+    std::cout << "Setting target to: " << mac_to_string(tgt_bytes) << std::endl;
+    memcpy(param.u.btm_report_params.target, tgt_bytes, sizeof(tgt_bytes));
     param.u.btm_report_params.status_code = 0x01;
     em_network_node_t node{};
     snprintf(node.key, sizeof(node.key), "%s", "BTMReportNode");
@@ -224,15 +218,12 @@ TEST(em_cmd_start_dpp_t, em_cmd_start_dpp_t_btm_report_valid) {
     std::cout << "Node key = " << node.key << std::endl;
     em_cmd_start_dpp_t cmd(param);
     std::cout << "Object constructed" << std::endl;
-    std::cout << "source: " << mac_to_string(reinterpret_cast<char*>(cmd.m_param.u.btm_report_params.source)) << std::endl;
-    std::cout << "sta_mac: " << mac_to_string(reinterpret_cast<char*>(cmd.m_param.u.btm_report_params.sta_mac)) << std::endl;
-    std::cout << "target:  " << mac_to_string(reinterpret_cast<char*>(cmd.m_param.u.btm_report_params.target)) << std::endl;
-    EXPECT_STREQ(reinterpret_cast<char*>(cmd.m_param.u.btm_report_params.source),
-                 std::string(src, sizeof(cmd.m_param.u.btm_report_params.source) - 1).c_str());
-    EXPECT_STREQ(reinterpret_cast<char*>(cmd.m_param.u.btm_report_params.sta_mac),
-                 std::string(sta, sizeof(cmd.m_param.u.btm_report_params.sta_mac) - 1).c_str());
-    EXPECT_STREQ(reinterpret_cast<char*>(cmd.m_param.u.btm_report_params.target),
-                 std::string(tgt, sizeof(cmd.m_param.u.btm_report_params.target) - 1).c_str());
+    std::cout << "source: " << mac_to_string(cmd.m_param.u.btm_report_params.source) << std::endl;
+    std::cout << "sta_mac: " << mac_to_string(cmd.m_param.u.btm_report_params.sta_mac) << std::endl;
+    std::cout << "target:  " << mac_to_string(cmd.m_param.u.btm_report_params.target) << std::endl;
+    EXPECT_EQ(memcmp(cmd.m_param.u.btm_report_params.source, src_bytes, 6), 0);
+    EXPECT_EQ(memcmp(cmd.m_param.u.btm_report_params.sta_mac, sta_bytes, 6), 0);
+    EXPECT_EQ(memcmp(cmd.m_param.u.btm_report_params.target, tgt_bytes, 6), 0);
     EXPECT_EQ(cmd.m_param.u.btm_report_params.status_code, 0x01);
     EXPECT_STREQ(cmd.m_param.net_node->key, "BTMReportNode");
     std::cout << "Exiting em_cmd_start_dpp_t_btm_report_valid test" << std::endl;
