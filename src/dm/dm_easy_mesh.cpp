@@ -3389,7 +3389,7 @@ void dm_easy_mesh_t::set_db_cfg_param(db_cfg_type_t cfg_type, const char *criter
 	}
 
 	m_db_cfg_param.db_cfg_type |= static_cast<unsigned int> (cfg_type);
-	snprintf(m_db_cfg_param.db_cfg_criteria[index], strlen(criteria), "%s", criteria);
+	snprintf(m_db_cfg_param.db_cfg_criteria[index], sizeof(em_long_string_t), "%s", criteria);
 }
 
 char *dm_easy_mesh_t::db_cfg_type_get_criteria(db_cfg_type_t cfg_type)

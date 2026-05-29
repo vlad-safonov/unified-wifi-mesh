@@ -156,7 +156,7 @@ int em_cmd_cli_t::get_edited_node(em_network_node_t *node, const char *header, c
 	em_net_node_t::free_network_tree_string(node_str);
 	obj = (cJSON *)em_net_node_t::network_tree_to_json(new_node);
 	formatted = cJSON_Print(obj);
-	snprintf(buff, sizeof(buff), "%s", formatted);
+	snprintf(buff, EM_IO_BUFF_SZ, "%s", formatted);
 	cJSON_Delete(obj);
     em_net_node_t::free_network_tree(new_node);
 

@@ -130,7 +130,7 @@ void em_dev_test_t::encode(em_subdoc_info_t *subdoc, hash_map_t *m_em_map, bool 
 
 	tmp = cJSON_Print(parent);
 	//printf("%s:%d: Subdoc: %s\n", __func__, __LINE__, tmp);
-	snprintf(subdoc->buff, sizeof(subdoc->buff), "%s", tmp);
+	snprintf(subdoc->buff, EM_IO_BUFF_SZ, "%s", tmp);
 	cJSON_free(parent);
 }
 

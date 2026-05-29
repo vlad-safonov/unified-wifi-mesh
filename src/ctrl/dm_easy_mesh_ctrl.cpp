@@ -3226,7 +3226,7 @@ void dm_easy_mesh_ctrl_t::get_config(em_long_string_t net_id, em_subdoc_info_t *
 
     tmp = cJSON_Print(parent);
     em_printfout("Subdoc: %s", tmp);
-    snprintf(subdoc->buff, sizeof(subdoc->buff), "%s", tmp);
+    snprintf(subdoc->buff, EM_IO_BUFF_SZ, "%s", tmp);
     cJSON_free(parent);
 }
 
