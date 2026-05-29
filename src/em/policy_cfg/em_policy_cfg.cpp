@@ -375,7 +375,7 @@ short em_policy_cfg_t::create_vendor_policy_cfg_tlv(unsigned char *buff)
 
         data = reinterpret_cast<em_vendor_data_t *> (cursor);
         data->attr_id = vendor_ext_attr_id_policy_sta_marker;
-        snprintf(reinterpret_cast<char *> (data->vendor_data), sizeof(reinterpret_cast<char *> (data->vendor_data)), "%s", policy->m_policy.managed_sta_marker);
+        snprintf(reinterpret_cast<char *> (data->vendor_data), sizeof(policy->m_policy.managed_sta_marker), "%s", policy->m_policy.managed_sta_marker);
 
         len += sizeof(data->attr_id) + strlen(policy->m_policy.managed_sta_marker) + 1;
         cursor += sizeof(data->attr_id) + strlen(policy->m_policy.managed_sta_marker) + 1;
