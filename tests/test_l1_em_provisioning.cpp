@@ -709,7 +709,7 @@ TEST_F(EmProvisioningTest, send_1905_eapol_encap_msg_valid_frame)
     size_t frame_len = 10;
     uint8_t eapol_frame[10] = {0};
     const char frame_src[11] = "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A";
-    snprintf(reinterpret_cast<char*>(eapol_frame), 10, "%s", frame_src);
+    memcpy(eapol_frame, frame_src, 10);
     std::cout << "Set eapol_frame with 10 bytes: ";
     for (size_t i = 0; i < frame_len; i++) {
         std::cout << std::hex << static_cast<int>(eapol_frame[i]) << " ";
@@ -787,7 +787,7 @@ TEST_F(EmProvisioningTest, send_1905_eapol_encap_msg_zero_length)
     size_t frame_len = 0; // Zero length
     uint8_t eapol_frame[10] = {0};
     const char frame_src[11] = "\xAA\xBB\xCC\xDD\xEE\xFF\x11\x22\x33\x44";
-    snprintf(reinterpret_cast<char*>(eapol_frame), 10, "%s", frame_src);
+    memcpy(eapol_frame, frame_src, 10);
     // Initialize a valid destination AL MAC address: {0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E}.
     uint8_t dest_al_mac[6] = {0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E};
     std::cout << "Invoking send_1905_eapol_encap_msg with zero frame length" << std::endl;
@@ -823,7 +823,7 @@ TEST_F(EmProvisioningTest, send_1905_eapol_encap_msg_null_dest_mac)
     size_t frame_len = 10;
     uint8_t eapol_frame[10] = {0};
     const char frame_src[11] = "\x55\x66\x77\x88\x99\xAA\xBB\xCC\xDD\xEE";
-    snprintf(reinterpret_cast<char*>(eapol_frame), 10, "%s", frame_src);
+    memcpy(eapol_frame, frame_src, 10);
     uint8_t* dest_al_mac = nullptr;
     std::cout << "Invoking send_1905_eapol_encap_msg with null destination AL MAC pointer" << std::endl;
     int ret = provisioning->send_1905_eapol_encap_msg(eapol_frame, frame_len, dest_al_mac);
@@ -858,7 +858,7 @@ TEST_F(EmProvisioningTest, send_1905_eapol_encap_msg_all_zero_dest_mac)
     size_t frame_len = 10;
     uint8_t eapol_frame[10] = {0};
     const char frame_src[11] = "\xDE\xAD\xBE\xEF\x00\x11\x22\x33\x44\x55";
-    snprintf(reinterpret_cast<char*>(eapol_frame), 10, "%s", frame_src);
+    memcpy(eapol_frame, frame_src, 10);
     // Initialize destination AL MAC address with all zeros.
     uint8_t dest_al_mac[6] = {0};
     memset(dest_al_mac, 0, 6);

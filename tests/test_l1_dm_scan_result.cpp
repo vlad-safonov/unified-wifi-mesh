@@ -3471,11 +3471,9 @@ TEST(dm_scan_result_t_Test, NullKeyPointer) {
     snprintf(reinterpret_cast<char*>(id.net_id), sizeof(id.net_id), "%s", "initial");
     id.net_id[sizeof(id.net_id) - 1] = '\0';
 
-    snprintf(reinterpret_cast<char*>(id.dev_mac), sizeof(id.dev_mac), "%s", "initial");
-    id.dev_mac[sizeof(id.dev_mac) - 1] = '\0';
+    memset(id.dev_mac, 0x11, sizeof(id.dev_mac));
 
-    snprintf(reinterpret_cast<char*>(id.scanner_mac), sizeof(id.scanner_mac), "%s", "initial");
-    id.scanner_mac[sizeof(id.scanner_mac) - 1] = '\0';
+    memset(id.scanner_mac, 0x22, sizeof(id.scanner_mac));
 
     id.op_class = 0;
     id.channel = 0;
@@ -3577,11 +3575,9 @@ TEST(dm_scan_result_t_Test, InvalidKeyFormat) {
     snprintf(reinterpret_cast<char*>(id.net_id), sizeof(id.net_id), "%s", "unchanged");
     id.net_id[sizeof(id.net_id) - 1] = '\0';
 
-    snprintf(reinterpret_cast<char*>(id.dev_mac), sizeof(id.dev_mac), "%s", "unchanged");
-    id.dev_mac[sizeof(id.dev_mac) - 1] = '\0';
+    memset(id.dev_mac, 0x11, sizeof(id.dev_mac));
 
-    snprintf(reinterpret_cast<char*>(id.scanner_mac), sizeof(id.scanner_mac), "%s", "unchanged");
-    id.scanner_mac[sizeof(id.scanner_mac) - 1] = '\0';
+    memset(id.scanner_mac, 0x22, sizeof(id.scanner_mac));
 
     id.op_class = 99;
     id.channel = 99;
