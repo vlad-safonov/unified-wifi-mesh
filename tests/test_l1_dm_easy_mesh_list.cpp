@@ -164,8 +164,7 @@ protected:
 
 
 void setup_valid_interface(em_interface_t &intf, const char* name, const unsigned char mac[6]) {
-    strncpy(intf.name, name, sizeof(intf.name) - 1);
-    intf.name[sizeof(intf.name)-1] = '\0';
+    snprintf(intf.name, sizeof(intf.name), "%s", name);
     memcpy(intf.mac, mac, sizeof(mac_address_t));
     intf.media = em_media_type_ieee8023ab;
 }
@@ -3084,7 +3083,7 @@ TEST_F(dm_easy_mesh_list_tTEST, put_network_null_key)
 {
     std::cout << "Entering put_network_null_key test" << std::endl;
     dm_network_t network;
-    strncpy(network.m_net_info.id, "ValidNetwork", sizeof(network.m_net_info.id));
+    snprintf(network.m_net_info.id, sizeof(network.m_net_info.id), "%s", "ValidNetwork");
     std::cout << "Invoking put_network with key: " << "NULL" << std::endl;
     EXPECT_ANY_THROW(list.put_network(nullptr, &network));
     std::cout << "Exiting put_network_null_key test" << std::endl;

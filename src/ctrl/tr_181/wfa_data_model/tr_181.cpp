@@ -918,7 +918,7 @@ bus_error_t tr_181_t::get_node_sync(char *event_name, raw_data_t *p_data, bus_us
     }
     em_printfout(" get_node_sync: node mac len: %d", sizeof(mac_addr_str_t));
 
-    strncpy(reinterpret_cast<char *> (p_data->raw_data.bytes), reinterpret_cast<const char *> (g_temp_node_mac), sizeof(mac_addr_str_t));
+    snprintf(reinterpret_cast<char *> (p_data->raw_data.bytes), sizeof(mac_addr_str_t), "%s", reinterpret_cast<const char *> (g_temp_node_mac));
     p_data->raw_data_len    = sizeof(mac_addr_str_t);
 
     em_printfout(" get_node_sync: node mac: %s", p_data->raw_data.bytes);

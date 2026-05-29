@@ -336,7 +336,7 @@ void printMacAddress(const unsigned char* mac)
 void configure_device(dm_easy_mesh_t &mesh) {
     dm_device_t &device = mesh.m_device;
     em_device_info_t &info = device.m_device_info;
-	strncpy(info.id.net_id, "DEV1", sizeof(info.id.net_id));
+	snprintf(info.id.net_id, sizeof(info.id.net_id), "%s", "DEV1");
     info.profile = em_profile_type_1;
     strcpy(info.manufacturer, "TestManufacturer");
     strcpy(info.serial_number, "SN123456");
@@ -454,7 +454,7 @@ TEST(dm_easy_mesh_t, analyze_ap_cap_query_valid_ap_cap_query_event)
     em_bus_event_t evt = {};
     evt.type = em_bus_event_type_ap_cap_query;
     evt.data_len = 128;
-    strncpy(evt.u.subdoc.name, "ValidAPCapPayload", sizeof(evt.u.subdoc.name) - 1);
+    snprintf(evt.u.subdoc.name, sizeof(evt.u.subdoc.name), "%s", "ValidAPCapPayload");
     // evt.params must be valid because constructor uses it
     evt.params.net_node = nullptr;
     // Command output array (must start as nullptr)
@@ -533,7 +533,7 @@ TEST(dm_easy_mesh_t, analyze_ap_cap_query_null_command_pointer)
     em_bus_event_t evt = {};
     evt.type = em_bus_event_type_ap_cap_query;
     evt.data_len = 128;
-    strncpy(evt.u.subdoc.name, "ValidAPCapPayload", sizeof(evt.u.subdoc.name)-1);
+    snprintf(evt.u.subdoc.name, sizeof(evt.u.subdoc.name), "%s", "ValidAPCapPayload");
     std::cout << "Invoking analyze_ap_cap_query with valid evt and pcmd=NULL" << std::endl;
     int ret = mesh.analyze_ap_cap_query(&evt, NULL);
     std::cout << "Method returned: " << ret << std::endl;
@@ -611,7 +611,7 @@ TEST(dm_easy_mesh_t, analyze_ap_cap_query_corrupted_payload)
     // Set data_len to a non-zero value indicating payload present.
     evt.data_len = 256;
     // Corrupt the sub-document by setting an unexpected/malformed string.
-    strncpy(evt.u.subdoc.name, "!!!@@@###CORRUPTED_PAYLOAD$$$", sizeof(evt.u.subdoc.name)-1);
+    snprintf(evt.u.subdoc.name, sizeof(evt.u.subdoc.name), "%s", "!!!@@@###CORRUPTED_PAYLOAD$$$");
     em_cmd_t* pcmd[1] = { nullptr };
     std::cout << "Invoking analyze_ap_cap_query with evt.type=" << static_cast<unsigned int>(evt.type)
               << ", data_len=" << evt.data_len
@@ -2604,8 +2604,7 @@ TEST(dm_easy_mesh_t, decode_client_cap_config_null_key) {
     const size_t buff_size = 4;
     em_subdoc_info_t *subdoc = static_cast<em_subdoc_info_t *>(malloc(sizeof(em_subdoc_info_t) + buff_size));
     ASSERT_NE(subdoc, nullptr);
-    strncpy(subdoc->name, "clientcap", sizeof(subdoc->name) - 1);
-    subdoc->name[sizeof(subdoc->name)-1] = '\0';
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "clientcap");
     subdoc->buff[0] = '\0';
     const char *key = NULL;
     char clientmac[18] = {0};
@@ -2645,8 +2644,7 @@ TEST(dm_easy_mesh_t, decode_client_cap_config_null_key) {
 TEST(dm_easy_mesh_t, decode_client_cap_config_null_clientmac) {
     std::cout << "Entering decode_client_cap_config_null_clientmac test" << std::endl;
     em_subdoc_info_t subdoc;
-    strncpy(subdoc.name, "clientcap", sizeof(subdoc.name) - 1);
-    subdoc.name[sizeof(subdoc.name)-1] = '\0';
+    snprintf(subdoc.name, sizeof(subdoc.name), "%s", "clientcap");
     const char *key = "clientcap";
     char *clientmac = NULL;
     char radio_mac[18] = {0};
@@ -2683,8 +2681,7 @@ TEST(dm_easy_mesh_t, decode_client_cap_config_null_clientmac) {
 TEST(dm_easy_mesh_t, decode_client_cap_config_null_radio_mac) {
     std::cout << "Entering decode_client_cap_config_null_radio_mac test" << std::endl;
     em_subdoc_info_t subdoc;
-    strncpy(subdoc.name, "clientcap", sizeof(subdoc.name) - 1);
-    subdoc.name[sizeof(subdoc.name)-1] = '\0';
+    snprintf(subdoc.name, sizeof(subdoc.name), "%s", "clientcap");
     const char *key = "clientcap";
     char clientmac[18] = {0};
     char *radio_mac = NULL;
@@ -4356,8 +4353,7 @@ TEST(dm_easy_mesh_t, decode_config_set_ssid_valid_config)
         "   ]"
         " }"
         "}";
-    strncpy(subdoc->buff, json, BUFSZ - 1);
-    subdoc->buff[BUFSZ - 1] = '\0';
+    snprintf(subdoc->buff, BUFSZ, "%s", json);
     int ret = dm.decode_config_set_ssid(subdoc, "wfa-dataelements:SetSSID");
     EXPECT_EQ(ret, 0);
     EXPECT_EQ(dm.m_num_net_ssids, EM_MAX_NET_SSIDS);
@@ -5365,8 +5361,7 @@ TEST(dm_easy_mesh_t, encode_config_valid_configuration)
     dm_easy_mesh_t dm_easy_mesh_obj;
     em_subdoc_info_t *subdoc = static_cast<em_subdoc_info_t *>(calloc(1, sizeof(em_subdoc_info_t) + EM_IO_BUFF_SZ));
     ASSERT_NE(subdoc, nullptr);
-    strncpy(subdoc->name, "valid_namespace", sizeof(subdoc->name));
-    subdoc->name[sizeof(subdoc->name) - 1] = '\0';
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "valid_namespace");
     const char * key = "Test";
     std::cout << "Invoking encode_config with subdoc name: " << subdoc->name << " and key: " << key << std::endl;
     int ret = dm_easy_mesh_obj.encode_config(subdoc, key);
@@ -5431,8 +5426,7 @@ TEST(dm_easy_mesh_t, encode_config_null_key_failure)
     std::cout << "Entering encode_config_null_key_failure test" << std::endl;
     dm_easy_mesh_t dm_easy_mesh_obj;
     em_subdoc_info_t subdoc;
-    strncpy(subdoc.name, "valid_namespace", sizeof(subdoc.name));
-    subdoc.name[sizeof(subdoc.name) - 1] = '\0';
+    snprintf(subdoc.name, sizeof(subdoc.name), "%s", "valid_namespace");
     std::cout << "Invoking encode_config with subdoc name: " << subdoc.name << " and key: NULL" << std::endl;
     int ret = dm_easy_mesh_obj.encode_config(&subdoc, NULL);
     std::cout << "Returned value: " << ret << std::endl;
@@ -5466,8 +5460,7 @@ TEST(dm_easy_mesh_t, encode_config_empty_key_failure)
     std::cout << "Entering encode_config_empty_key_failure test" << std::endl;
     dm_easy_mesh_t dm_easy_mesh_obj;
     em_subdoc_info_t subdoc;
-    strncpy(subdoc.name, "valid_namespace", sizeof(subdoc.name));
-    subdoc.name[sizeof(subdoc.name) - 1] = '\0';
+    snprintf(subdoc.name, sizeof(subdoc.name), "%s", "valid_namespace");
     const char * key = "";
     std::cout << "Invoking encode_config with subdoc name: " << subdoc.name
               << " and key: (empty string)" << std::endl;
@@ -5706,8 +5699,7 @@ TEST(dm_easy_mesh_t, encode_config_reset_validSubdoc_validKey) {
     dm_easy_mesh_t dm;
     em_subdoc_info_t *subdoc = static_cast<em_subdoc_info_t *>(calloc(1, sizeof(em_subdoc_info_t) + EM_IO_BUFF_SZ));
     ASSERT_NE(subdoc, nullptr);
-    strncpy(subdoc->name, "config", sizeof(subdoc->name)-1);
-    subdoc->name[sizeof(subdoc->name)-1] = '\0';
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "config");
     const char* key = "wfa-dataelements:Reset";
     std::cout << "Invoking encode_config_reset with subdoc->name: " << subdoc->name << " and key: " << key << std::endl;
     int ret = dm.encode_config_reset(subdoc, key);
@@ -5772,8 +5764,7 @@ TEST(dm_easy_mesh_t, encode_config_reset_validSubdoc_nullKey) {
     std::cout << "Entering encode_config_reset_validSubdoc_nullKey test" << std::endl;
     dm_easy_mesh_t dm;
     em_subdoc_info_t subdoc;
-    strncpy(subdoc.name, "config", sizeof(subdoc.name)-1);
-    subdoc.name[sizeof(subdoc.name)-1] = '\0';
+    snprintf(subdoc.name, sizeof(subdoc.name), "%s", "config");
     const char* key = nullptr;
     std::cout << "Invoking encode_config_reset with subdoc.name: " << subdoc.name << " and key: " << "NULL" << std::endl;
     int ret = dm.encode_config_reset(&subdoc, key);
@@ -5806,8 +5797,7 @@ TEST(dm_easy_mesh_t, encode_config_reset_validSubdoc_emptyKey) {
     dm_easy_mesh_t dm;
     char subdoc_buf[sizeof(em_subdoc_info_t) + EM_IO_BUFF_SZ]{};
     em_subdoc_info_t *subdoc = reinterpret_cast<em_subdoc_info_t*>(subdoc_buf);
-    strncpy(subdoc->name, "config", sizeof(subdoc->name)-1);
-    subdoc->name[sizeof(subdoc->name)-1] = '\0';
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "config");
     const char* key = "";
     std::cout << "Invoking encode_config_reset with subdoc->name: " << subdoc->name << " and key: " << "(empty string)" << std::endl;
     int ret = dm.encode_config_reset(subdoc, key);
@@ -5839,7 +5829,7 @@ TEST(dm_easy_mesh_t, encode_config_test_valid_subdoc_and_valid_key)
     std::cout << "Entering encode_config_test_valid_subdoc_and_valid_key test" << std::endl;
     char subdoc_buf[sizeof(em_subdoc_info_t) + EM_IO_BUFF_SZ]{};
     em_subdoc_info_t *subdoc = reinterpret_cast<em_subdoc_info_t*>(subdoc_buf);
-    strncpy(subdoc->name, "valid_name", sizeof(subdoc->name));
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "valid_name");
     const char* key = "test_key";
     std::cout << "Invoking encode_config_test with subdoc->name: " << subdoc->name << " and key: " << key << std::endl;
     dm_easy_mesh_t dm;
@@ -5871,7 +5861,7 @@ TEST(dm_easy_mesh_t, encode_config_test_valid_subdoc_and_empty_key)
 {
     std::cout << "Entering encode_config_test_valid_subdoc_and_empty_key test" << std::endl;
     em_subdoc_info_t subdoc;
-    strncpy(subdoc.name, "valid_name", sizeof(subdoc.name));
+    snprintf(subdoc.name, sizeof(subdoc.name), "%s", "valid_name");
     const char* key = "";
     std::cout << "Invoking encode_config_test with subdoc.name: " << subdoc.name << " and empty key" << std::endl;
     dm_easy_mesh_t dm;
@@ -5936,7 +5926,7 @@ TEST(dm_easy_mesh_t, encode_config_test_valid_subdoc_and_null_key)
 {
     std::cout << "Entering encode_config_test_valid_subdoc_and_null_key test" << std::endl;
     em_subdoc_info_t subdoc;
-    strncpy(subdoc.name, "valid_name", sizeof(subdoc.name));
+    snprintf(subdoc.name, sizeof(subdoc.name), "%s", "valid_name");
     const char* key = NULL;
     std::cout << "Invoking encode_config_test with subdoc.name: " << subdoc.name << " and key pointer as NULL" << std::endl;
     dm_easy_mesh_t dm;
@@ -5969,7 +5959,7 @@ TEST(dm_easy_mesh_t, encode_config_test_empty_name_and_valid_key)
 {
     std::cout << "Entering encode_config_test_empty_name_and_valid_key test" << std::endl;
     em_subdoc_info_t subdoc;
-    strncpy(subdoc.name, "", sizeof(subdoc.name));
+    snprintf(subdoc.name, sizeof(subdoc.name), "%s", "");
     const char* key = "test_key";
     std::cout << "Invoking encode_config_test with empty subdoc.name and key: " << key << std::endl;
     dm_easy_mesh_t dm;
@@ -6937,8 +6927,7 @@ TEST(dm_easy_mesh_t, get_agent_al_interface_valid_AL_interface)
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t obj;
     const char* validName = "ValidInterface";
-    strncpy(obj.m_device.m_device_info.intf.name, validName, sizeof(obj.m_device.m_device_info.intf.name) - 1);
-    obj.m_device.m_device_info.intf.name[sizeof(obj.m_device.m_device_info.intf.name) - 1] = '\0';
+    snprintf(obj.m_device.m_device_info.intf.name, sizeof(obj.m_device.m_device_info.intf.name), "%s", validName);
     unsigned char validMac[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
     memcpy(obj.m_device.m_device_info.intf.mac, validMac, sizeof(validMac));
     obj.m_device.m_device_info.intf.media = em_media_type_ieee80211ac_5;
@@ -9273,7 +9262,7 @@ TEST(dm_easy_mesh_t, get_cmd_ctx_valid_pointer_and_data_access)
     /* Populate command context */
     mesh.m_cmd_ctx.arr_index = 42;
     mesh.m_cmd_ctx.type = dm_orch_type_bss_insert;
-    strncpy(mesh.m_cmd_ctx.obj_id, "test-object-id", sizeof(mesh.m_cmd_ctx.obj_id));
+    snprintf(mesh.m_cmd_ctx.obj_id, sizeof(mesh.m_cmd_ctx.obj_id), "%s", "test-object-id");
     std::cout << "Invoking get_cmd_ctx()" << std::endl;
     em_cmd_ctx_t* ctx = mesh.get_cmd_ctx();
     ASSERT_NE(ctx, nullptr);
@@ -9406,7 +9395,7 @@ TEST(dm_easy_mesh_t, get_controller_interface_valid)
     std::cout << "Entering " << testName << std::endl;
     dm_easy_mesh_t mesh;
     /* Populate controller interface */
-    strncpy(mesh.m_network.m_net_info.ctrl_id.name, "ctrl-iface", sizeof(mesh.m_network.m_net_info.ctrl_id.name));
+    snprintf(mesh.m_network.m_net_info.ctrl_id.name, sizeof(mesh.m_network.m_net_info.ctrl_id.name), "%s", "ctrl-iface");
     unsigned char mac[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
     memcpy(mesh.m_network.m_net_info.ctrl_id.mac, mac, sizeof(mac));
     mesh.m_network.m_net_info.ctrl_id.media = em_media_type_ieee80211b_24;
@@ -11328,7 +11317,7 @@ TEST(dm_easy_mesh_t, get_interface_by_index_configured)
     dm_easy_mesh_t dm{};
     unsigned int index = 1;
     // Configure interface
-    strncpy(dm.m_interfaces[index].name, "eth0", sizeof(dm.m_interfaces[index].name) - 1);
+    snprintf(dm.m_interfaces[index].name, sizeof(dm.m_interfaces[index].name), "%s", "eth0");
     unsigned char mac[6] = {0x10, 0x22, 0x33, 0x44, 0x55, 0x66};
     memcpy(dm.m_interfaces[index].mac, mac, sizeof(mac));
     dm.m_interfaces[index].media = em_media_type_ieee8023ab;
@@ -11371,7 +11360,7 @@ TEST(dm_easy_mesh_t, get_interface_by_index_max_boundary)
     std::cout << "Entering " << testName << std::endl;
     dm_easy_mesh_t dm{};
     unsigned int index = EM_MAX_INTERFACES - 1;
-    strncpy(dm.m_interfaces[index].name, "eth0", sizeof(dm.m_interfaces[index].name) - 1);
+    snprintf(dm.m_interfaces[index].name, sizeof(dm.m_interfaces[index].name), "%s", "eth0");
     unsigned char mac[6] = {0x10, 0x22, 0x33, 0x44, 0x55, 0x66};
     memcpy(dm.m_interfaces[index].mac, mac, sizeof(mac));
     dm.m_interfaces[index].media = em_media_type_ieee8023ab;
@@ -11994,10 +11983,10 @@ TEST(dm_easy_mesh_t, get_network_info_configured)
     std::cout << "Entering " << testName << std::endl;
 	dm_easy_mesh_t dm;
     em_network_info_t &cfg = dm.m_network.m_net_info;
-    strncpy(cfg.id, "TestNetworkID", sizeof(cfg.id));
+    snprintf(cfg.id, sizeof(cfg.id), "%s", "TestNetworkID");
     cfg.num_of_devices = 5;
-    strncpy(cfg.timestamp, "2025-01-01T10:00:00Z", sizeof(cfg.timestamp));
-    strncpy(cfg.ctrl_id.name, "eth0", sizeof(cfg.ctrl_id.name));
+    snprintf(cfg.timestamp, sizeof(cfg.timestamp), "%s", "2025-01-01T10:00:00Z");
+    snprintf(cfg.ctrl_id.name, sizeof(cfg.ctrl_id.name), "%s", "eth0");
     cfg.ctrl_id.media = em_media_type_ieee8023ab;
     cfg.media = em_media_type_ieee80211ac_5;
     std::cout << "Invoking get_network_info()" << std::endl;
@@ -12072,10 +12061,10 @@ TEST(dm_easy_mesh_t, get_network_info_static_configured)
     std::cout << "Invoking static get_network_info(void*)" << std::endl;
 	dm_easy_mesh_t dm;
     em_network_info_t &cfg = dm.m_network.m_net_info;
-    strncpy(cfg.id, "TestNetworkID", sizeof(cfg.id));
+    snprintf(cfg.id, sizeof(cfg.id), "%s", "TestNetworkID");
     cfg.num_of_devices = 5;
-    strncpy(cfg.timestamp, "2025-01-01T10:00:00Z", sizeof(cfg.timestamp));
-    strncpy(cfg.ctrl_id.name, "eth0", sizeof(cfg.ctrl_id.name));
+    snprintf(cfg.timestamp, sizeof(cfg.timestamp), "%s", "2025-01-01T10:00:00Z");
+    snprintf(cfg.ctrl_id.name, sizeof(cfg.ctrl_id.name), "%s", "eth0");
     cfg.ctrl_id.media = em_media_type_ieee8023ab;
     cfg.media = em_media_type_ieee80211ac_5;
     em_network_info_t *info = dm_easy_mesh_t::get_network_info(&dm);
@@ -12209,16 +12198,16 @@ TEST(dm_easy_mesh_t, get_network_ssid_configured)
     dm.m_num_net_ssids = 1;
     // Configure SSID[0]
     em_network_ssid_info_t &cfg = dm.m_network_ssid[0].m_network_ssid_info;
-    strncpy(cfg.id, "ssid-001", sizeof(cfg.id));
-    strncpy(cfg.ssid, "TestSSID", sizeof(cfg.ssid));
-    strncpy(cfg.pass_phrase, "TestPassword", sizeof(cfg.pass_phrase));
+    snprintf(cfg.id, sizeof(cfg.id), "%s", "ssid-001");
+    snprintf(cfg.ssid, sizeof(cfg.ssid), "%s", "TestSSID");
+    snprintf(cfg.pass_phrase, sizeof(cfg.pass_phrase), "%s", "TestPassword");
     cfg.enable = true;
     cfg.advertisement = true;
     cfg.num_bands = 2;
-    strncpy(cfg.band[0], "2.4G", sizeof(cfg.band[0]));
-    strncpy(cfg.band[1], "5G", sizeof(cfg.band[1]));
+    snprintf(cfg.band[0], sizeof(cfg.band[0]), "%s", "2.4G");
+    snprintf(cfg.band[1], sizeof(cfg.band[1]), "%s", "5G");
     cfg.num_akms = 1;
-    strncpy(cfg.akm[0], "WPA2-PSK", sizeof(cfg.akm[0]));
+    snprintf(cfg.akm[0], sizeof(cfg.akm[0]), "%s", "WPA2-PSK");
     cfg.num_hauls = 2;
     cfg.haul_type[0] = em_haul_type_fronthaul;
     cfg.haul_type[1] = em_haul_type_backhaul;
@@ -12293,15 +12282,15 @@ TEST(dm_easy_mesh_t, get_network_ssid_by_ref_configured)
     dm_easy_mesh_t dm{};
     dm.m_num_net_ssids = 1;
     em_network_ssid_info_t &cfg = dm.m_network_ssid[0].m_network_ssid_info;
-    strncpy(cfg.id, "ssid-002", sizeof(cfg.id));
-    strncpy(cfg.ssid, "BackhaulSSID", sizeof(cfg.ssid));
-    strncpy(cfg.pass_phrase, "BackhaulPass", sizeof(cfg.pass_phrase));
+    snprintf(cfg.id, sizeof(cfg.id), "%s", "ssid-002");
+    snprintf(cfg.ssid, sizeof(cfg.ssid), "%s", "BackhaulSSID");
+    snprintf(cfg.pass_phrase, sizeof(cfg.pass_phrase), "%s", "BackhaulPass");
     cfg.enable = true;
     cfg.advertisement = false;
     cfg.num_bands = 1;
-    strncpy(cfg.band[0], "5G", sizeof(cfg.band[0]));
+    snprintf(cfg.band[0], sizeof(cfg.band[0]), "%s", "5G");
     cfg.num_akms = 1;
-    strncpy(cfg.akm[0], "WPA3-SAE", sizeof(cfg.akm[0]));
+    snprintf(cfg.akm[0], sizeof(cfg.akm[0]), "%s", "WPA3-SAE");
     cfg.num_hauls = 1;
     cfg.haul_type[0] = em_haul_type_backhaul;
     std::cout << "Invoking get_network_ssid_by_ref(0)" << std::endl;
@@ -12343,12 +12332,12 @@ TEST(dm_easy_mesh_t, get_network_ssid_info_by_haul_type_positive)
 	dm_easy_mesh_t dm{};
     dm.m_num_net_ssids = 2;
     em_network_ssid_info_t &info0 = dm.m_network_ssid[0].m_network_ssid_info;
-    strncpy(info0.ssid, "FrontHaulSSID", sizeof(info0.ssid));
+    snprintf(info0.ssid, sizeof(info0.ssid), "%s", "FrontHaulSSID");
     info0.enable = true;
     info0.num_hauls = 1;
     info0.haul_type[0] = em_haul_type_fronthaul;
     em_network_ssid_info_t &info1 = dm.m_network_ssid[1].m_network_ssid_info;
-    strncpy(info1.ssid, "BackHaulSSID", sizeof(info1.ssid));
+    snprintf(info1.ssid, sizeof(info1.ssid), "%s", "BackHaulSSID");
     info1.enable = true;
     info1.num_hauls = 1;
     info1.haul_type[0] = em_haul_type_backhaul;
@@ -12420,7 +12409,7 @@ TEST(dm_easy_mesh_t, get_network_ssid_info_invalid_haul_type)
 	dm_easy_mesh_t dm{};
     dm.m_num_net_ssids = 1;
     em_network_ssid_info_t &info = dm.m_network_ssid[0].m_network_ssid_info;
-    strncpy(info.ssid, "TestSSID", sizeof(info.ssid));
+    snprintf(info.ssid, sizeof(info.ssid), "%s", "TestSSID");
     info.num_hauls = 1;
     info.haul_type[0] = em_haul_type_fronthaul;
     em_haul_type_t invalid = static_cast<em_haul_type_t>(999);
@@ -14668,7 +14657,7 @@ TEST(dm_easy_mesh_t, get_num_scan_results_single_entry)
     dm_easy_mesh_t mesh;
     mesh.init();
     em_scan_result_id_t id{};
-    strncpy(id.net_id, "net1", sizeof(id.net_id) - 1);
+    snprintf(id.net_id, sizeof(id.net_id), "%s", "net1");
     unsigned char dev_mac[6]     = {0x10, 0x11, 0x12, 0x13, 0x14, 0x15};
     unsigned char scanner_mac[6] = {0x20, 0x21, 0x22, 0x23, 0x24, 0x25};
     memcpy(id.dev_mac, dev_mac, sizeof(mac_address_t));
@@ -15370,7 +15359,7 @@ TEST(dm_easy_mesh_t, get_primary_device_type_valid)
     const char* testName = "get_primary_device_type_valid";
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t mesh;
-    strncpy(mesh.m_device.m_device_info.primary_device_type, "router", sizeof(mesh.m_device.m_device_info.primary_device_type));
+    snprintf(mesh.m_device.m_device_info.primary_device_type, sizeof(mesh.m_device.m_device_info.primary_device_type), "%s", "router");
     std::cout << "Invoking get_primary_device_type()" << std::endl;
     char* deviceType = mesh.get_primary_device_type();
     std::cout << "Retrieved primary device type = " << (deviceType ? deviceType : "NULL") << std::endl;
@@ -15402,10 +15391,10 @@ TEST(dm_easy_mesh_t, get_prioritized_interface_valid_eth)
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t mesh;
     mesh.m_num_preferences = 1;
-    strncpy(mesh.m_preference[0].platform, "rpi", sizeof(mesh.m_preference[0].platform));
+    snprintf(mesh.m_preference[0].platform, sizeof(mesh.m_preference[0].platform), "%s", "rpi");
     mesh.m_preference[0].media = em_media_type_ieee8023ab; // Ethernet
     mesh.m_num_interfaces = 1;
-    strncpy(mesh.m_interfaces[0].name, "eth0", sizeof(mesh.m_interfaces[0].name));
+    snprintf(mesh.m_interfaces[0].name, sizeof(mesh.m_interfaces[0].name), "%s", "eth0");
     const char* platform = "rpi";
     std::cout << "Invoking get_prioritized_interface(\"" << platform << "\")" << std::endl;
     em_interface_t* iface = mesh.get_prioritized_interface(platform);
@@ -15439,10 +15428,10 @@ TEST(dm_easy_mesh_t, get_prioritized_interface_valid_wlan)
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t mesh;
     mesh.m_num_preferences = 1;
-    strncpy(mesh.m_preference[0].platform, "bpi", sizeof(mesh.m_preference[0].platform));
+    snprintf(mesh.m_preference[0].platform, sizeof(mesh.m_preference[0].platform), "%s", "bpi");
     mesh.m_preference[0].media = em_media_type_ieee80211b_24; // WiFi
     mesh.m_num_interfaces = 1;
-    strncpy(mesh.m_interfaces[0].name, "wlan0", sizeof(mesh.m_interfaces[0].name));
+    snprintf(mesh.m_interfaces[0].name, sizeof(mesh.m_interfaces[0].name), "%s", "wlan0");
     const char* platform = "bpi";
     std::cout << "Invoking get_prioritized_interface(\"" << platform << "\")" << std::endl;
     em_interface_t* iface = mesh.get_prioritized_interface(platform);
@@ -15478,10 +15467,10 @@ TEST(dm_easy_mesh_t, get_prioritized_interface_no_match)
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t mesh;
     mesh.m_num_preferences = 1;
-    strncpy(mesh.m_preference[0].platform, "rpi", sizeof(mesh.m_preference[0].platform));
+    snprintf(mesh.m_preference[0].platform, sizeof(mesh.m_preference[0].platform), "%s", "rpi");
     mesh.m_preference[0].media = em_media_type_ieee8023ab; // Ethernet
     mesh.m_num_interfaces = 1;
-    strncpy(mesh.m_interfaces[0].name, "eth0", sizeof(mesh.m_interfaces[0].name));
+    snprintf(mesh.m_interfaces[0].name, sizeof(mesh.m_interfaces[0].name), "%s", "eth0");
     const char* platform = "bpi";
     std::cout << "Invoking get_prioritized_interface(\"" << platform << "\")" << std::endl;
     em_interface_t* iface = mesh.get_prioritized_interface(platform);
@@ -15514,8 +15503,8 @@ TEST(dm_easy_mesh_t, get_radio_valid_index)
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t mesh;
     mesh.m_num_radios = 2;
-    strncpy(mesh.m_radio[0].m_radio_info.id.net_id, "radio0", sizeof(mesh.m_radio[0].m_radio_info.id.net_id));
-    strncpy(mesh.m_radio[1].m_radio_info.id.net_id, "radio1", sizeof(mesh.m_radio[1].m_radio_info.id.net_id));
+    snprintf(mesh.m_radio[0].m_radio_info.id.net_id, sizeof(mesh.m_radio[0].m_radio_info.id.net_id), "%s", "radio0");
+    snprintf(mesh.m_radio[1].m_radio_info.id.net_id, sizeof(mesh.m_radio[1].m_radio_info.id.net_id), "%s", "radio1");
     unsigned int index = 1;
     std::cout << "Invoking get_radio(" << index << ")" << std::endl;
     dm_radio_t* radio = mesh.get_radio(index);
@@ -15588,7 +15577,7 @@ TEST(dm_easy_mesh_t, get_radio_valid_mac)
     mac_address_t mac1 = {0xAA,0xBB,0xCC,0xDD,0xEE,0xFF};
     memcpy(mesh.m_radio[0].m_radio_info.intf.mac, mac0, sizeof(mac_address_t));
     memcpy(mesh.m_radio[1].m_radio_info.intf.mac, mac1, sizeof(mac_address_t));
-    strncpy(mesh.m_radio[1].m_radio_info.id.net_id, "radio1", sizeof(mesh.m_radio[1].m_radio_info.id.net_id));
+    snprintf(mesh.m_radio[1].m_radio_info.id.net_id, sizeof(mesh.m_radio[1].m_radio_info.id.net_id), "%s", "radio1");
     std::cout << "Invoking get_radio(mac1)" << std::endl;
     dm_radio_t* radio = mesh.get_radio(mac1);
     std::cout << "Retrieved radio net_id = " << (radio ? radio->m_radio_info.id.net_id : "NULL") << std::endl;
@@ -15655,7 +15644,7 @@ TEST(dm_easy_mesh_t, get_radio_by_ref_valid_index)
     const char* testName = "get_radio_by_ref_valid_index";
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t mesh;
-    strncpy(mesh.m_radio[0].m_radio_info.id.net_id, "radio0", sizeof(mesh.m_radio[0].m_radio_info.id.net_id));
+    snprintf(mesh.m_radio[0].m_radio_info.id.net_id, sizeof(mesh.m_radio[0].m_radio_info.id.net_id), "%s", "radio0");
     unsigned int index = 0;
     std::cout << "Invoking get_radio_by_ref(" << index << ")" << std::endl;
     dm_radio_t& radio = mesh.get_radio_by_ref(index);
@@ -15770,10 +15759,10 @@ TEST(dm_easy_mesh_t, get_radio_data_valid_interface)
     dm_easy_mesh_t mesh;
     mesh.m_wifi_data = new webconfig_subdoc_data_t{};
     mesh.m_wifi_data->u.decoded.num_radios = 2;
-    strncpy(mesh.m_wifi_data->u.decoded.radios[0].name, "wlan0", sizeof(mesh.m_wifi_data->u.decoded.radios[0].name));
-    strncpy(mesh.m_wifi_data->u.decoded.radios[1].name, "wlan1", sizeof(mesh.m_wifi_data->u.decoded.radios[1].name));
+    snprintf(mesh.m_wifi_data->u.decoded.radios[0].name, sizeof(mesh.m_wifi_data->u.decoded.radios[0].name), "%s", "wlan0");
+    snprintf(mesh.m_wifi_data->u.decoded.radios[1].name, sizeof(mesh.m_wifi_data->u.decoded.radios[1].name), "%s", "wlan1");
     em_interface_t iface;
-    strncpy(iface.name, "wlan1", sizeof(iface.name));
+    snprintf(iface.name, sizeof(iface.name), "%s", "wlan1");
     std::cout << "Invoking get_radio_data(iface.name=" << iface.name << ")" << std::endl;
     rdk_wifi_radio_t* radio = mesh.get_radio_data(&iface);
     std::cout << "Retrieved radio name = " << (radio ? radio->name : "NULL") << std::endl;
@@ -15811,9 +15800,9 @@ TEST(dm_easy_mesh_t, get_radio_data_invalid_interface)
     dm_easy_mesh_t mesh;
     mesh.m_wifi_data = new webconfig_subdoc_data_t{};
     mesh.m_wifi_data->u.decoded.num_radios = 1;
-    strncpy(mesh.m_wifi_data->u.decoded.radios[0].name, "wlan0", sizeof(mesh.m_wifi_data->u.decoded.radios[0].name));
+    snprintf(mesh.m_wifi_data->u.decoded.radios[0].name, sizeof(mesh.m_wifi_data->u.decoded.radios[0].name), "%s", "wlan0");
     em_interface_t iface;
-    strncpy(iface.name, "wlan5", sizeof(iface.name));
+    snprintf(iface.name, sizeof(iface.name), "%s", "wlan5");
     std::cout << "Invoking get_radio_data(iface.name=" << iface.name << ")" << std::endl;
     rdk_wifi_radio_t* radio = mesh.get_radio_data(&iface);
     std::cout << "Retrieved radio = " << (radio ? radio->name : "NULL") << std::endl;
@@ -15842,7 +15831,7 @@ TEST(dm_easy_mesh_t, get_radio_data_invalid_interface)
  * | Variation / Step | Description | Test Data | Expected Result | Notes |
  * | :----: | --------- | ---------- |-------------- | ----- |
  * | 01 | Instantiate dm_easy_mesh_t and set m_wifi_data to nullptr | mesh.m_wifi_data = nullptr | Object is initialized with wifi_data as nullptr | Should be successful |
- * | 02 | Setup em_interface_t with iface.name set to "wlan0" using strncpy | iface.name = "wlan0" | Interface is correctly initialized with the name "wlan0" | Should be successful |
+ * | 02 | Setup em_interface_t with iface.name set to "wlan0" using snprintf | iface.name = "wlan0" | Interface is correctly initialized with the name "wlan0" | Should be successful |
  * | 03 | Invoke get_radio_data with the provided interface and validate the output | Input: iface.name = "wlan0", mesh.m_wifi_data = nullptr; Output: radio pointer | Return value is nullptr and EXPECT_TRUE(radio == nullptr) assertion passes | Should Pass |
  */
 TEST(dm_easy_mesh_t, get_radio_data_null_wifi_data)
@@ -15852,7 +15841,7 @@ TEST(dm_easy_mesh_t, get_radio_data_null_wifi_data)
     dm_easy_mesh_t mesh;
     mesh.m_wifi_data = nullptr;
     em_interface_t iface;
-    strncpy(iface.name, "wlan0", sizeof(iface.name));
+    snprintf(iface.name, sizeof(iface.name), "%s", "wlan0");
     std::cout << "Invoking get_radio_data(iface.name=" << iface.name << ")" << std::endl;
     rdk_wifi_radio_t* radio = mesh.get_radio_data(&iface);
     std::cout << "Retrieved radio = " << (radio ? radio->name : "NULL") << std::endl;
@@ -15885,8 +15874,8 @@ TEST(dm_easy_mesh_t, get_radio_info_valid_index)
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t mesh;
     mesh.m_num_radios = 2;
-    strncpy(mesh.m_radio[0].m_radio_info.id.net_id, "radio0", sizeof(mesh.m_radio[0].m_radio_info.id.net_id));
-    strncpy(mesh.m_radio[1].m_radio_info.id.net_id, "radio1", sizeof(mesh.m_radio[1].m_radio_info.id.net_id));
+    snprintf(mesh.m_radio[0].m_radio_info.id.net_id, sizeof(mesh.m_radio[0].m_radio_info.id.net_id), "%s", "radio0");
+    snprintf(mesh.m_radio[1].m_radio_info.id.net_id, sizeof(mesh.m_radio[1].m_radio_info.id.net_id), "%s", "radio1");
     unsigned int index = 1;
     std::cout << "Invoking get_radio_info(index=" << index << ")" << std::endl;
     em_radio_info_t* radioInfo = mesh.get_radio_info(index);
@@ -15923,7 +15912,7 @@ TEST(dm_easy_mesh_t, get_radio_info_invalid_index)
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t mesh;
     mesh.m_num_radios = 1;
-    strncpy(mesh.m_radio[0].m_radio_info.id.net_id, "radio0", sizeof(mesh.m_radio[0].m_radio_info.id.net_id));
+    snprintf(mesh.m_radio[0].m_radio_info.id.net_id, sizeof(mesh.m_radio[0].m_radio_info.id.net_id), "%s", "radio0");
     unsigned int index = 5;
     std::cout << "Invoking get_radio_info(index=" << index << ")" << std::endl;
     em_radio_info_t* radioInfo = mesh.get_radio_info(index);
@@ -15958,7 +15947,7 @@ TEST(dm_easy_mesh_t, static_get_radio_info_valid_index)
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t mesh;
     mesh.m_num_radios = 1;
-    strncpy(mesh.m_radio[0].m_radio_info.id.net_id, "radio0", sizeof(mesh.m_radio[0].m_radio_info.id.net_id));
+    snprintf(mesh.m_radio[0].m_radio_info.id.net_id, sizeof(mesh.m_radio[0].m_radio_info.id.net_id), "%s", "radio0");
     unsigned int index = 0;
     std::cout << "Invoking static get_radio_info(dm, index=" << index << ")" << std::endl;
     em_radio_info_t* radioInfo = dm_easy_mesh_t::get_radio_info(&mesh, index);
@@ -15995,7 +15984,7 @@ TEST(dm_easy_mesh_t, static_get_radio_info_invalid_index)
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t mesh;
     mesh.m_num_radios = 1;
-    strncpy(mesh.m_radio[0].m_radio_info.id.net_id, "radio0", sizeof(mesh.m_radio[0].m_radio_info.id.net_id));
+    snprintf(mesh.m_radio[0].m_radio_info.id.net_id, sizeof(mesh.m_radio[0].m_radio_info.id.net_id), "%s", "radio0");
     unsigned int index = 10;
     std::cout << "Invoking static get_radio_info(dm, index=" << index << ")" << std::endl;
     em_radio_info_t* radioInfo = dm_easy_mesh_t::get_radio_info(&mesh, index);
@@ -16027,7 +16016,7 @@ TEST(dm_easy_mesh_t, get_radio_interface_valid_index)
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t mesh;
     mesh.m_num_radios = 1;
-    strncpy(mesh.m_radio[0].m_radio_info.intf.name, "wlan0", sizeof(mesh.m_radio[0].m_radio_info.intf.name));
+    snprintf(mesh.m_radio[0].m_radio_info.intf.name, sizeof(mesh.m_radio[0].m_radio_info.intf.name), "%s", "wlan0");
     unsigned int index = 0;
     std::cout << "Invoking get_radio_interface(index=" << index << ")" << std::endl;
     em_interface_t* intf = mesh.get_radio_interface(index);
@@ -16072,7 +16061,7 @@ TEST(dm_easy_mesh_t, get_radio_interface_invalid_index)
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t mesh;
     mesh.m_num_radios = 1;
-    strncpy(mesh.m_radio[0].m_radio_info.intf.name, "wlan0", sizeof(mesh.m_radio[0].m_radio_info.intf.name));
+    snprintf(mesh.m_radio[0].m_radio_info.intf.name, sizeof(mesh.m_radio[0].m_radio_info.intf.name), "%s", "wlan0");
     unsigned int index = 5;
     std::cout << "Invoking get_radio_interface(index=" << index << ")" << std::endl;
     em_interface_t* intf = mesh.get_radio_interface(index);
@@ -16108,7 +16097,7 @@ TEST(dm_easy_mesh_t, get_scan_result_single_entry_valid_index)
     dm_easy_mesh_t mesh;
     mesh.init();
     em_scan_result_id_t id{};
-    strncpy(id.net_id, "net1", sizeof(id.net_id));
+    snprintf(id.net_id, sizeof(id.net_id), "%s", "net1");
     id.dev_mac[0] = 0x10;
     id.scanner_mac[0] = 0x20;
     id.op_class = 81;
@@ -16217,7 +16206,7 @@ TEST(dm_easy_mesh_t, get_scan_result_invalid_index)
     dm_easy_mesh_t mesh;
     mesh.init();
     em_scan_result_id_t id{};
-    strncpy(id.net_id, "net1", sizeof(id.net_id));
+    snprintf(id.net_id, sizeof(id.net_id), "%s", "net1");
     id.dev_mac[0] = 0xAA;
     id.scanner_mac[0] = 0xBB;
     id.op_class = 81;
@@ -16302,7 +16291,7 @@ TEST(dm_easy_mesh_t, get_serial_number_valid)
     const char* testName = "get_serial_number_valid";
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t mesh;
-    strncpy(mesh.m_device.m_device_info.serial_number, "SN12345678", sizeof(mesh.m_device.m_device_info.serial_number));
+    snprintf(mesh.m_device.m_device_info.serial_number, sizeof(mesh.m_device.m_device_info.serial_number), "%s", "SN12345678");
     std::cout << "Invoking get_serial_number()" << std::endl;
     char* serial = mesh.get_serial_number();
     // Print retrieved value
@@ -16381,7 +16370,7 @@ TEST(dm_easy_mesh_t, get_software_version_valid)
     const char* testName = "get_software_version_valid";
     std::cout << "Entering " << testName << " test" << std::endl;
     dm_easy_mesh_t mesh;
-    strncpy(mesh.m_device.m_device_info.software_ver, "v1.2.3-build45", sizeof(mesh.m_device.m_device_info.software_ver));
+    snprintf(mesh.m_device.m_device_info.software_ver, sizeof(mesh.m_device.m_device_info.software_ver), "%s", "v1.2.3-build45");
     std::cout << "Invoking get_software_version()" << std::endl;
     char* version = mesh.get_software_version();
     // Print retrieved value
@@ -17237,7 +17226,7 @@ TEST(dm_easy_mesh_t, set_cmd_ctx_ValidCmdCtxCopy)
     em_cmd_ctx_t ctx{};
     ctx.arr_index = 10;
     ctx.type = dm_orch_type_net_insert;
-    strncpy(ctx.obj_id, "network_001", sizeof(ctx.obj_id) - 1);
+    snprintf(ctx.obj_id, sizeof(ctx.obj_id), "%s", "network_001");
     std::cout << "Invoking set_cmd_ctx(&ctx)" << std::endl;
     mesh.set_cmd_ctx(&ctx);
     EXPECT_EQ(mesh.m_cmd_ctx.arr_index, 10u);
@@ -18855,7 +18844,7 @@ TEST(dm_easy_mesh_t, set_policy_AddNewPolicy)
     unsigned char device_mac[6] = {0xAA,0xBB,0xCC,0xDD,0xEE,0xFF};
     memcpy(mesh.m_device.m_device_info.intf.mac, device_mac, 6);
     dm_policy_t policy{};
-    strncpy(policy.m_policy.id.net_id, "net1", sizeof(policy.m_policy.id.net_id) - 1);
+    snprintf(policy.m_policy.id.net_id, sizeof(policy.m_policy.id.net_id), "%s", "net1");
     policy.m_policy.id.type = em_policy_id_type_steering_local;
     unsigned char radio_mac[6] = {1,2,3,4,5,6};
     memcpy(policy.m_policy.id.radio_mac, radio_mac, 6);
@@ -18900,7 +18889,7 @@ TEST(dm_easy_mesh_t, set_policy_ReplaceExistingPolicy)
     memcpy(mesh.m_device.m_device_info.intf.mac, device_mac, 6);
     unsigned char radio_mac[6] = {0x11,0x22,0x33,0x44,0x55,0x66};
     dm_policy_t p1{};
-    strncpy(p1.m_policy.id.net_id, "netA", sizeof(p1.m_policy.id.net_id) - 1);
+    snprintf(p1.m_policy.id.net_id, sizeof(p1.m_policy.id.net_id), "%s", "netA");
     p1.m_policy.id.type = em_policy_id_type_channel_scan;
     memcpy(p1.m_policy.id.radio_mac, radio_mac, 6);
     memcpy(p1.m_policy.id.dev_mac, device_mac, 6);
@@ -18948,11 +18937,11 @@ TEST(dm_easy_mesh_t, set_policy_DifferentNetIdAddsNewPolicy)
     unsigned char device_mac[6] = {1,1,1,1,1,1};
     memcpy(mesh.m_device.m_device_info.intf.mac, device_mac, 6);
     dm_policy_t p1{};
-    strncpy(p1.m_policy.id.net_id, "net1", sizeof(p1.m_policy.id.net_id) - 1);
+    snprintf(p1.m_policy.id.net_id, sizeof(p1.m_policy.id.net_id), "%s", "net1");
     p1.m_policy.id.type = em_policy_id_type_qos_mgt;
     memcpy(p1.m_policy.id.dev_mac, device_mac, 6);
     dm_policy_t p2 = p1;
-    strncpy(p2.m_policy.id.net_id, "net2", sizeof(p2.m_policy.id.net_id) - 1);
+    snprintf(p2.m_policy.id.net_id, sizeof(p2.m_policy.id.net_id), "%s", "net2");
     std::cout << "Invoking set_policy with net_id net1" << std::endl;
     mesh.set_policy(p1);
     std::cout << "Invoking set_policy with net_id net2" << std::endl;
@@ -18990,7 +18979,7 @@ TEST(dm_easy_mesh_t, set_policy_SameIdsDifferentTypeAddsNewPolicy)
     unsigned char device_mac[6] = {0xFF,0xEE,0xDD,0xCC,0xBB,0xAA};
     memcpy(mesh.m_device.m_device_info.intf.mac, device_mac, 6);
     dm_policy_t p1{};
-    strncpy(p1.m_policy.id.net_id, "netX", sizeof(p1.m_policy.id.net_id) - 1);
+    snprintf(p1.m_policy.id.net_id, sizeof(p1.m_policy.id.net_id), "%s", "netX");
     p1.m_policy.id.type = em_policy_id_type_channel_scan;
     memcpy(p1.m_policy.id.dev_mac, device_mac, 6);
     dm_policy_t p2 = p1;
@@ -22030,7 +22019,7 @@ TEST(dm_easy_mesh_t, UpdateApMldInfo_positive_CreateNewMld)
     dm.init();
     em_ap_mld_info_t input{};
     input.mac_addr_valid = true;
-    strncpy(input.ssid, "TestSSID", sizeof(input.ssid));
+    snprintf(input.ssid, sizeof(input.ssid), "%s", "TestSSID");
     input.str = 1;
     input.nstr = 2;
     input.emlsr = true;
@@ -22094,7 +22083,7 @@ TEST(dm_easy_mesh_t, UpdateApMldInfo_positive_UpdateExistingMld)
     dm.init();
     em_ap_mld_info_t first{};
     first.mac_addr_valid = true;
-    strncpy(first.ssid, "SSID1", sizeof(first.ssid));
+    snprintf(first.ssid, sizeof(first.ssid), "%s", "SSID1");
     for (int i = 0; i < 6; i++) {
         first.mac_addr[i] = static_cast<uint8_t>(i + 1);
     }
@@ -22102,7 +22091,7 @@ TEST(dm_easy_mesh_t, UpdateApMldInfo_positive_UpdateExistingMld)
     em_ap_mld_info_t update;
     memset(&update, 0, sizeof(update));
     update.mac_addr_valid = true;
-    strncpy(update.ssid, "SSID_UPDATED", sizeof(update.ssid));
+    snprintf(update.ssid, sizeof(update.ssid), "%s", "SSID_UPDATED");
     for (int i = 0; i < 6; i++) {
         update.mac_addr[i] = static_cast<uint8_t>(i + 1);
     }
@@ -22196,7 +22185,7 @@ TEST(dm_easy_mesh_t, UpdateApMldInfo_positive_StaticWrapperInvocation)
     dm.init();
     em_ap_mld_info_t input{};
     input.mac_addr_valid = true;
-    strncpy(input.ssid, "StaticCallSSID", sizeof(input.ssid));
+    snprintf(input.ssid, sizeof(input.ssid), "%s", "StaticCallSSID");
     for (int i = 0; i < 6; i++) {
         input.mac_addr[i] = static_cast<uint8_t>(20 + i);
     }
@@ -22233,7 +22222,7 @@ TEST(dm_easy_mesh_t, UpdateApMldInfo_negative_Static_NullDmPointer)
     std::cout << "Entering UpdateApMldInfo_negative_Static_NullDmPointer test" << std::endl;
     em_ap_mld_info_t input{};
     input.mac_addr_valid = true;
-    strncpy(input.ssid, "NullDM", sizeof(input.ssid));
+    snprintf(input.ssid, sizeof(input.ssid), "%s", "NullDM");
     for (int i = 0; i < 6; i++) {
         input.mac_addr[i] = static_cast<uint8_t>(70 + i);
     }

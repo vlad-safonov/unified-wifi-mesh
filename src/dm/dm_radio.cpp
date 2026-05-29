@@ -217,7 +217,7 @@ bool dm_radio_t::operator == (const dm_radio_t& obj) {
 void dm_radio_t::operator = (const dm_radio_t& obj)
 {
 	if (this == &obj) { return; }
-	strncpy(this->m_radio_info.id.net_id, obj.m_radio_info.id.net_id, sizeof(em_long_string_t));
+	snprintf(this->m_radio_info.id.net_id, sizeof(em_long_string_t), "%s", obj.m_radio_info.id.net_id);
 	memcpy(this->m_radio_info.id.dev_mac, obj.m_radio_info.id.dev_mac, sizeof(mac_address_t));
 	memcpy(this->m_radio_info.id.ruid, obj.m_radio_info.id.ruid, sizeof(mac_address_t));
 	
@@ -252,12 +252,12 @@ int dm_radio_t::parse_radio_id_from_key(const char *key, em_radio_id_t *id)
     char *tmp, *remain;
     unsigned int i = 0;
    
-    strncpy(str, key, strlen(key) + 1);
+    snprintf(str, sizeof(str), "%s", key);
     remain = str;
     while ((tmp = strchr(remain, '@')) != NULL) {
         if (i == 0) {
             *tmp = 0;
-            strncpy(id->net_id, remain, strlen(remain) + 1);
+            snprintf(id->net_id, sizeof(id->net_id), "%s", remain);
             tmp++;
             remain = tmp;
         } else if (i == 1) {

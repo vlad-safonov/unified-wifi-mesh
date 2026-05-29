@@ -51,8 +51,8 @@ TEST(em_cmd_ap_cap_report_t, valid_input)
     std::cout << "Entering valid_input test" << std::endl;
     em_cmd_params_t param{};
     param.u.args.num_args = 1;
-    strncpy(param.u.args.fixed_args, "TestAPCapReport", sizeof(param.u.args.fixed_args));
-    strncpy(param.u.args.args[0], "Arg1", sizeof(param.u.args.args[0]));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "TestAPCapReport");
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", "Arg1");
     dm_easy_mesh_t dm;
     em_cmd_ap_cap_report_t report(param, dm);
     EXPECT_EQ(report.m_param.u.args.num_args, 1);
@@ -120,10 +120,10 @@ TEST(em_cmd_ap_cap_report_t, multiple_arguments)
     std::cout << "Entering multiple_arguments test" << std::endl;
     em_cmd_params_t param{};
     param.u.args.num_args = 3;
-    strncpy(param.u.args.fixed_args, "MultiArgReport", sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "MultiArgReport");
     const char* argsArr[] = {"Arg1", "Arg2", "Arg3"};
     for (int i = 0; i < 3; i++)
-        strncpy(param.u.args.args[i], argsArr[i], sizeof(param.u.args.args[i]));
+        snprintf(param.u.args.args[i], sizeof(param.u.args.args[i]), "%s", argsArr[i]);
     dm_easy_mesh_t dm;
     em_cmd_ap_cap_report_t report(param, dm);
     EXPECT_EQ(report.m_param.u.args.num_args, 3);
@@ -163,7 +163,7 @@ TEST(em_cmd_ap_cap_report_t, zero_args_nonempty_fixed)
     std::cout << "Entering zero_args_nonempty_fixed test" << std::endl;
     em_cmd_params_t param{};
     param.u.args.num_args = 0;
-    strncpy(param.u.args.fixed_args, "OnlyFixedArg", sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "OnlyFixedArg");
     dm_easy_mesh_t dm;
     em_cmd_ap_cap_report_t report(param, dm);
     EXPECT_EQ(report.m_param.u.args.num_args, 0);

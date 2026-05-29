@@ -47,9 +47,9 @@ TEST(em_cmd_ap_metrics_report_t, em_cmd_ap_metrics_report_t_valid_parameters) {
     std::cout << "Entering em_cmd_ap_metrics_report_t_valid_parameters test" << std::endl;
     em_cmd_params_t params{};
     params.u.args.num_args = 1;
-    strncpy(params.u.args.args[0], "APMetricsReport", sizeof(params.u.args.args[0]) );
+    snprintf(params.u.args.args[0], sizeof(params.u.args.args[0]), "%s", "APMetricsReport");
     const char *testFixedStr = "TestFixedArgs";
-    strncpy(params.u.args.fixed_args, testFixedStr, sizeof(params.u.args.fixed_args));
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", testFixedStr);
     std::cout << "Passed fixed_args: " << params.u.args.fixed_args << std::endl;
     dm_easy_mesh_t dm;
     std::cout << "dm_easy_mesh_t object created" << std::endl;
@@ -98,7 +98,7 @@ TEST(em_cmd_ap_metrics_report_t, em_cmd_ap_metrics_report_t_empty_fixed_args) {
     em_cmd_params_t params{};
     params.u.args.num_args = 0;
     const char *emptyStr = "";
-    strncpy(params.u.args.fixed_args, emptyStr, sizeof(params.u.args.fixed_args));
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", emptyStr);
     std::cout << "Passed fixed_args (expected empty): '" << params.u.args.fixed_args << "'" << std::endl;
     dm_easy_mesh_t dm;
     std::cout << "dm_easy_mesh_t object created" << std::endl;
@@ -147,8 +147,8 @@ TEST(em_cmd_ap_metrics_report_t, em_cmd_ap_metrics_report_t_ConstructWithMaxSSID
     maxSsid[127] = '\0';
     em_cmd_params_t params;
     params.u.args.num_args = 1;
-    strncpy(params.u.args.args[0], maxSsid, sizeof(params.u.args.args[0]));
-    strncpy(params.u.args.fixed_args, maxSsid, sizeof(params.u.args.fixed_args));
+    snprintf(params.u.args.args[0], sizeof(params.u.args.args[0]), "%s", maxSsid);
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", maxSsid);
     dm_easy_mesh_t dm;
     em_cmd_ap_metrics_report_t cmd(params, dm);
     std::cout << "Invoked em_cmd_ap_metrics_report_t with fixed_args of length " << strlen(params.u.args.fixed_args) << std::endl;

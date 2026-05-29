@@ -135,7 +135,7 @@ int dm_device_t::decode(const cJSON *obj, void *parent_id)
     }
 
     if ((tmp = cJSON_GetObjectItem(obj, "BackhaulMediaType")) != NULL) {
-        //strncpy(m_device_info.backhaul_media_type, cJSON_GetStringValue(tmp), strlen(cJSON_GetStringValue(tmp))); //need to check with soumya
+        //snprintf(m_device_info.backhaul_media_type, sizeof(m_device_info.backhaul_media_type), "%s", cJSON_GetStringValue(tmp)); //need to check with soumya
     }
 	
     if ((tmp = cJSON_GetObjectItem(obj, "BackhaulPHYRate")) != NULL) {
@@ -189,11 +189,11 @@ void dm_device_t::encode(cJSON *obj, bool summary)
     cJSON_AddStringToObject(bh_obj, "MACAddress", mac_str);
 	switch (m_device_info.backhaul_mac.media) {
 		case em_media_type_ieee8023ab:
-			strncpy(media_str, "Ethernet", strlen("Ethernet") + 1);
+			snprintf(media_str, sizeof("Ethernet"), "%s", "Ethernet");
 			break;
 
 		default:
-			strncpy(media_str, "Wireless LAN", strlen("Wireless LAN") + 1);
+			snprintf(media_str, sizeof("Wireless LAN"), "%s", "Wireless LAN");
 			break;
 	}
     cJSON_AddStringToObject(bh_obj, "MediaType", media_str);
@@ -342,12 +342,12 @@ int dm_device_t::parse_device_id_from_key(const char *key, em_device_id_t *id)
     char *tmp, *remain;
     unsigned int i = 0;
    
-    strncpy(str, key, strlen(key) + 1);
+    snprintf(str, sizeof(str), "%s", key);
     remain = str;
     while ((tmp = strchr(remain, '@')) != NULL) {
         if (i == 0) {
             *tmp = 0;
-            strncpy(id->net_id, remain, strlen(remain) + 1);
+            snprintf(id->net_id, sizeof(id->net_id), "%s", remain);
             tmp++;
             remain = tmp;
         } else if (i == 1) {

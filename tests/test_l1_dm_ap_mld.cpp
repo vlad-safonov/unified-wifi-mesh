@@ -771,7 +771,7 @@ TEST(dm_ap_mld_t_Test, ValidAPMLDInformation) {
     em_ap_mld_info_t ap_mld_info{};
     memset(&ap_mld_info, 0, sizeof(ap_mld_info));
     ap_mld_info.mac_addr_valid = true;
-    strncpy(ap_mld_info.ssid, "TestSSID", sizeof(ap_mld_info.ssid));
+    snprintf(ap_mld_info.ssid, sizeof(ap_mld_info.ssid), "%s", "TestSSID");
     ap_mld_info.str = true;
     ap_mld_info.nstr = false;
     ap_mld_info.emlsr = true;
@@ -838,7 +838,7 @@ TEST(dm_ap_mld_t_Test, InvalidMACAddress) {
     em_ap_mld_info_t ap_mld_info{};
     memset(&ap_mld_info, 0, sizeof(ap_mld_info));
     ap_mld_info.mac_addr_valid = true;
-    strncpy(ap_mld_info.ssid, "TestSSID", sizeof(ap_mld_info.ssid));
+    snprintf(ap_mld_info.ssid, sizeof(ap_mld_info.ssid), "%s", "TestSSID");
     uint8_t invalid_mac[6] = {0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x00};
     memcpy(ap_mld_info.mac_addr, invalid_mac, sizeof(invalid_mac));
     ap_mld_info.str = true;
@@ -878,7 +878,7 @@ TEST(dm_ap_mld_t_Test, EmptySSID) {
     em_ap_mld_info_t ap_mld_info{};
     memset(&ap_mld_info, 0, sizeof(ap_mld_info));
     ap_mld_info.mac_addr_valid = true;
-    strncpy(ap_mld_info.ssid, "", sizeof(ap_mld_info.ssid));
+    snprintf(ap_mld_info.ssid, sizeof(ap_mld_info.ssid), "%s", "");
     uint8_t mac[6] = {0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E};
     memcpy(ap_mld_info.mac_addr, mac, sizeof(mac));
     ap_mld_info.str = true;
@@ -916,7 +916,7 @@ TEST(dm_ap_mld_t_Test, MaximumNumberOfAffiliatedAPs) {
     em_ap_mld_info_t ap_mld_info{};
     memset(&ap_mld_info, 0, sizeof(ap_mld_info));
     ap_mld_info.mac_addr_valid = true;
-    strncpy(ap_mld_info.ssid, "TestSSID", sizeof(ap_mld_info.ssid));
+    snprintf(ap_mld_info.ssid, sizeof(ap_mld_info.ssid), "%s", "TestSSID");
     ap_mld_info.str = true;
     ap_mld_info.nstr = false;
     ap_mld_info.emlsr = true;
@@ -952,7 +952,7 @@ TEST(dm_ap_mld_t_Test, ZeroAffiliatedAPs) {
     em_ap_mld_info_t ap_mld_info{};
     memset(&ap_mld_info, 0, sizeof(ap_mld_info));
     ap_mld_info.mac_addr_valid = true;
-    strncpy(ap_mld_info.ssid, "TestSSID", sizeof(ap_mld_info.ssid));
+    snprintf(ap_mld_info.ssid, sizeof(ap_mld_info.ssid), "%s", "TestSSID");
     ap_mld_info.str = true;
     ap_mld_info.nstr = false;
     ap_mld_info.emlsr = true;
@@ -988,7 +988,7 @@ TEST(dm_ap_mld_t_Test, CopyConstructorWithValidValues) {
     dm_ap_mld_t max_instance{};
     memset(&max_instance.m_ap_mld_info, 0, sizeof(max_instance.m_ap_mld_info));
     max_instance.m_ap_mld_info.mac_addr_valid = true;
-    strncpy(max_instance.m_ap_mld_info.ssid, "MaxSSID", sizeof(max_instance.m_ap_mld_info.ssid));
+    snprintf(max_instance.m_ap_mld_info.ssid, sizeof(max_instance.m_ap_mld_info.ssid), "%s", "MaxSSID");
     max_instance.m_ap_mld_info.str = true;
     max_instance.m_ap_mld_info.nstr = true;
     max_instance.m_ap_mld_info.emlsr = true;

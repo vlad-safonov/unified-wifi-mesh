@@ -70,19 +70,19 @@ TEST(em_cmd_start_dpp_t, em_cmd_start_dpp_t_args_valid) {
     param.u.args.num_args = 3;
 
     std::cout << "Setting args[0] = Argument1" << std::endl;
-    strncpy(param.u.args.args[0], "Argument1", sizeof(param.u.args.args[0]) - 1);
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", "Argument1");
 
     std::cout << "Setting args[1] = Argument2" << std::endl;
-    strncpy(param.u.args.args[1], "Argument2", sizeof(param.u.args.args[1]) - 1);
+    snprintf(param.u.args.args[1], sizeof(param.u.args.args[1]), "%s", "Argument2");
 
     std::cout << "Setting args[2] = Argument3" << std::endl;
-    strncpy(param.u.args.args[2], "Argument3", sizeof(param.u.args.args[2]) - 1);
+    snprintf(param.u.args.args[2], sizeof(param.u.args.args[2]), "%s", "Argument3");
 
     std::cout << "Setting fixed_args = FixedArgument" << std::endl;
-    strncpy(param.u.args.fixed_args, "FixedArgument", sizeof(param.u.args.fixed_args) - 1);
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "FixedArgument");
 
     em_network_node_t node{};
-    strncpy(node.key, "TestNodeKey", sizeof(node.key) - 1);
+    snprintf(node.key, sizeof(node.key), "%s", "TestNodeKey");
     node.display_info.collapsed = false;
     node.display_info.orig_node_ctr = 1;
     node.display_info.node_ctr = 1;
@@ -158,7 +158,7 @@ TEST(em_cmd_start_dpp_t, em_cmd_start_dpp_t_steer_valid) {
     param.u.steer_params.target_op_class = 5;
     param.u.steer_params.target_channel = 36;
     em_network_node_t node{};
-    strncpy(node.key, "SteerTestNode", sizeof(node.key) - 1);
+    snprintf(node.key, sizeof(node.key), "%s", "SteerTestNode");
     node.display_info.orig_node_ctr = 2;
     node.display_info.node_ctr = 2;
     node.display_info.node_pos = 1;
@@ -212,14 +212,14 @@ TEST(em_cmd_start_dpp_t, em_cmd_start_dpp_t_btm_report_valid) {
     const char* sta   = "FF:EE:DD:CC:BB:AA";
     const char* tgt   = "77:66:55:44:33:22";
     std::cout << "Setting source to: " << src << std::endl;
-    strncpy(reinterpret_cast<char*>(param.u.btm_report_params.source), src, sizeof(param.u.btm_report_params.source) - 1);
+    snprintf(reinterpret_cast<char*>(param.u.btm_report_params.source), sizeof(param.u.btm_report_params.source), "%s", src);
     std::cout << "Setting sta_mac to: " << sta << std::endl;
-    strncpy(reinterpret_cast<char*>(param.u.btm_report_params.sta_mac), sta, sizeof(param.u.btm_report_params.sta_mac) - 1);
+    snprintf(reinterpret_cast<char*>(param.u.btm_report_params.sta_mac), sizeof(param.u.btm_report_params.sta_mac), "%s", sta);
     std::cout << "Setting target to: " << tgt << std::endl;
-    strncpy(reinterpret_cast<char*>(param.u.btm_report_params.target), tgt, sizeof(param.u.btm_report_params.target) - 1);
+    snprintf(reinterpret_cast<char*>(param.u.btm_report_params.target), sizeof(param.u.btm_report_params.target), "%s", tgt);
     param.u.btm_report_params.status_code = 0x01;
     em_network_node_t node{};
-    strncpy(node.key, "BTMReportNode", sizeof(node.key) - 1);
+    snprintf(node.key, sizeof(node.key), "%s", "BTMReportNode");
     param.net_node = &node;
     std::cout << "Node key = " << node.key << std::endl;
     em_cmd_start_dpp_t cmd(param);
@@ -263,8 +263,7 @@ TEST(em_cmd_start_dpp_t, em_cmd_start_dpp_t_disassoc_valid)
     em_cmd_params_t param = {};
     param.u.disassoc_params.num = 1;
     em_network_node_t node = {};
-    strncpy(node.key, "DisassocNode", sizeof(node.key) - 1);
-    node.key[sizeof(node.key) - 1] = '\0';
+    snprintf(node.key, sizeof(node.key), "%s", "DisassocNode");
     node.display_info.collapsed = false;
     node.display_info.orig_node_ctr = 4;
     node.display_info.node_ctr = 4;
@@ -313,8 +312,7 @@ TEST(em_cmd_start_dpp_t, em_cmd_start_dpp_t_scan_valid)
     std::cout << "Entering em_cmd_start_dpp_t_scan_valid test" << std::endl;
     em_cmd_params_t param = {};
     em_network_node_t node = {};
-    strncpy(node.key, "ScanNode", sizeof(node.key) - 1);
-    node.key[sizeof(node.key) - 1] = '\0';
+    snprintf(node.key, sizeof(node.key), "%s", "ScanNode");
     node.display_info.collapsed = false;
     node.display_info.orig_node_ctr = 5;
     node.display_info.node_ctr = 5;
@@ -422,12 +420,9 @@ TEST(em_cmd_start_dpp_t, em_cmd_start_dpp_t_null_netnode)
     std::cout << "Entering em_cmd_start_dpp_t_null_netnode test" << std::endl;
     em_cmd_params_t param = {};
     param.u.args.num_args = 2;
-    strncpy(param.u.args.args[0], "Arg1_NullNode", sizeof(param.u.args.args[0]) - 1);
-    param.u.args.args[0][sizeof(param.u.args.args[0]) - 1] = '\0';
-    strncpy(param.u.args.args[1], "Arg2_NullNode", sizeof(param.u.args.args[1]) - 1);
-    param.u.args.args[1][sizeof(param.u.args.args[1]) - 1] = '\0';
-    strncpy(param.u.args.fixed_args, "Fixed_NullNode", sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", "Arg1_NullNode");
+    snprintf(param.u.args.args[1], sizeof(param.u.args.args[1]), "%s", "Arg2_NullNode");
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "Fixed_NullNode");
     param.net_node = nullptr;
     std::cout << "Invoking em_cmd_start_dpp_t constructor with net_node = NULL" << std::endl;
     std::cout << "u.args.num_args = " << param.u.args.num_args << std::endl;

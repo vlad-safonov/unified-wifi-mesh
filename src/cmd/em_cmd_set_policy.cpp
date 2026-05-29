@@ -51,7 +51,7 @@ em_cmd_set_policy_t::em_cmd_set_policy_t(em_cmd_params_t param, dm_easy_mesh_t& 
     m_orch_desc[1].op = dm_orch_type_policy_cfg;
     m_orch_desc[1].submit = true;
 
-    strncpy(m_name, "set_policy", strlen("set_policy") + 1);
+    snprintf(m_name, sizeof("set_policy"), "%s", "set_policy");
     m_svc = em_service_type_ctrl;
     init(dm);
 

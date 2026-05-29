@@ -48,13 +48,10 @@
 TEST(em_cmd_set_radio_t, em_cmd_set_radio_t_valid_set_radio_parameters) {
     std::cout << "Entering em_cmd_set_radio_t_valid_set_radio_parameters test" << std::endl;
     em_cmd_params_t params;
-    strncpy(params.u.args.fixed_args, "set_radio", sizeof(params.u.args.fixed_args)-1);
-    params.u.args.fixed_args[sizeof(params.u.args.fixed_args)-1] = '\0';
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", "set_radio");
     params.u.args.num_args = 2;
-    strncpy(params.u.args.args[0], "radio1", sizeof(params.u.args.args[0])-1);
-    params.u.args.args[0][sizeof(params.u.args.args[0])-1] = '\0';
-    strncpy(params.u.args.args[1], "radio2", sizeof(params.u.args.args[1])-1);
-    params.u.args.args[1][sizeof(params.u.args.args[1])-1] = '\0';
+    snprintf(params.u.args.args[0], sizeof(params.u.args.args[0]), "%s", "radio1");
+    snprintf(params.u.args.args[1], sizeof(params.u.args.args[1]), "%s", "radio2");
     std::cout << "Invoking em_cmd_set_radio_t constructor with:" << std::endl;
     std::cout << "  fixed_args: " << params.u.args.fixed_args << std::endl;
     std::cout << "  num_args: " << params.u.args.num_args << std::endl;
@@ -103,7 +100,7 @@ TEST(em_cmd_set_radio_t, em_cmd_set_radio_t_valid_set_radio_parameters) {
 TEST(em_cmd_set_radio_t, em_cmd_set_radio_t_minimal_empty_arguments) {
     std::cout << "Entering em_cmd_set_radio_t_minimal_empty_arguments test" << std::endl;
     em_cmd_params_t params{};
-    strncpy(params.u.args.fixed_args, "", sizeof(params.u.args.fixed_args));
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", "");
     params.u.args.num_args = 0;
     std::cout << "Invoking em_cmd_set_radio_t constructor with:" << std::endl;
     std::cout << "  fixed_args: " << params.u.args.fixed_args << std::endl;
@@ -151,14 +148,12 @@ TEST(em_cmd_set_radio_t, em_cmd_set_radio_t_ctor_max_fixed_args)
     char maxStr[128];
     memset(maxStr, 'X', sizeof(maxStr) - 1);
     maxStr[sizeof(maxStr) - 1] = '\0';
-    strncpy(param.u.args.fixed_args, maxStr, sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", maxStr);
     param.u.args.num_args = 5;
     char maxArg[128];
     memset(maxArg, 'Y', sizeof(maxArg) - 1);
     maxArg[sizeof(maxArg) - 1] = '\0';
-    strncpy(param.u.args.args[0], maxArg, sizeof(param.u.args.args[0]) - 1);
-    param.u.args.args[0][sizeof(param.u.args.args[0]) - 1] = '\0';
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", maxArg);
     dm_easy_mesh_t dm;
     em_cmd_set_radio_t cmd(param, dm);
     EXPECT_EQ(cmd.m_param.u.args.num_args, 5);

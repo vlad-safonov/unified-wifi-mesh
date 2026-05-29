@@ -121,7 +121,7 @@ void em_net_node_t::set_node_array_value(em_network_node_t *node, char *fmt)
 		memset(node->child[node->num_children], 0, sizeof(em_network_node_t));
 		node->child[node->num_children]->type = arrType;
 		if (arrType == em_network_node_data_type_string) {
-			strncpy(node->child[node->num_children]->value_str, remain, sizeof(em_long_string_t));
+			snprintf(node->child[node->num_children]->value_str, sizeof(em_long_string_t), "%s", remain);
 		} else if (arrType == em_network_node_data_type_number) {
 			node->child[node->num_children]->value_int = static_cast<unsigned int> (atoi(remain));
 		}
@@ -139,7 +139,7 @@ void em_net_node_t::set_node_array_value(em_network_node_t *node, char *fmt)
 	memset(node->child[node->num_children], 0, sizeof(em_network_node_t));
 	node->child[node->num_children]->type = arrType;
 	if (arrType == em_network_node_data_type_string) {
-		strncpy(node->child[node->num_children]->value_str, remain, sizeof(em_long_string_t));
+		snprintf(node->child[node->num_children]->value_str, sizeof(em_long_string_t), "%s", remain);
 	} else if (arrType == em_network_node_data_type_number) {
 		node->child[node->num_children]->value_int = static_cast<unsigned int> (atoi(remain));
 	}
@@ -213,7 +213,7 @@ void em_net_node_t::set_node_scalar_value(em_network_node_t *node, char *fmt)
 			break;
 
 		case em_network_node_data_type_string:
-			strncpy(node->value_str, fmt, strlen(fmt) + 1);
+			snprintf(node->value_str, sizeof(node->value_str), "%s", fmt);
 			break;
 
         default:
@@ -445,14 +445,14 @@ int em_net_node_t::get_network_tree_node(cJSON *obj, em_network_node_t *root, un
     size_t sz = 0;
 
     if (obj->string != NULL) {
-        strncpy(root->key, obj->string, strlen(obj->string) + 1);
+        snprintf(root->key, sizeof(root->key), "%s", obj->string);
     }
 
     if (cJSON_IsInvalid(obj) == true) {
         root->type = em_network_node_data_type_invalid;
     } else if (cJSON_IsString(obj) == true) {
         root->type = em_network_node_data_type_string;
-        strncpy(root->value_str, obj->valuestring, strlen(obj->valuestring) + 1);
+        snprintf(root->value_str, sizeof(root->value_str), "%s", obj->valuestring);
     } else if (cJSON_IsNumber(obj) == true) {
         root->type = em_network_node_data_type_number;
         root->value_int = static_cast<unsigned int> (obj->valueint);
@@ -570,12 +570,12 @@ em_network_node_t *em_net_node_t::clone_network_tree(em_network_node_t *node)
     cloned = static_cast<em_network_node_t *> (malloc(sizeof(em_network_node_t)));
     memset(cloned, 0, sizeof(em_network_node_t));
 
-    strncpy(cloned->key, node->key, strlen(node->key) + 1);
+    snprintf(cloned->key, sizeof(cloned->key), "%s", node->key);
     memcpy(&cloned->display_info, &node->display_info, sizeof(em_node_display_info_t));
     cloned->display_info.orig_node_ctr = node->display_info.orig_node_ctr;
 
     cloned->type = node->type;
-    strncpy(cloned->value_str, node->value_str, sizeof(em_long_string_t));
+    snprintf(cloned->value_str, sizeof(em_long_string_t), "%s", node->value_str);
     cloned->value_int = node->value_int;
 
 	for (i = 0; i < node->num_children; i++) {
@@ -622,7 +622,7 @@ em_network_node_t *em_net_node_t::clone_network_tree_for_display(em_network_node
     memset(cloned, 0, sizeof(em_network_node_t));
 
 	if (trim_result == false) {
-    	strncpy(cloned->key, node->key, strlen(node->key) + 1);
+    	snprintf(cloned->key, sizeof(cloned->key), "%s", node->key);
 	} else {
 		trim_result = false;
 	}
@@ -631,7 +631,7 @@ em_network_node_t *em_net_node_t::clone_network_tree_for_display(em_network_node
     cloned->display_info.orig_node_ctr = node->display_info.orig_node_ctr;
 
     cloned->type = node->type;
-    strncpy(cloned->value_str, node->value_str, sizeof(em_long_string_t));
+    snprintf(cloned->value_str, sizeof(em_long_string_t), "%s", node->value_str);
     cloned->value_int = node->value_int;
 
     should_consider = (node->display_info.node_ctr == index);

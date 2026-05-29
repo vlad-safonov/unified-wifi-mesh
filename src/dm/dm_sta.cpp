@@ -374,7 +374,7 @@ void dm_sta_t::parse_sta_bss_radio_from_key(const char *key, mac_address_t sta, 
     char *tmp, *remain;
     unsigned int i = 0;
 
-    strncpy(str, key, strlen(key) + 1);
+    snprintf(str, sizeof(str), "%s", key);
     remain = str;
     while ((tmp = strchr(remain, '@')) != NULL) {
         *tmp = 0;
@@ -501,7 +501,7 @@ void dm_sta_t::decode_sta_capability(dm_sta_t *sta)
                         ext_ptr++;
 
                         if (common_info_len >= EM_MAC_ADDR_LEN) {
-                            strncpy(sta->m_sta_info.multi_link, util::mac_to_string(ext_ptr).c_str(), sizeof(em_long_string_t));
+                            snprintf(sta->m_sta_info.multi_link, sizeof(em_long_string_t), "%s", util::mac_to_string(ext_ptr).c_str());
                         }
                     }
                 }

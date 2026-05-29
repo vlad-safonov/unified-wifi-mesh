@@ -51,7 +51,7 @@ em_cmd_set_ssid_t::em_cmd_set_ssid_t(em_cmd_params_t param, dm_easy_mesh_t& dm)
     m_orch_desc[1].submit = true;
     m_orch_desc[2].op = dm_orch_type_net_ssid_update;
 
-    strncpy(m_name, "set_ssid", strlen("set_ssid") + 1);
+    snprintf(m_name, sizeof("set_ssid"), "%s", "set_ssid");
     m_svc = em_service_type_ctrl;
     init(dm);
 

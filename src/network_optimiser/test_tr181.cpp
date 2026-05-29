@@ -125,7 +125,7 @@ int main()
 
             //1st prop
             memset(&input_data->data_prop, 0, sizeof(bus_data_prop_t));
-            strncpy(input_data->data_prop.name, "SSID", BUS_MAX_NAME_LENGTH);
+            snprintf(input_data->data_prop.name, BUS_MAX_NAME_LENGTH, "%s", "SSID");
             input_data->data_prop.name_len = strlen("SSID") + 1;
             input_data->data_prop.value.data_type = bus_data_type_string;
             input_data->data_prop.value.raw_data.bytes = strdup("atest");
@@ -135,7 +135,7 @@ int main()
             //2nd prop
             // AddRemoveChange
             add_prop->value.data_type = bus_data_type_string;
-            strncpy(add_prop->name, "AddRemoveChange", BUS_MAX_NAME_LENGTH);
+            snprintf(add_prop->name, BUS_MAX_NAME_LENGTH, "%s", "AddRemoveChange");
             add_prop->name_len = strlen("AddRemoveChange") + 1;
             add_prop->value.raw_data.bytes = strdup("Add");
             add_prop->value.raw_data_len = strlen("Add") + 1;
@@ -144,7 +144,7 @@ int main()
             //3rd prop
             // Band
             band_prop->value.data_type = bus_data_type_string;
-            strncpy(band_prop->name, "Band", BUS_MAX_NAME_LENGTH);
+            snprintf(band_prop->name, BUS_MAX_NAME_LENGTH, "%s", "Band");
             band_prop->name_len = strlen("Band") + 1;
             band_prop->value.raw_data.bytes = strdup("2.4");
             band_prop->value.raw_data_len = strlen("2.4") + 1;
@@ -152,7 +152,7 @@ int main()
 
             // PassPhrase
             pass_prop->value.data_type = bus_data_type_string;
-            strncpy(pass_prop->name, "PassPhrase", BUS_MAX_NAME_LENGTH);
+            snprintf(pass_prop->name, BUS_MAX_NAME_LENGTH, "%s", "PassPhrase");
             pass_prop->name_len = strlen("PassPhrase") + 1;
             pass_prop->value.raw_data.bytes = strdup("rdk@1234");
             pass_prop->value.raw_data_len = strlen("rdk@1234") + 1;
@@ -160,7 +160,7 @@ int main()
 
             // AKMsAllowed
             akm_prop->value.data_type = bus_data_type_string;
-                strncpy(akm_prop->name, "AKMsAllowed", BUS_MAX_NAME_LENGTH);
+                snprintf(akm_prop->name, BUS_MAX_NAME_LENGTH, "%s", "AKMsAllowed");
             akm_prop->name_len = strlen("AKMsAllowed") + 1;
             akm_prop->value.raw_data.bytes = strdup("psk");
             akm_prop->value.raw_data_len = strlen("psk") + 1;

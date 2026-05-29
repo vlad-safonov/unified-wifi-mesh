@@ -132,12 +132,12 @@ int em_cmd_cli_t::get_edited_node(em_network_node_t *node, const char *header, c
 	snprintf(key, sizeof(em_long_string_t), "wfa-dataelements:%s", header);
 
 	if (child->num_children && strncmp(child->child[0]->key, key, strlen(key)) != 0) {
-  		strncpy(child->key, key, strlen(key) + 1); 
+  		snprintf(child->key, sizeof(child->key), "%s", key); 
 		tmp = (em_network_node_t *)malloc(sizeof(em_network_node_t));   
    		memset(tmp, 0, sizeof(em_network_node_t));
-   		strncpy(tmp->key, "ID", strlen("ID") + 1);
+   		snprintf(tmp->key, sizeof("ID"), "%s", "ID");
    		tmp->type = em_network_node_data_type_string;
-   		strncpy(tmp->value_str, net_id, strlen(net_id) + 1);
+   		snprintf(tmp->value_str, sizeof(tmp->value_str), "%s", net_id);
 
    		child->child[child->num_children] = tmp;
    		child->num_children++;
@@ -156,7 +156,7 @@ int em_cmd_cli_t::get_edited_node(em_network_node_t *node, const char *header, c
 	em_net_node_t::free_network_tree_string(node_str);
 	obj = (cJSON *)em_net_node_t::network_tree_to_json(new_node);
 	formatted = cJSON_Print(obj);
-	strncpy(buff, formatted, strlen(formatted) + 1);
+	snprintf(buff, sizeof(buff), "%s", formatted);
 	cJSON_Delete(obj);
     em_net_node_t::free_network_tree(new_node);
 
@@ -190,7 +190,7 @@ int em_cmd_cli_t::execute(char *result)
         case em_cmd_type_dev_test:
             bevt->type = em_bus_event_type_dev_test;
             info = &bevt->u.subdoc;
-	    strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args));
+	    snprintf(info->name, strlen(param->u.args.fixed_args), "%s", param->u.args.fixed_args);
             break;
 
         case em_cmd_type_set_dev_test:
@@ -199,7 +199,7 @@ int em_cmd_cli_t::execute(char *result)
             }
             bevt->type = em_bus_event_type_set_dev_test;
 	    info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args));
+            snprintf(info->name, strlen(param->u.args.fixed_args), "%s", param->u.args.fixed_args);
                         if ((bevt->data_len = get_edited_node(node, "SetDevTest", info->buff)) < 0) {
                 printf("%s:%d: failed to open file at location:%s error:%d\n", __func__, __LINE__, param->u.args.fixed_args, errno);
                 return -1;
@@ -245,7 +245,7 @@ int em_cmd_cli_t::execute(char *result)
 			}
             bevt->type = em_bus_event_type_reset;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
 			if ((bevt->data_len = get_edited_node(node, "Reset", info->buff)) < 0) {
                 printf("%s:%d: failed to open file at location:%s error:%d\n", __func__, __LINE__, param->u.args.fixed_args, errno);
                 return -1;
@@ -255,13 +255,13 @@ int em_cmd_cli_t::execute(char *result)
         case em_cmd_type_get_network:
             bevt->type = em_bus_event_type_get_network;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
             break;
 
         case em_cmd_type_get_device:
             bevt->type = em_bus_event_type_get_device;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
             break;
     
         case em_cmd_type_remove_device:
@@ -271,7 +271,7 @@ int em_cmd_cli_t::execute(char *result)
 			}
             bevt->type = em_bus_event_type_remove_device;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
 			if ((bevt->data_len = get_edited_node(node, "RemoveDevice", info->buff)) < 0) {
                 printf("%s:%d: failed to open file at location:%s error:%d\n", __func__, __LINE__, param->u.args.fixed_args, errno);
                 return -1;
@@ -281,7 +281,7 @@ int em_cmd_cli_t::execute(char *result)
         case em_cmd_type_get_radio:
             bevt->type = em_bus_event_type_get_radio;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
             break;
 
         case em_cmd_type_set_radio:
@@ -291,7 +291,7 @@ int em_cmd_cli_t::execute(char *result)
 			}
             bevt->type = em_bus_event_type_set_radio;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
 			if ((bevt->data_len = get_edited_node(node, "RadioEnable", info->buff)) < 0) {
                 printf("%s:%d: failed to open file at location:%s error:%d\n", __func__, __LINE__, param->u.args.fixed_args, errno);
                 return -1;
@@ -310,7 +310,7 @@ int em_cmd_cli_t::execute(char *result)
 			}
             bevt->type = em_bus_event_type_set_ssid;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
 			if ((bevt->data_len = get_edited_node(node, "SetSSID", info->buff)) < 0) {
                 printf("%s:%d: failed to open file at location:%s error:%d\n", __func__, __LINE__, param->u.args.fixed_args, errno);
                 return -1;
@@ -320,7 +320,7 @@ int em_cmd_cli_t::execute(char *result)
         case em_cmd_type_get_channel:
             bevt->type = em_bus_event_type_get_channel;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
             break;
 
         case em_cmd_type_set_channel:
@@ -329,7 +329,7 @@ int em_cmd_cli_t::execute(char *result)
 			}
             bevt->type = em_bus_event_type_set_channel;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
 			if ((bevt->data_len = get_edited_node(node, "SetAnticipatedChannelPreference", info->buff)) < 0) {
                 printf("%s:%d: failed to open file at location:%s error:%d\n", __func__, __LINE__, param->u.args.fixed_args, errno);
                 return -1;
@@ -343,7 +343,7 @@ int em_cmd_cli_t::execute(char *result)
 			}
             bevt->type = em_bus_event_type_scan_channel;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
 			if ((bevt->data_len = get_edited_node(node, "ChannelScanRequest", info->buff)) < 0) {
                 printf("%s:%d: failed to open file at location:%s error:%d\n", __func__, __LINE__, param->u.args.fixed_args, errno);
                 return -1;
@@ -353,13 +353,13 @@ int em_cmd_cli_t::execute(char *result)
         case em_cmd_type_scan_result:
             bevt->type = em_bus_event_type_scan_result;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
             break;
 
         case em_cmd_type_get_policy:
             bevt->type = em_bus_event_type_get_policy;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
             break;
 
         case em_cmd_type_set_policy:
@@ -368,7 +368,7 @@ int em_cmd_cli_t::execute(char *result)
             }
             bevt->type = em_bus_event_type_set_policy;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
             if ((bevt->data_len = get_edited_node(node, "SetPolicy", info->buff)) < 0) {
                 printf("%s:%d: failed to open file at location:%s error:%d\n", __func__, __LINE__, param->u.args.fixed_args, errno);
             return -1;
@@ -378,13 +378,13 @@ int em_cmd_cli_t::execute(char *result)
         case em_cmd_type_get_bss:
             bevt->type = em_bus_event_type_get_bss;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
             break;
 
         case em_cmd_type_get_sta:
             bevt->type = em_bus_event_type_get_sta;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
             break;
 
         case em_cmd_type_steer_sta:
@@ -394,7 +394,7 @@ int em_cmd_cli_t::execute(char *result)
 			}
             bevt->type = em_bus_event_type_steer_sta;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
             if ((bevt->data_len = get_edited_node(node, "ClientSteer", info->buff)) < 0) {
                 printf("%s:%d: failed to open file at location:%s error:%d\n", __func__, __LINE__, param->u.args.fixed_args, errno);
                 return -1;
@@ -408,7 +408,7 @@ int em_cmd_cli_t::execute(char *result)
 			}
             bevt->type = em_bus_event_type_disassoc_sta;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
             if ((bevt->data_len = get_edited_node(node, "Disassociate", info->buff)) < 0) {
                 printf("%s:%d: failed to open file at location:%s error:%d\n", __func__, __LINE__, param->u.args.fixed_args, errno);
                 return -1;
@@ -426,7 +426,7 @@ int em_cmd_cli_t::execute(char *result)
                 printf("%s:%d: failed to open file at location:%s error:%d\n", __func__, __LINE__, param->u.args.fixed_args, errno);
                 return -1;
             }
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
             if ((bevt->data_len = load_params_file(m_cmd.m_param.u.args.fixed_args, info->buff)) < 0) {
                 printf("%s:%d: failed to open file at location:%s error:%d\n", __func__, __LINE__, param->u.args.fixed_args, errno);
                 return -1;
@@ -447,7 +447,7 @@ int em_cmd_cli_t::execute(char *result)
         case em_cmd_type_get_mld_config:
             bevt->type = em_bus_event_type_get_mld_config;
             info = &bevt->u.subdoc;
-            strncpy(info->name, param->u.args.fixed_args, strlen(param->u.args.fixed_args) + 1);
+            snprintf(info->name, sizeof(info->name), "%s", param->u.args.fixed_args);
             break;
 
         case em_cmd_type_mld_reconfig:

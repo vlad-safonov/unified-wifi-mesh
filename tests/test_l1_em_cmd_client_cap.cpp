@@ -49,11 +49,11 @@
 TEST(em_cmd_client_cap_report_t, em_cmd_client_cap_report_t_valid_client_cap_report) {
     std::cout << "Entering em_cmd_client_cap_report_t_valid_client_cap_report test" << std::endl;
     em_cmd_params_t param = {};
-    strncpy(param.u.args.fixed_args, "ValidClientCap", sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "ValidClientCap");
     param.u.args.num_args = 3;
-    strncpy(param.u.args.args[0], "Arg1", sizeof(param.u.args.args[0]));
-    strncpy(param.u.args.args[1], "Arg2", sizeof(param.u.args.args[1]));
-    strncpy(param.u.args.args[2], "Arg3", sizeof(param.u.args.args[2]));
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", "Arg1");
+    snprintf(param.u.args.args[1], sizeof(param.u.args.args[1]), "%s", "Arg2");
+    snprintf(param.u.args.args[2], sizeof(param.u.args.args[2]), "%s", "Arg3");
     dm_easy_mesh_t dm{};
     dm.m_network.m_net_info.id[0] = '\0';
     std::cout << "Constructor invoked with fixed_args = " << param.u.args.fixed_args << std::endl;

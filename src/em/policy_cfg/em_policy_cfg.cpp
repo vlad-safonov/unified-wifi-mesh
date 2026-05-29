@@ -375,7 +375,7 @@ short em_policy_cfg_t::create_vendor_policy_cfg_tlv(unsigned char *buff)
 
         data = reinterpret_cast<em_vendor_data_t *> (cursor);
         data->attr_id = vendor_ext_attr_id_policy_sta_marker;
-        strncpy(reinterpret_cast<char *> (data->vendor_data), policy->m_policy.managed_sta_marker, strlen(policy->m_policy.managed_sta_marker) + 1);
+        snprintf(reinterpret_cast<char *> (data->vendor_data), sizeof(reinterpret_cast<char *> (data->vendor_data)), "%s", policy->m_policy.managed_sta_marker);
 
         len += sizeof(data->attr_id) + strlen(policy->m_policy.managed_sta_marker) + 1;
         cursor += sizeof(data->attr_id) + strlen(policy->m_policy.managed_sta_marker) + 1;
@@ -662,7 +662,7 @@ int em_policy_cfg_t::handle_policy_cfg_req(unsigned char *buff, unsigned int len
                 data = reinterpret_cast<em_vendor_data_t *> (cursor);
                 em_printfout("vendor attr id is: %d", data->attr_id);
                 if (data->attr_id == vendor_ext_attr_id_policy_sta_marker) {
-                    strncpy(policy.vendor_policy.managed_client_marker, reinterpret_cast<const char *>(data->vendor_data), strlen(reinterpret_cast<char *> (data->vendor_data)) + 1);
+                    snprintf(policy.vendor_policy.managed_client_marker, sizeof(policy.vendor_policy.managed_client_marker), "%s", reinterpret_cast<const char *>(data->vendor_data));
                     em_printfout(" Recvd sta marker: %s", policy.vendor_policy.managed_client_marker);
                     cursor += sizeof(data->attr_id) + strlen(reinterpret_cast<char *> (data->vendor_data)) + 1;
                 } else if (data->attr_id == vendor_ext_attr_id_policy_alarm) {

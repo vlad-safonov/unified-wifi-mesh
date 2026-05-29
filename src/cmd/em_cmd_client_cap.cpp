@@ -49,7 +49,7 @@ em_cmd_client_cap_report_t::em_cmd_client_cap_report_t(em_cmd_params_t param, dm
     m_orch_desc[0].op = dm_orch_type_client_cap_report;
 	m_orch_desc[0].submit = true;
 
-    strncpy(m_name, "client_cap", strlen("client_cap") + 1);
+    snprintf(m_name, sizeof("client_cap"), "%s", "client_cap");
     m_svc = em_service_type_agent;
     init(dm);
 

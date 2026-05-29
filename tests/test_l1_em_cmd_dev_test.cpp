@@ -45,14 +45,11 @@ TEST(em_cmd_dev_test_t, em_cmd_dev_test_t_valid_parameters)
 {
     std::cout << "Entering em_cmd_dev_test_t_valid_parameters test" << std::endl;
     em_cmd_params_t param{};
-    strncpy(param.u.args.fixed_args, "DeviceTest", sizeof(param.u.args.fixed_args));
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args)-1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "DeviceTest");
     param.u.args.num_args = 1;
     dm_easy_mesh_t dm{};
-    strncpy(dm.m_network.m_net_info.id, "NetConfig01", sizeof(dm.m_network.m_net_info.id));
-    dm.m_network.m_net_info.id[sizeof(dm.m_network.m_net_info.id)-1] = '\0';
-    strncpy(dm.m_device.m_device_info.manufacturer, "TestManufacturer", sizeof(dm.m_device.m_device_info.manufacturer));
-    dm.m_device.m_device_info.manufacturer[sizeof(dm.m_device.m_device_info.manufacturer)-1] = '\0';
+    snprintf(dm.m_network.m_net_info.id, sizeof(dm.m_network.m_net_info.id), "%s", "NetConfig01");
+    snprintf(dm.m_device.m_device_info.manufacturer, sizeof(dm.m_device.m_device_info.manufacturer), "%s", "TestManufacturer");
     std::cout << "Invoking constructor..." << std::endl;
     em_cmd_dev_test_t cmd(param, dm);
     EXPECT_EQ(cmd.m_type, em_cmd_type_dev_test);
@@ -134,14 +131,11 @@ TEST(em_cmd_dev_test_t, em_cmd_dev_test_t_max_length_fixed_args)
         maxStr[i] = 'A';
     }
     maxStr[127] = '\0';
-    strncpy(param.u.args.fixed_args, maxStr, sizeof(param.u.args.fixed_args));
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args)-1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", maxStr);
     param.u.args.num_args = 2;
     dm_easy_mesh_t dm{};
-    strncpy(dm.m_network.m_net_info.id, "MaxLenNetwork", sizeof(dm.m_network.m_net_info.id));
-    dm.m_network.m_net_info.id[sizeof(dm.m_network.m_net_info.id)-1] = '\0';
-    strncpy(dm.m_device.m_device_info.manufacturer, "MaxLenManufacturer", sizeof(dm.m_device.m_device_info.manufacturer));
-    dm.m_device.m_device_info.manufacturer[sizeof(dm.m_device.m_device_info.manufacturer)-1] = '\0';
+    snprintf(dm.m_network.m_net_info.id, sizeof(dm.m_network.m_net_info.id), "%s", "MaxLenNetwork");
+    snprintf(dm.m_device.m_device_info.manufacturer, sizeof(dm.m_device.m_device_info.manufacturer), "%s", "MaxLenManufacturer");
     em_cmd_dev_test_t cmd(param, dm);
     EXPECT_EQ(cmd.m_type, em_cmd_type_dev_test);
     EXPECT_STREQ(cmd.m_name, "dev_test");
@@ -185,12 +179,10 @@ TEST(em_cmd_dev_test_t, em_cmd_dev_test_t_arbitrary_valid_data)
     std::cout << "Entering em_cmd_dev_test_t_arbitrary_valid_data test" << std::endl;
     em_cmd_params_t param{};
     const char* arbitraryStr = "Abc123!@#_TestData";
-    strncpy(param.u.args.fixed_args, arbitraryStr, sizeof(param.u.args.fixed_args));
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args)-1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", arbitraryStr);
     param.u.args.num_args = 3;
     dm_easy_mesh_t dm{};
-    strncpy(dm.m_network.m_net_info.id, "ArbitraryNetwork", sizeof(dm.m_network.m_net_info.id));
-    dm.m_network.m_net_info.id[sizeof(dm.m_network.m_net_info.id)-1] = '\0';
+    snprintf(dm.m_network.m_net_info.id, sizeof(dm.m_network.m_net_info.id), "%s", "ArbitraryNetwork");
     em_cmd_dev_test_t cmd(param, dm);
     EXPECT_EQ(cmd.m_type, em_cmd_type_dev_test);
     EXPECT_STREQ(cmd.m_name, "dev_test");

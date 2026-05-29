@@ -63,7 +63,7 @@ int em_cmd_exec_t::load_params_file(const char *filename, char *buff)
     } else {
 
         //clear the data from buffer
-        strncpy(buff, "", 1);
+        snprintf(buff, 1, "%s", "");
         while (fgets(tmp, sizeof(tmp), fp) != NULL) {
             strncat(buff, tmp, strlen(tmp));
             sz += static_cast<int> (strlen(tmp));

@@ -253,7 +253,7 @@ void em_cli_t::init_lib_dbg(char *file_name)
 {
     FILE *fp;
 
-    strncpy(m_lib_dbg_file_name, file_name, strlen(file_name) + 1);
+    snprintf(m_lib_dbg_file_name, sizeof(m_lib_dbg_file_name), "%s", file_name);
     if ((fp = fopen(file_name, "w")) == NULL) {
         return;
     }

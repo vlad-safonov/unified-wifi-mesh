@@ -1625,7 +1625,7 @@ std::pair<uint8_t *, size_t> ec_enrollee_t::create_config_request(std::optional<
     if (gethostname(hostname, sizeof(hostname)) != 0) {
         em_printfout("`gethostname` failed, defaulting DPP Configuration Request object key \"name\" to \"Enrollee\"");
         static const char *default_name = "Enrollee";
-        strncpy(hostname, default_name, sizeof(hostname));
+        snprintf(hostname, sizeof(hostname), "%s", default_name);
     }
     cJSON *name = cJSON_CreateString(hostname);
     if (!dpp_config_request_obj || !netRole || !wifi_tech) {

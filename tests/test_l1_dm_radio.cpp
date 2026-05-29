@@ -289,7 +289,7 @@ TEST(dm_radio_t_Test, CopyConstructorWithFullyInitializedObject) {
     std::cout << "Entering CopyConstructorWithFullyInitializedObject" << std::endl;
     dm_radio_t radio;
     // Properly initialize em_radio_id_t
-    strncpy(radio.m_radio_info.id.net_id, "TestNetID", sizeof(radio.m_radio_info.id.net_id));
+    snprintf(radio.m_radio_info.id.net_id, sizeof(radio.m_radio_info.id.net_id), "%s", "TestNetID");
     memset(radio.m_radio_info.id.dev_mac, 0x01, sizeof(radio.m_radio_info.id.dev_mac));
     memset(radio.m_radio_info.id.ruid, 0x02, sizeof(radio.m_radio_info.id.ruid));
     // Initialize other fields
@@ -411,7 +411,7 @@ TEST(dm_radio_t_Test, CopyConstructorWithInvalidData) {
 TEST(dm_radio_t_Test, InitializeWithValidRadioInfo) {
     std::cout << "Entering InitializeWithValidRadioInfo" << std::endl;
     em_radio_info_t radio_info;
-    strncpy(radio_info.id.net_id, "TestNetID", sizeof(radio_info.id.net_id));
+    snprintf(radio_info.id.net_id, sizeof(radio_info.id.net_id), "%s", "TestNetID");
     memset(radio_info.id.dev_mac, 0x01, sizeof(radio_info.id.dev_mac));
     memset(radio_info.id.ruid, 0x02, sizeof(radio_info.id.ruid));
     radio_info.enabled = true;
@@ -741,7 +741,7 @@ TEST(dm_radio_t_Test, RetrieveRadioIDWhenMACAddressIsProperlyInitializedUsingCus
 TEST(dm_radio_t_Test, RetrieveRadioInfoAfterInitialization) {
     std::cout << "Entering RetrieveRadioInfoAfterInitialization" << std::endl;
     em_radio_info_t radio_info;
-    strncpy(radio_info.id.net_id, "TestNetID", sizeof(radio_info.id.net_id));
+    snprintf(radio_info.id.net_id, sizeof(radio_info.id.net_id), "%s", "TestNetID");
     memset(radio_info.id.dev_mac, 0x01, sizeof(radio_info.id.dev_mac));
     memset(radio_info.id.ruid, 0x02, sizeof(radio_info.id.ruid));
     radio_info.enabled = true;
@@ -789,8 +789,7 @@ TEST(dm_radio_t_Test, RetrieveRadioInterfaceAfterInitialization) {
     dm_radio_t radio;
     // Manually initialize media, name, and mac in radio.m_radio_info.intf
     radio.m_radio_info.intf.media = em_media_type_ieee80211n_5;
-    strncpy(radio.m_radio_info.intf.name, "wlan0", sizeof(radio.m_radio_info.intf.name));
-    radio.m_radio_info.intf.name[sizeof(radio.m_radio_info.intf.name) - 1] = '\0';
+    snprintf(radio.m_radio_info.intf.name, sizeof(radio.m_radio_info.intf.name), "%s", "wlan0");
     unsigned char valid_mac[6] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55};
     memcpy(radio.m_radio_info.intf.mac, valid_mac, sizeof(valid_mac));
     em_interface_t* interface = radio.get_radio_interface();
@@ -971,7 +970,7 @@ TEST(dm_radio_t_Test, SuccessfulInitialization) {
 TEST(dm_radio_t_Test, AssigningDmRadioTObjectWithInitializedValues) {
     std::cout << "Entering AssigningDmRadioTObjectWithInitializedValues" << std::endl;
     dm_radio_t obj1, obj2;
-    strncpy(obj1.m_radio_info.id.net_id, "TestNetID", sizeof(obj1.m_radio_info.id.net_id));
+    snprintf(obj1.m_radio_info.id.net_id, sizeof(obj1.m_radio_info.id.net_id), "%s", "TestNetID");
     memset(obj1.m_radio_info.id.dev_mac, 0x01, sizeof(obj1.m_radio_info.id.dev_mac));
     memset(obj1.m_radio_info.id.ruid, 0x02, sizeof(obj1.m_radio_info.id.ruid));
     obj1.m_radio_info.enabled = true;
@@ -1013,10 +1012,10 @@ TEST(dm_radio_t_Test, AssigningDmRadioTObjectWithInitializedValues) {
 TEST(dm_radio_t_Test, IdenticalObjects) {
     std::cout << "Entering IdenticalObjects test";
     dm_radio_t obj1, obj2;
-    strncpy(obj1.m_radio_info.id.net_id, "TestNetID", sizeof(obj1.m_radio_info.id.net_id));
+    snprintf(obj1.m_radio_info.id.net_id, sizeof(obj1.m_radio_info.id.net_id), "%s", "TestNetID");
     memset(obj1.m_radio_info.id.dev_mac, 0x01, sizeof(obj1.m_radio_info.id.dev_mac));
     memset(obj1.m_radio_info.id.ruid, 0x02, sizeof(obj1.m_radio_info.id.ruid));
-    strncpy(obj2.m_radio_info.id.net_id, "TestNetID", sizeof(obj2.m_radio_info.id.net_id));
+    snprintf(obj2.m_radio_info.id.net_id, sizeof(obj2.m_radio_info.id.net_id), "%s", "TestNetID");
     memset(obj2.m_radio_info.id.dev_mac, 0x01, sizeof(obj2.m_radio_info.id.dev_mac));
     memset(obj2.m_radio_info.id.ruid, 0x02, sizeof(obj2.m_radio_info.id.ruid));
     obj1.m_radio_info.enabled = obj2.m_radio_info.enabled = true;

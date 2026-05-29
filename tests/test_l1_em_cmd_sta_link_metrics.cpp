@@ -95,14 +95,10 @@ TEST(em_cmd_sta_link_metrics_t, CustomNetworkConfiguration)
 
     dm_easy_mesh_t custom_dm;
     const char* customNetID = "CustomNetID";
-    strncpy(custom_dm.m_network.m_net_info.id, customNetID,
-            sizeof(custom_dm.m_network.m_net_info.id) - 1);
-    custom_dm.m_network.m_net_info.id[sizeof(custom_dm.m_network.m_net_info.id) - 1] = '\0';
+    snprintf(custom_dm.m_network.m_net_info.id, sizeof(custom_dm.m_network.m_net_info.id), "%s", customNetID);
 
     const char* customCtrlIfName = "CtrlInterface";
-    strncpy(custom_dm.m_network.m_net_info.ctrl_id.name, customCtrlIfName,
-            sizeof(custom_dm.m_network.m_net_info.ctrl_id.name) - 1);
-    custom_dm.m_network.m_net_info.ctrl_id.name[sizeof(custom_dm.m_network.m_net_info.ctrl_id.name) - 1] = '\0';
+    snprintf(custom_dm.m_network.m_net_info.ctrl_id.name, sizeof(custom_dm.m_network.m_net_info.ctrl_id.name), "%s", customCtrlIfName);
 
     std::cout << "Invoking em_cmd_sta_link_metrics_t(custom_dm)" << std::endl;
     em_cmd_sta_link_metrics_t cmd(custom_dm);

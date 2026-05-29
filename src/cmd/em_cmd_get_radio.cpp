@@ -47,7 +47,7 @@ em_cmd_get_radio_t::em_cmd_get_radio_t(em_cmd_params_t param, dm_easy_mesh_t& dm
 	m_orch_op_idx = 0;
 	m_num_orch_desc = 0;
 
-	strncpy(m_name, "get_radio", strlen("get_radio") + 1);
+	snprintf(m_name, sizeof("get_radio"), "%s", "get_radio");
    	m_svc = em_service_type_ctrl;
 	init(dm);
 

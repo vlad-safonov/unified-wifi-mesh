@@ -66,7 +66,7 @@ em_cmd_em_config_t::em_cmd_em_config_t(em_cmd_params_t param, dm_easy_mesh_t& dm
     m_orch_desc[8].op = dm_orch_type_topo_publish;
     m_orch_desc[8].submit = true;
 
-    strncpy(m_name, "em_config", strlen("em_config") + 1);
+    snprintf(m_name, sizeof("em_config"), "%s", "em_config");
     m_svc = em_service_type_ctrl;
     init(dm);
 

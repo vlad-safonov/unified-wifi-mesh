@@ -49,8 +49,7 @@ TEST(em_cmd_bsta_cap_t, em_cmd_bsta_cap_t_ValidConstruction)
     em_cmd_params_t param;
     param.u.args.num_args = 3;
     const char* validFixedArgs = "ValidFixedArgsValue";
-    strncpy(param.u.args.fixed_args, validFixedArgs, sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", validFixedArgs);
     em_network_node_t netnode{};
     param.net_node = &netnode;
     param.net_node->value_int = 3;
@@ -101,8 +100,7 @@ TEST(em_cmd_bsta_cap_t, em_cmd_bsta_cap_t_NullNetNode)
     em_cmd_params_t param;
     param.u.args.num_args = 2;
     const char* validFixedArgs = "NonEmptyFixedArgs";
-    strncpy(param.u.args.fixed_args, validFixedArgs, sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", validFixedArgs);
     param.net_node = nullptr;
     dm_easy_mesh_t dm;
     std::cout << "Parameter net_node is: " << param.net_node << std::endl;
@@ -146,8 +144,7 @@ TEST(em_cmd_bsta_cap_t, em_cmd_bsta_cap_t_EmptyFixedArgs)
     std::cout << "Entering em_cmd_bsta_cap_t_EmptyFixedArgs test" << std::endl;
     em_cmd_params_t param;
     param.u.args.num_args = 0;
-    strncpy(param.u.args.fixed_args, "", sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "");
     dm_easy_mesh_t dm;
     std::cout << "Parameter fixed_args (length): " << std::strlen(param.u.args.fixed_args) << std::endl;
     em_cmd_bsta_cap_t obj(param, dm);
@@ -194,8 +191,7 @@ TEST(em_cmd_bsta_cap_t, em_cmd_bsta_cap_t_MaxLengthFixedArgs)
     char maxStr[128] = {0};
     memset(maxStr, 'A', 127);
     maxStr[127] = '\0';
-    strncpy(param.u.args.fixed_args, maxStr, sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", maxStr);
     dm_easy_mesh_t dm;
     std::cout << "Parameter fixed_args length: " << std::strlen(param.u.args.fixed_args) << std::endl;
     em_cmd_bsta_cap_t obj(param, dm);

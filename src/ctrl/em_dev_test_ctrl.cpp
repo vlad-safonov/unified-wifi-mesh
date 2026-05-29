@@ -77,19 +77,19 @@ void em_dev_test_t::encode(em_subdoc_info_t *subdoc, hash_map_t *m_em_map, bool 
 
 				switch (dev_test_info.haul_type) {
 					case em_haul_type_fronthaul:
-						strncpy(haul_type_str, "[Fronthaul]", strlen("[Fronthaul]") + 1);
+						snprintf(haul_type_str, sizeof("[Fronthaul]"), "%s", "[Fronthaul]");
 						break;
 					case em_haul_type_backhaul:
-						strncpy(haul_type_str, "[Backhaul]", strlen("[Backhaul]") + 1);
+						snprintf(haul_type_str, sizeof("[Backhaul]"), "%s", "[Backhaul]");
 						break;
 					case em_haul_type_iot:
-						strncpy(haul_type_str, "[IoT]", strlen("[IoT]") + 1);
+						snprintf(haul_type_str, sizeof("[IoT]"), "%s", "[IoT]");
 						break;
 					case em_haul_type_configurator:
-						strncpy(haul_type_str, "[Configurator]", strlen("[Configurator]") + 1);
+						snprintf(haul_type_str, sizeof("[Configurator]"), "%s", "[Configurator]");
 						break;
 					case em_haul_type_hotspot:
-						strncpy(haul_type_str, "[Hotspot]", strlen("[Hotspot]") + 1);
+						snprintf(haul_type_str, sizeof("[Hotspot]"), "%s", "[Hotspot]");
 						break;
 					default:
 					   break;
@@ -130,7 +130,7 @@ void em_dev_test_t::encode(em_subdoc_info_t *subdoc, hash_map_t *m_em_map, bool 
 
 	tmp = cJSON_Print(parent);
 	//printf("%s:%d: Subdoc: %s\n", __func__, __LINE__, tmp);
-	strncpy(subdoc->buff, tmp, strlen(tmp) + 1);
+	snprintf(subdoc->buff, sizeof(subdoc->buff), "%s", tmp);
 	cJSON_free(parent);
 }
 

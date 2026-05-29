@@ -48,10 +48,10 @@ TEST(em_cmd_sta_list_t, em_cmd_sta_list_t_valid_parameters) {
     std::cout << "Entering em_cmd_sta_list_t_valid_parameters test" << std::endl;
     em_cmd_params_t params;
     const char *testFixedArg = "TestFixedArgValue";
-    strncpy(params.u.args.fixed_args, testFixedArg, sizeof(params.u.args.fixed_args));
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", testFixedArg);
     params.u.args.num_args = 1;
     const char *arg0 = "Argument0";
-    strncpy(params.u.args.args[0], arg0, sizeof(params.u.args.args[0]));
+    snprintf(params.u.args.args[0], sizeof(params.u.args.args[0]), "%s", arg0);
     dm_easy_mesh_t dm;
     std::cout << "Invoking constructor with params.u.args.fixed_args as " << params.u.args.fixed_args << " and params.u.args.args[0] as " << params.u.args.args[0] << std::endl;
     em_cmd_sta_list_t cmd(params, dm);
@@ -97,7 +97,7 @@ TEST(em_cmd_sta_list_t, em_cmd_sta_list_t_valid_minimal_parameters)
 {
     std::cout << "Entering em_cmd_sta_list_t_valid_minimal_parameters test" << std::endl;
     em_cmd_params_t param{};
-    strncpy(param.u.args.fixed_args, "", sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "");
     param.u.args.num_args = 0;
     dm_easy_mesh_t dm;
     std::cout << "Invoking em_cmd_sta_list_t with fixed_args: " << param.u.args.fixed_args << std::endl;
@@ -144,14 +144,12 @@ TEST(em_cmd_set_policy_t, em_cmd_sta_list_t_ctor_max_fixed_args)
     char maxStr[128];
     memset(maxStr, 'X', sizeof(maxStr) - 1);
     maxStr[sizeof(maxStr) - 1] = '\0';
-    strncpy(param.u.args.fixed_args, maxStr, sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", maxStr);
     param.u.args.num_args = 5;
     char maxArg[128];
     memset(maxArg, 'Y', sizeof(maxArg) - 1);
     maxArg[sizeof(maxArg) - 1] = '\0';
-    strncpy(param.u.args.args[0], maxArg, sizeof(param.u.args.args[0]) - 1);
-    param.u.args.args[0][sizeof(param.u.args.args[0]) - 1] = '\0';
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", maxArg);
     dm_easy_mesh_t dm;
     em_cmd_sta_list_t cmd(param, dm);
     EXPECT_EQ(cmd.m_param.u.args.num_args, 5);
@@ -195,8 +193,8 @@ TEST(em_cmd_get_network_t, em_cmd_sta_list_t_NullNetworkNode)
     std::cout << "Entering em_cmd_sta_list_t_NullNetworkNode test" << std::endl;
     em_cmd_params_t param;
     param.u.args.num_args = 1;
-    strncpy(param.u.args.fixed_args, "STA_LIST", sizeof(param.u.args.fixed_args));
-    strncpy(param.u.args.args[0], "Param1", sizeof(param.u.args.args[0]));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "STA_LIST");
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", "Param1");
     param.net_node = nullptr;
     dm_easy_mesh_t dm;
     em_cmd_sta_list_t cmd(param, dm);

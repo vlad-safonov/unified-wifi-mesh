@@ -428,7 +428,7 @@ int em_configuration_t::create_operational_bss_tlv(unsigned char *buff)
         	}
         	radio->bss_num++;
         	memcpy(bss->bssid, dm->m_bss[j].m_bss_info.bssid.mac, sizeof(mac_address_t));
-        	strncpy(bss->ssid, dm->m_bss[j].m_bss_info.ssid, sizeof(ssid_t));
+        	snprintf(bss->ssid, sizeof(ssid_t), "%s", dm->m_bss[j].m_bss_info.ssid);
         	bss->ssid_len = static_cast<unsigned char> (strlen(dm->m_bss[j].m_bss_info.ssid) + 1);
         	all_bss_len += static_cast<unsigned int> (sizeof(em_ap_operational_bss_t) + bss->ssid_len);
         	bss = reinterpret_cast<em_ap_operational_bss_t *>(reinterpret_cast<unsigned char *> (bss) + sizeof(em_ap_operational_bss_t) + bss->ssid_len);
@@ -479,7 +479,7 @@ int em_configuration_t::create_operational_bss_tlv_topology(unsigned char *buff)
             }
             radio->bss_num++;
             memcpy(bss->bssid, dm->m_bss[bss_index].m_bss_info.bssid.mac, sizeof(mac_address_t));
-            strncpy(bss->ssid, dm->m_bss[bss_index].m_bss_info.ssid, sizeof(ssid_t));
+            snprintf(bss->ssid, sizeof(ssid_t), "%s", dm->m_bss[bss_index].m_bss_info.ssid);
             bss->ssid_len = static_cast<unsigned char>(strlen(dm->m_bss[bss_index].m_bss_info.ssid) + 1);
             all_bss_len += static_cast<unsigned int>(sizeof(em_ap_operational_bss_t) + bss->ssid_len);
             bss = reinterpret_cast<em_ap_operational_bss_t *>(reinterpret_cast<unsigned char *>(bss) + sizeof(em_ap_operational_bss_t) + bss->ssid_len);
@@ -530,7 +530,7 @@ int em_configuration_t::create_bss_config_rprt_tlv(unsigned char *buff)
         	bss_rprt_len += sizeof(em_bss_rprt_t);
         	memcpy(bss_rprt->bssid, dm->m_bss[j].m_bss_info.bssid.mac, sizeof(bssid_t));
         	bss_rprt->ssid_len = static_cast<unsigned char> (strlen(dm->m_bss[j].m_bss_info.ssid) + 1);
-            strncpy(bss_rprt->ssid, dm->m_bss[j].m_bss_info.ssid, sizeof(ssid_t));
+            snprintf(bss_rprt->ssid, sizeof(ssid_t), "%s", dm->m_bss[j].m_bss_info.ssid);
 	
     	    bss_rprt_len += bss_rprt->ssid_len;
 
@@ -623,7 +623,7 @@ int em_configuration_t::create_ap_mld_config_tlv(unsigned char *buff)
         ap_mld->ap_mld_mac_addr_valid = ap_mld_info.mac_addr_valid;
 
         ap_mld->ssid_len = static_cast<unsigned char>(sizeof(ssid_t));
-        strncpy(ap_mld->ssid, ap_mld_info.ssid, ap_mld->ssid_len);
+        snprintf(ap_mld->ssid, ap_mld->ssid_len, "%s", ap_mld_info.ssid);
 
         memcpy(ap_mld->ap_mld_mac_addr, ap_mld_info.mac_addr, sizeof(mac_address_t));
         ap_mld->str = ap_mld_info.str;
@@ -855,7 +855,7 @@ void em_configuration_t::handle_ap_vendor_operational_bss(unsigned char *value, 
 				dm->set_num_bss(dm->get_num_bss() + 1);
 			}
 			// fill up id first
-			strncpy(dm_bss->m_bss_info.id.net_id, dm->m_device.m_device_info.id.net_id, sizeof(em_long_string_t));
+			snprintf(dm_bss->m_bss_info.id.net_id, sizeof(em_long_string_t), "%s", dm->m_device.m_device_info.id.net_id);
 			memcpy(dm_bss->m_bss_info.id.dev_mac, dm->m_device.m_device_info.intf.mac, sizeof(mac_address_t));
 			memcpy(dm_bss->m_bss_info.id.ruid, radio->ruid, sizeof(mac_address_t));
 			memcpy(dm_bss->m_bss_info.id.bssid, bss->bssid, sizeof(mac_address_t));
@@ -1463,7 +1463,7 @@ int em_configuration_t::handle_ap_operational_bss(unsigned char *buff, unsigned 
 				dm_bss->init();
 
 				// fill up id first
-				strncpy(dm_bss->m_bss_info.id.net_id, dm->m_device.m_device_info.id.net_id, sizeof(em_long_string_t));
+				snprintf(dm_bss->m_bss_info.id.net_id, sizeof(em_long_string_t), "%s", dm->m_device.m_device_info.id.net_id);
 				memcpy(dm_bss->m_bss_info.id.dev_mac, dm->m_device.m_device_info.intf.mac, sizeof(mac_address_t));
 				memcpy(dm_bss->m_bss_info.id.ruid, radio->ruid, sizeof(mac_address_t));
 				memcpy(dm_bss->m_bss_info.id.bssid, bss->bssid, sizeof(mac_address_t));
@@ -1480,15 +1480,14 @@ int em_configuration_t::handle_ap_operational_bss(unsigned char *buff, unsigned 
             memcpy(ssid_buf, bss->ssid, ssid_len);
             ssid_buf[ssid_len] = '\0';
             if (dm->is_ssid_match(ssid_buf)) {
-                strncpy(dm_bss->m_bss_info.ssid, ssid_buf, sizeof(dm_bss->m_bss_info.ssid) - 1);
-                dm_bss->m_bss_info.ssid[sizeof(dm_bss->m_bss_info.ssid) - 1] = '\0';
+                snprintf(dm_bss->m_bss_info.ssid, sizeof(dm_bss->m_bss_info.ssid), "%s", ssid_buf);
             } else {
                 // SSID mismatch, stop processing further.
                 em_printfout("%s:%d:SSID mismatch. Stop proceeding. SSID=%s", __func__, __LINE__, bss->ssid);
                 return -2;
             }
             dm_bss->m_bss_info.enabled = true;
-            strncpy(dm_bss->m_bss_info.timestamp, time_date, sizeof(em_long_string_t));
+            snprintf(dm_bss->m_bss_info.timestamp, sizeof(em_long_string_t), "%s", time_date);
 
 			updated_at_least_one_bss = true;
 			
@@ -1810,7 +1809,7 @@ int em_configuration_t::handle_ap_mld_config_tlv(unsigned char *buff, unsigned i
         }
 
         ap_mld_info->mac_addr_valid = ap_mld->ap_mld_mac_addr_valid;
-        strncpy(ap_mld_info->ssid, ap_mld->ssid, ap_mld->ssid_len);
+        snprintf(ap_mld_info->ssid, ap_mld->ssid_len, "%s", ap_mld->ssid);
 
         memcpy(ap_mld_info->mac_addr, ap_mld->ap_mld_mac_addr, sizeof(mac_address_t));
         ap_mld_info->str = ap_mld->str;
@@ -2290,7 +2289,7 @@ uint16_t convert_akm_strings_to_wps_authtype(std::vector<std::string> akm_string
     em_short_string_t akms_array[akm_strings.size()];
     memset(akms_array, 0, sizeof(em_short_string_t)*akm_strings.size());
     for (size_t i = 0; i < akm_strings.size(); i++) {
-        strncpy(akms_array[i], akm_strings[i].c_str(), sizeof(em_short_string_t)-1);
+        snprintf(akms_array[i], sizeof(em_short_string_t), "%s", akm_strings[i].c_str());
     }
     return convert_akm_strings_to_wps_authtype(akms_array, akm_strings.size());
 }

@@ -49,7 +49,7 @@ em_cmd_link_quality_report_t::em_cmd_link_quality_report_t(em_cmd_params_t param
     m_orch_desc[0].op = dm_orch_type_link_quality_report;
     m_orch_desc[0].submit = true;
 
-    strncpy(m_name, "alarm_report", strlen("alarm_report") + 1);
+    snprintf(m_name, sizeof("alarm_report"), "%s", "alarm_report");
     m_svc = em_service_type_agent;
     init(dm);
 

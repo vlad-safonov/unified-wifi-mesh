@@ -50,7 +50,7 @@ em_cmd_dev_init_t::em_cmd_dev_init_t(em_cmd_params_t param, dm_easy_mesh_t& dm)
     m_orch_desc[0].submit = false;
     m_orch_desc[1].submit = true;
 
-    strncpy(m_name, "dev_init", strlen("dev_init") + 1);
+    snprintf(m_name, sizeof("dev_init"), "%s", "dev_init");
     m_svc = em_service_type_agent;
     init(dm);
 

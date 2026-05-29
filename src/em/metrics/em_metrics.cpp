@@ -139,7 +139,7 @@ int em_metrics_t::handle_assoc_sta_vendor_link_metrics_tlv(unsigned char *buff, 
 
     sta = dm->find_sta(sta_metrics->sta_mac, sta_metrics->bssid);
     if (sta != NULL && len >= sizeof(em_assoc_sta_vendor_link_metrics_t)) {
-        strncpy(sta->m_sta_info.sta_client_type, sta_metrics->sta_client_type, sizeof(sta->m_sta_info.sta_client_type));
+        snprintf(sta->m_sta_info.sta_client_type, sizeof(sta->m_sta_info.sta_client_type), "%s", sta_metrics->sta_client_type);
     }
 
     return 0;
@@ -1288,7 +1288,7 @@ short em_metrics_t::create_assoc_vendor_sta_link_metrics_tlv(unsigned char *buff
             memcpy(&assoc_sta_metrics->bssid, sta->m_sta_info.bssid, sizeof(bssid_t));
             len += sizeof(bssid_t);
 
-            strncpy(assoc_sta_metrics->sta_client_type, sta->m_sta_info.sta_client_type, sizeof(assoc_sta_metrics->sta_client_type));
+            snprintf(assoc_sta_metrics->sta_client_type, sizeof(assoc_sta_metrics->sta_client_type), "%s", sta->m_sta_info.sta_client_type);
             len += sizeof(assoc_sta_metrics->sta_client_type);
         }
     }
@@ -1609,8 +1609,8 @@ short em_metrics_t::create_link_stats_alarm_tlv(unsigned char *buff)
     while (sta != NULL) {
         link_stats = reinterpret_cast<em_link_report_t *>(tmp);
         memcpy(link_stats->sta_mac, sta->m_sta_info.id, sizeof(mac_address_t));
-        strncpy(reinterpret_cast<char*>(link_stats->reporting_timestamp),
-            reinterpret_cast<const char*>(sta->m_sta_info.link_stats_report.reporting_timestamp), 32);
+        snprintf(reinterpret_cast<char*>(link_stats->reporting_timestamp), 32, "%s",
+            reinterpret_cast<const char*>(sta->m_sta_info.link_stats_report.reporting_timestamp));
 
         link_stats->link_quality_threshold = sta->m_sta_info.link_stats_report.link_quality_threshold;
         link_stats->alarm_triggered = sta->m_sta_info.link_stats_report.alarm_triggered;
@@ -1624,8 +1624,8 @@ short em_metrics_t::create_link_stats_alarm_tlv(unsigned char *buff)
 
         for (int j = 0; j < link_stats->sample_count; j++) {
             link_stats->alarm_sample[j].link_quality_score = sta->m_sta_info.link_stats_report.alarm_sample[j].link_quality_score;
-            strncpy(reinterpret_cast<char*>(link_stats->alarm_sample[j].reporting_time),
-                reinterpret_cast<const char*>(sta->m_sta_info.link_stats_report.alarm_sample[j].reporting_time), 32);
+            snprintf(reinterpret_cast<char*>(link_stats->alarm_sample[j].reporting_time), 32, "%s",
+                reinterpret_cast<const char*>(sta->m_sta_info.link_stats_report.alarm_sample[j].reporting_time));
             link_stats->alarm_sample[j].snr = sta->m_sta_info.link_stats_report.alarm_sample[j].snr;
             link_stats->alarm_sample[j].per = sta->m_sta_info.link_stats_report.alarm_sample[j].per;
             link_stats->alarm_sample[j].phy = sta->m_sta_info.link_stats_report.alarm_sample[j].phy;

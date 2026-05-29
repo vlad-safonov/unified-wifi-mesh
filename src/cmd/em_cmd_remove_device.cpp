@@ -50,7 +50,7 @@ em_cmd_remove_device_t::em_cmd_remove_device_t(em_cmd_params_t param, dm_easy_me
     m_orch_desc[1].op = dm_orch_type_em_delete;
     m_orch_desc[2].op = dm_orch_type_dm_delete;
 
-	strncpy(m_name, "remove_device", strlen("remove_device") + 1);
+	snprintf(m_name, sizeof("remove_device"), "%s", "remove_device");
    	m_svc = em_service_type_ctrl;
 	init(dm);
 

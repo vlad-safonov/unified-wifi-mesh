@@ -47,8 +47,8 @@ TEST(em_cmd_set_ssid_t, em_cmd_set_ssid_t_ConstructValidNonEmptyFixedArgs)
     std::cout << "Entering em_cmd_set_ssid_t_ConstructValidNonEmptyFixedArgs test" << std::endl;
     em_cmd_params_t params;
     params.u.args.num_args = 1;
-    strncpy(params.u.args.args[0], "MySSID", sizeof(params.u.args.args[0]) );
-    strncpy(params.u.args.fixed_args, "MySSID", sizeof(params.u.args.fixed_args));
+    snprintf(params.u.args.args[0], sizeof(params.u.args.args[0]), "%s", "MySSID");
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", "MySSID");
     dm_easy_mesh_t dm;
     std::cout << "Invoking em_cmd_set_ssid_t with fixed_args: " << params.u.args.fixed_args << std::endl;
     em_cmd_set_ssid_t cmd(params, dm);
@@ -94,7 +94,7 @@ TEST(em_cmd_set_ssid_t, em_cmd_set_ssid_t_ConstructWithEmptyFixedArgs)
     std::cout << "Entering em_cmd_set_ssid_t_ConstructWithEmptyFixedArgs test" << std::endl;
     em_cmd_params_t params;
     params.u.args.num_args = 0;
-    strncpy(params.u.args.fixed_args, "", sizeof(params.u.args.fixed_args));
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", "");
     dm_easy_mesh_t dm;
     std::cout << "Invoking em_cmd_set_ssid_t with fixed_args: \"" << params.u.args.fixed_args << "\"" << std::endl;
     em_cmd_set_ssid_t cmd(params, dm);
@@ -142,8 +142,8 @@ TEST(em_cmd_set_ssid_t, em_cmd_set_ssid_t_ConstructWithMaxSSIDLength)
     maxSsid[127] = '\0';
     em_cmd_params_t params;
     params.u.args.num_args = 1;
-    strncpy(params.u.args.args[0], maxSsid, sizeof(params.u.args.args[0]));
-    strncpy(params.u.args.fixed_args, maxSsid, sizeof(params.u.args.fixed_args));
+    snprintf(params.u.args.args[0], sizeof(params.u.args.args[0]), "%s", maxSsid);
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", maxSsid);
     dm_easy_mesh_t dm;
     em_cmd_set_ssid_t cmd(params, dm);
     std::cout << "Invoked em_cmd_set_ssid_t with fixed_args of length " << strlen(params.u.args.fixed_args) << std::endl;
@@ -189,10 +189,10 @@ TEST(em_cmd_set_ssid_t, em_cmd_set_ssid_t_ConstructWithInitializedDM)
     std::cout << "Entering em_cmd_set_ssid_t_ConstructWithInitializedDM test" << std::endl;
     em_cmd_params_t params;
     params.u.args.num_args = 1;
-    strncpy(params.u.args.args[0], "PreInitSSID", sizeof(params.u.args.args[0]));
-    strncpy(params.u.args.fixed_args, "PreInitSSID", sizeof(params.u.args.fixed_args));
+    snprintf(params.u.args.args[0], sizeof(params.u.args.args[0]), "%s", "PreInitSSID");
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", "PreInitSSID");
     dm_easy_mesh_t dm{};
-    strncpy(dm.m_network.m_net_info.id, "Network123", sizeof(dm.m_network.m_net_info.id));
+    snprintf(dm.m_network.m_net_info.id, sizeof(dm.m_network.m_net_info.id), "%s", "Network123");
     std::cout << "Invoking em_cmd_set_ssid_t with fixed_args: " << params.u.args.fixed_args << " and pre-initialized dm network id: " << dm.m_network.m_net_info.id << std::endl;
     em_cmd_set_ssid_t cmd(params, dm);
     EXPECT_STREQ(cmd.m_param.u.args.fixed_args, "PreInitSSID");

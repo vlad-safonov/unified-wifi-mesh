@@ -49,7 +49,7 @@ em_cmd_scan_channel_t::em_cmd_scan_channel_t(em_cmd_params_t param, dm_easy_mesh
     m_orch_desc[0].op = dm_orch_type_channel_scan_req;
     m_orch_desc[0].submit = true;
 
-    strncpy(m_name, "scan_channel", strlen("scan_channel") + 1);
+    snprintf(m_name, sizeof("scan_channel"), "%s", "scan_channel");
     m_svc = em_service_type_ctrl;
     init(dm);
 

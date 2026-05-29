@@ -51,10 +51,10 @@ TEST(em_cmd_set_policy_t, em_cmd_set_policy_t_valid_complete_parameters)
     std::cout << "Entering em_cmd_set_policy_t_valid_complete_parameters test" << std::endl;
     em_cmd_params_t param{};
     const char *policyCommand = "policy_set_complete";
-    strncpy(param.u.args.fixed_args, policyCommand, sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", policyCommand);
     param.u.args.num_args = 2;
-    strncpy(param.u.args.args[0], "Arg0", sizeof(param.u.args.args[0]));
-    strncpy(param.u.args.args[1], "Arg1", sizeof(param.u.args.args[1]));
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", "Arg0");
+    snprintf(param.u.args.args[1], sizeof(param.u.args.args[1]), "%s", "Arg1");
     dm_easy_mesh_t dm;
     std::cout << "Invoking em_cmd_set_policy_t with fixed_args: " << param.u.args.fixed_args << std::endl;
     em_cmd_set_policy_t cmd(param, dm);
@@ -103,7 +103,7 @@ TEST(em_cmd_set_policy_t, em_cmd_set_policy_t_valid_minimal_parameters)
 {
     std::cout << "Entering em_cmd_set_policy_t_valid_minimal_parameters test" << std::endl;
     em_cmd_params_t param{};
-    strncpy(param.u.args.fixed_args, "", sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "");
     param.u.args.num_args = 0;
     dm_easy_mesh_t dm;
     std::cout << "Invoking em_cmd_set_policy_t with fixed_args: " << param.u.args.fixed_args << std::endl;
@@ -147,14 +147,12 @@ TEST(em_cmd_set_policy_t, em_cmd_set_policy_t_ctor_max_fixed_args)
     char maxStr[128];
     memset(maxStr, 'X', sizeof(maxStr) - 1);
     maxStr[sizeof(maxStr) - 1] = '\0';
-    strncpy(param.u.args.fixed_args, maxStr, sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", maxStr);
     param.u.args.num_args = 5;
     char maxArg[128];
     memset(maxArg, 'Y', sizeof(maxArg) - 1);
     maxArg[sizeof(maxArg) - 1] = '\0';
-    strncpy(param.u.args.args[0], maxArg, sizeof(param.u.args.args[0]) - 1);
-    param.u.args.args[0][sizeof(param.u.args.args[0]) - 1] = '\0';
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", maxArg);
     dm_easy_mesh_t dm;
     em_cmd_set_policy_t cmd(param, dm);
     EXPECT_EQ(cmd.m_param.u.args.num_args, 5);

@@ -267,7 +267,7 @@ TEST(dm_device_t_Test, RetrieveALInterfaceWithValidDeviceInfo) {
     std::cout << "Entering RetrieveALInterfaceWithValidDeviceInfo test" << std::endl;
     // Create and populate device info
     em_device_info_t device_info = {};
-    strncpy(device_info.backhaul_alid.name, "eth0", sizeof(device_info.backhaul_alid.name) - 1);
+    snprintf(device_info.backhaul_alid.name, sizeof(device_info.backhaul_alid.name), "%s", "eth0");
     device_info.backhaul_alid.media = em_media_type_ieee8023ab;
     // Instantiate device with populated info
     dm_device_t* device = new dm_device_t(&device_info);

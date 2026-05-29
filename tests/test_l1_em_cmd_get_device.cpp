@@ -52,16 +52,16 @@ TEST(em_cmd_get_device_t, em_cmd_get_device_t_FullyPopulatedInput) {
     cmdParams.u.args.num_args = 3;
     const char *fixedStr = "fixed_parameters";
     std::cout << "Setting fixed_args: " << fixedStr << std::endl;
-    strncpy(cmdParams.u.args.fixed_args, fixedStr, sizeof(cmdParams.u.args.fixed_args));
+    snprintf(cmdParams.u.args.fixed_args, sizeof(cmdParams.u.args.fixed_args), "%s", fixedStr);
     const char *arg0 = "argument_one";
     const char *arg1 = "argument_two";
     const char *arg2 = "argument_three";
     std::cout << "Setting args[0]: " << arg0 << std::endl;
-    strncpy(cmdParams.u.args.args[0], arg0, sizeof(cmdParams.u.args.args[0]));
+    snprintf(cmdParams.u.args.args[0], sizeof(cmdParams.u.args.args[0]), "%s", arg0);
     std::cout << "Setting args[1]: " << arg1 << std::endl;
-    strncpy(cmdParams.u.args.args[1], arg1, sizeof(cmdParams.u.args.args[1]));
+    snprintf(cmdParams.u.args.args[1], sizeof(cmdParams.u.args.args[1]), "%s", arg1);
     std::cout << "Setting args[2]: " << arg2 << std::endl;
-    strncpy(cmdParams.u.args.args[2], arg2, sizeof(cmdParams.u.args.args[2]));
+    snprintf(cmdParams.u.args.args[2], sizeof(cmdParams.u.args.args[2]), "%s", arg2);
     dm_easy_mesh_t dm;
     em_cmd_get_device_t cmd(cmdParams, dm);
     std::cout << "em_cmd_get_device_t object created successfully with fully-populated input." << std::endl;
@@ -155,10 +155,10 @@ TEST(em_cmd_get_device_t, em_cmd_get_device_t_BoundaryMaxArgumentSizes) {
     memset(maxStr, 'A', sizeof(maxStr) - 1);
     maxStr[sizeof(maxStr) - 1] = '\0';
     std::cout << "Setting fixed_args with maximum length string: " << maxStr << std::endl;
-    strncpy(cmdParams.u.args.fixed_args, maxStr, sizeof(cmdParams.u.args.fixed_args));
+    snprintf(cmdParams.u.args.fixed_args, sizeof(cmdParams.u.args.fixed_args), "%s", maxStr);
     for (unsigned int i = 0; i < cmdParams.u.args.num_args; i++) {
         std::cout << "Setting args[" << i << "] with maximum length string." << std::endl;
-        strncpy(cmdParams.u.args.args[i], maxStr, sizeof(cmdParams.u.args.args[i]));
+        snprintf(cmdParams.u.args.args[i], sizeof(cmdParams.u.args.args[i]), "%s", maxStr);
     }
     dm_easy_mesh_t dm;
     em_cmd_get_device_t cmd(cmdParams, dm);

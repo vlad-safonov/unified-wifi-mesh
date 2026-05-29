@@ -79,13 +79,13 @@ TEST(em_net_node_t, clone_network_tree_single_node_no_children)
     std::cout << "Entering clone_network_tree_single_node_no_children test" << std::endl;
     em_network_node_t node;
     memset(&node, 0, sizeof(em_network_node_t));
-    strncpy(node.key, "node1", sizeof(node.key));
+    snprintf(node.key, sizeof(node.key), "%s", "node1");
     node.display_info.collapsed = false;
     node.display_info.orig_node_ctr = 1;
     node.display_info.node_ctr = 1;
     node.display_info.node_pos = 0;
     node.type = em_network_node_data_type_number;
-    strncpy(node.value_str, "123", sizeof(node.value_str));
+    snprintf(node.value_str, sizeof(node.value_str), "%s", "123");
     node.value_int = 123;
     node.num_children = 0;
     em_network_node_t* clone = em_net_node_t::clone_network_tree(&node);
@@ -129,24 +129,24 @@ TEST(em_net_node_t, clone_network_tree_one_child)
     std::cout << "Entering clone_network_tree_one_child test" << std::endl;
     em_network_node_t root;
     memset(&root, 0, sizeof(root));
-    strncpy(root.key, "root", sizeof(root.key));
+    snprintf(root.key, sizeof(root.key), "%s", "root");
     root.display_info.collapsed = false;
     root.display_info.orig_node_ctr = 1;
     root.display_info.node_ctr = 1;
     root.display_info.node_pos = 0;
     root.type = em_network_node_data_type_obj;
-    strncpy(root.value_str, "root_val", sizeof(root.value_str));
+    snprintf(root.value_str, sizeof(root.value_str), "%s", "root_val");
     root.value_int = 0;
     root.num_children = 1;
     em_network_node_t child;
     memset(&child, 0, sizeof(child));
-    strncpy(child.key, "child", sizeof(child.key));
+    snprintf(child.key, sizeof(child.key), "%s", "child");
     child.display_info.collapsed = true;
     child.display_info.orig_node_ctr = 2;
     child.display_info.node_ctr = 2;
     child.display_info.node_pos = 0;
     child.type = em_network_node_data_type_string;
-    strncpy(child.value_str, "child_val", sizeof(child.value_str));
+    snprintf(child.value_str, sizeof(child.value_str), "%s", "child_val");
     child.value_int = 10;
     child.num_children = 0;
     root.child[0] = &child;
@@ -205,35 +205,35 @@ TEST(em_net_node_t, clone_network_tree_root_with_multiple_children)
     std::cout << "Entering clone_network_tree_root_with_multiple_children test" << std::endl;
     em_network_node_t root;
     memset(&root, 0, sizeof(root));
-    strncpy(root.key, "root", sizeof(root.key));
+    snprintf(root.key, sizeof(root.key), "%s", "root");
     root.display_info.collapsed = false;
     root.display_info.orig_node_ctr = 10;
     root.display_info.node_ctr = 10;
     root.display_info.node_pos = 0;
     root.type = em_network_node_data_type_obj;
-    strncpy(root.value_str, "root_val", sizeof(root.value_str));
+    snprintf(root.value_str, sizeof(root.value_str), "%s", "root_val");
     root.value_int = 0;
     root.num_children = 2;
     em_network_node_t child1;
     memset(&child1, 0, sizeof(child1));
-    strncpy(child1.key, "child1", sizeof(child1.key));
+    snprintf(child1.key, sizeof(child1.key), "%s", "child1");
     child1.display_info.collapsed = true;
     child1.display_info.orig_node_ctr = 5;
     child1.display_info.node_ctr = 5;
     child1.display_info.node_pos = 1;
     child1.type = em_network_node_data_type_string;
-    strncpy(child1.value_str, "child1_val", sizeof(child1.value_str));
+    snprintf(child1.value_str, sizeof(child1.value_str), "%s", "child1_val");
     child1.value_int = 1;
     child1.num_children = 0;
     em_network_node_t child2;
     memset(&child2, 0, sizeof(child2));
-    strncpy(child2.key, "child2", sizeof(child2.key));
+    snprintf(child2.key, sizeof(child2.key), "%s", "child2");
     child2.display_info.collapsed = false;
     child2.display_info.orig_node_ctr = 3;
     child2.display_info.node_ctr = 3;
     child2.display_info.node_pos = 2;
     child2.type = em_network_node_data_type_number;
-    strncpy(child2.value_str, "42", sizeof(child2.value_str));
+    snprintf(child2.value_str, sizeof(child2.value_str), "%s", "42");
     child2.value_int = 42;
     child2.num_children = 0;
     root.child[0] = &child1;
@@ -293,35 +293,35 @@ TEST(em_net_node_t, clone_network_tree_one_child_one_grandchild)
     std::cout << "Entering clone_network_tree_one_child_one_grandchild test" << std::endl;
     em_network_node_t root;
     memset(&root, 0, sizeof(root));
-    strncpy(root.key, "root", sizeof(root.key));
+    snprintf(root.key, sizeof(root.key), "%s", "root");
     root.display_info.collapsed = false;
     root.display_info.orig_node_ctr = 1;
     root.display_info.node_ctr = 1;
     root.display_info.node_pos = 0;
     root.type = em_network_node_data_type_obj;
-    strncpy(root.value_str, "root_val", sizeof(root.value_str));
+    snprintf(root.value_str, sizeof(root.value_str), "%s", "root_val");
     root.value_int = 0;
     root.num_children = 1;
     em_network_node_t child;
     memset(&child, 0, sizeof(child));
-    strncpy(child.key, "child", sizeof(child.key));
+    snprintf(child.key, sizeof(child.key), "%s", "child");
     child.display_info.collapsed = true;
     child.display_info.orig_node_ctr = 2;
     child.display_info.node_ctr = 2;
     child.display_info.node_pos = 1;
     child.type = em_network_node_data_type_string;
-    strncpy(child.value_str, "child_val", sizeof(child.value_str));
+    snprintf(child.value_str, sizeof(child.value_str), "%s", "child_val");
     child.value_int = 10;
     child.num_children = 1;
     em_network_node_t grandchild;
     memset(&grandchild, 0, sizeof(grandchild));
-    strncpy(grandchild.key, "grandchild", sizeof(grandchild.key));
+    snprintf(grandchild.key, sizeof(grandchild.key), "%s", "grandchild");
     grandchild.display_info.collapsed = false;
     grandchild.display_info.orig_node_ctr = 3;
     grandchild.display_info.node_ctr = 3;
     grandchild.display_info.node_pos = 0;
     grandchild.type = em_network_node_data_type_number;
-    strncpy(grandchild.value_str, "42", sizeof(grandchild.value_str));
+    snprintf(grandchild.value_str, sizeof(grandchild.value_str), "%s", "42");
     grandchild.value_int = 42;
     grandchild.num_children = 0;
     child.child[0] = &grandchild;
@@ -387,47 +387,47 @@ TEST(em_net_node_t, clone_network_tree_multi_level_tree)
     std::cout << "Entering clone_network_tree_multi_level_tree test" << std::endl;
     em_network_node_t root;
     memset(&root, 0, sizeof(em_network_node_t));
-    strncpy(root.key, "root", sizeof(root.key));
+    snprintf(root.key, sizeof(root.key), "%s", "root");
     root.display_info.collapsed = false;
     root.display_info.orig_node_ctr = 10;
     root.display_info.node_ctr = 10;
     root.display_info.node_pos = 0;
     root.type = em_network_node_data_type_obj;
-    strncpy(root.value_str, "root_val", sizeof(root.value_str));
+    snprintf(root.value_str, sizeof(root.value_str), "%s", "root_val");
     root.value_int = 0;
     root.num_children = 2;
     em_network_node_t child1;
     memset(&child1, 0, sizeof(em_network_node_t));
-    strncpy(child1.key, "child1", sizeof(child1.key));
+    snprintf(child1.key, sizeof(child1.key), "%s", "child1");
     child1.display_info.collapsed = true;
     child1.display_info.orig_node_ctr = 5;
     child1.display_info.node_ctr = 5;
     child1.display_info.node_pos = 1;
     child1.type = em_network_node_data_type_string;
-    strncpy(child1.value_str, "child1_val", sizeof(child1.value_str));
+    snprintf(child1.value_str, sizeof(child1.value_str), "%s", "child1_val");
     child1.value_int = 1;
     child1.num_children = 1;
     em_network_node_t grandchild1;
     memset(&grandchild1, 0, sizeof(em_network_node_t));
-    strncpy(grandchild1.key, "grandchild1", sizeof(grandchild1.key));
+    snprintf(grandchild1.key, sizeof(grandchild1.key), "%s", "grandchild1");
     grandchild1.display_info.collapsed = false;
     grandchild1.display_info.orig_node_ctr = 2;
     grandchild1.display_info.node_ctr = 2;
     grandchild1.display_info.node_pos = 0;
     grandchild1.type = em_network_node_data_type_number;
-    strncpy(grandchild1.value_str, "42", sizeof(grandchild1.value_str));
+    snprintf(grandchild1.value_str, sizeof(grandchild1.value_str), "%s", "42");
     grandchild1.value_int = 42;
     grandchild1.num_children = 0;
     child1.child[0] = &grandchild1;
     em_network_node_t child2;
     memset(&child2, 0, sizeof(em_network_node_t));
-    strncpy(child2.key, "child2", sizeof(child2.key));
+    snprintf(child2.key, sizeof(child2.key), "%s", "child2");
     child2.display_info.collapsed = false;
     child2.display_info.orig_node_ctr = 3;
     child2.display_info.node_ctr = 3;
     child2.display_info.node_pos = 2;
     child2.type = em_network_node_data_type_array_obj;
-    strncpy(child2.value_str, "child2_val", sizeof(child2.value_str));
+    snprintf(child2.value_str, sizeof(child2.value_str), "%s", "child2_val");
     child2.value_int = 2;
     child2.num_children = 0;
     root.child[0] = &child1;
@@ -526,13 +526,13 @@ TEST(em_net_node_t, clone_network_tree_enum_loop)
     for (int i = 0; i < num_enum_values; i++) {
         em_network_node_t node;
         memset(&node, 0, sizeof(em_network_node_t));
-        strncpy(node.key, "enum_test", sizeof(node.key));
+        snprintf(node.key, sizeof(node.key), "%s", "enum_test");
         node.display_info.collapsed = false;
         node.display_info.orig_node_ctr = 0;
         node.display_info.node_ctr = 0;
         node.display_info.node_pos = 0;
         node.type = enum_values[i];
-        strncpy(node.value_str, "test", sizeof(node.value_str));
+        snprintf(node.value_str, sizeof(node.value_str), "%s", "test");
         node.value_int = 0;
         node.num_children = 0;
         em_network_node_t* clone = em_net_node_t::clone_network_tree(&node);
@@ -578,13 +578,13 @@ TEST(em_net_node_t, clone_network_tree_max_children)
     std::cout << "Entering clone_network_tree_max_children test" << std::endl;
     em_network_node_t root;
     memset(&root, 0, sizeof(em_network_node_t));
-    strncpy(root.key, "max_children_root", sizeof(root.key));
+    snprintf(root.key, sizeof(root.key), "%s", "max_children_root");
     root.display_info.collapsed = false;
     root.display_info.orig_node_ctr = 100;
     root.display_info.node_ctr = 100;
     root.display_info.node_pos = 0;
     root.type = em_network_node_data_type_obj;
-    strncpy(root.value_str, "max_root", sizeof(root.value_str));
+    snprintf(root.value_str, sizeof(root.value_str), "%s", "max_root");
     root.value_int = 0;
     root.num_children = EM_MAX_DM_CHILDREN;
     // Create maximum allowable children
@@ -593,13 +593,13 @@ TEST(em_net_node_t, clone_network_tree_max_children)
         memset(&children[i], 0, sizeof(em_network_node_t));
         char keyBuffer[128];
         std::snprintf(keyBuffer, sizeof(keyBuffer), "child_%u", i);
-        strncpy(children[i].key, keyBuffer, sizeof(children[i].key));
+        snprintf(children[i].key, sizeof(children[i].key), "%s", keyBuffer);
         children[i].display_info.collapsed = false;
         children[i].display_info.orig_node_ctr = i;
         children[i].display_info.node_ctr = i;
         children[i].display_info.node_pos = i;
         children[i].type = em_network_node_data_type_string;
-        strncpy(children[i].value_str, "child_val", sizeof(children[i].value_str));
+        snprintf(children[i].value_str, sizeof(children[i].value_str), "%s", "child_val");
         children[i].value_int = i;
         children[i].num_children = 0;
         root.child[i] = &children[i];
@@ -663,8 +663,8 @@ TEST(em_net_node_t, clone_network_tree_for_display_single_node_collapse_true) {
     em_net_node_t node;
     em_network_node_t* root = reinterpret_cast<em_network_node_t*>(malloc(sizeof(*root)));
     memset(root, 0, sizeof(*root));
-    strncpy(root->key, "root", sizeof(root->key)-1);
-    strncpy(root->value_str, "value", sizeof(root->value_str)-1);
+    snprintf(root->key, sizeof(root->key), "%s", "root");
+    snprintf(root->value_str, sizeof(root->value_str), "%s", "value");
     root->value_int = 1;
     root->display_info.node_ctr = 0;
     em_network_node_t disNode;
@@ -701,7 +701,7 @@ TEST(em_net_node_t, clone_network_tree_for_display_single_node_collapse_false) {
     em_net_node_t node;
     em_network_node_t* root = reinterpret_cast<em_network_node_t*>(malloc(sizeof(*root)));
     memset(root, 0, sizeof(*root));
-    strncpy(root->key, "root", sizeof(root->key)-1);
+    snprintf(root->key, sizeof(root->key), "%s", "root");
     root->num_children = 0;
     em_network_node_t disNode;
     memset(&disNode, 0, sizeof(disNode));
@@ -737,10 +737,10 @@ TEST(em_net_node_t, clone_network_tree_for_display_single_node_with_result_child
     em_net_node_t node;
     em_network_node_t* root = reinterpret_cast<em_network_node_t*>(malloc(sizeof(*root)));
     memset(root, 0, sizeof(*root));
-    strncpy(root->key, "root", sizeof(root->key)-1);
+    snprintf(root->key, sizeof(root->key), "%s", "root");
     em_network_node_t* resultChild = reinterpret_cast<em_network_node_t*>(malloc(sizeof(*resultChild)));
     memset(resultChild, 0, sizeof(*resultChild));
-    strncpy(resultChild->key, "Result", sizeof(resultChild->key)-1);
+    snprintf(resultChild->key, sizeof(resultChild->key), "%s", "Result");
     root->child[0] = resultChild;
     root->num_children = 1;
     em_network_node_t disNode;
@@ -783,12 +783,12 @@ TEST(em_net_node_t, clone_multi_level_tree_collapse_false) {
 
     em_network_node_t* root = reinterpret_cast<em_network_node_t*>(malloc(sizeof(*root)));
     memset(root, 0, sizeof(*root));
-    strncpy(root->key, "root", sizeof(root->key)-1);
+    snprintf(root->key, sizeof(root->key), "%s", "root");
     root->num_children = 1;
 
     em_network_node_t* child = reinterpret_cast<em_network_node_t*>(malloc(sizeof(*child)));
     memset(child, 0, sizeof(*child));
-    strncpy(child->key, "child", sizeof(child->key)-1);
+    snprintf(child->key, sizeof(child->key), "%s", "child");
     root->child[0] = child;
     child->num_children = 0;
 
@@ -858,7 +858,7 @@ TEST(em_net_node_t, clone_null_node_display_ctr) {
     em_net_node_t helper;
     em_network_node_t* root = reinterpret_cast<em_network_node_t*>(malloc(sizeof(*root)));
     memset(root, 0, sizeof(*root));
-    strncpy(root->key, "root", sizeof(root->key)-1);
+    snprintf(root->key, sizeof(root->key), "%s", "root");
     root->num_children = 0;
     em_network_node_t* clone =
         helper.clone_network_tree_for_display(root, nullptr, 0, true, nullptr);
@@ -918,9 +918,9 @@ TEST(em_net_node_t, free_network_tree_single_node_no_children) {
     em_network_node_t* node = reinterpret_cast<em_network_node_t*>(malloc(sizeof(em_network_node_t)));
     memset(node, 0, sizeof(em_network_node_t));
     const char *key = "single_node";
-    strncpy(node->key, key, sizeof(node->key));
+    snprintf(node->key, sizeof(node->key), "%s", key);
     const char *value = "value_single";
-    strncpy(node->value_str, value, sizeof(node->value_str));
+    snprintf(node->value_str, sizeof(node->value_str), "%s", value);
     node->display_info.collapsed = false;
     node->display_info.orig_node_ctr = 1;
     node->display_info.node_ctr = 1;
@@ -959,8 +959,8 @@ TEST(em_net_node_t, free_network_tree_multiple_levels) {
     std::cout << "Entering free_network_tree_multiple_levels test" << std::endl;
     em_network_node_t* root = reinterpret_cast<em_network_node_t*>(malloc(sizeof(*root)));
     memset(root, 0, sizeof(em_network_node_t));
-    strncpy(root->key, "root", sizeof(root->key));
-    strncpy(root->value_str, "root_value", sizeof(root->value_str));
+    snprintf(root->key, sizeof(root->key), "%s", "root");
+    snprintf(root->value_str, sizeof(root->value_str), "%s", "root_value");
     root->display_info.collapsed = true;
     root->display_info.orig_node_ctr = 1;
     root->display_info.node_ctr = 1;
@@ -974,8 +974,8 @@ TEST(em_net_node_t, free_network_tree_multiple_levels) {
     // Child1
     em_network_node_t* child1 = reinterpret_cast<em_network_node_t*>(malloc(sizeof(em_network_node_t)));
     memset(child1, 0, sizeof(em_network_node_t));
-    strncpy(child1->key, "child1", sizeof(child1->key));
-    strncpy(child1->value_str, "child1_value", sizeof(child1->value_str));
+    snprintf(child1->key, sizeof(child1->key), "%s", "child1");
+    snprintf(child1->value_str, sizeof(child1->value_str), "%s", "child1_value");
     child1->display_info.collapsed = false;
     child1->display_info.orig_node_ctr = 2;
     child1->display_info.node_ctr = 2;
@@ -987,8 +987,8 @@ TEST(em_net_node_t, free_network_tree_multiple_levels) {
     // Grandchildren
     em_network_node_t *grandchild1 = reinterpret_cast<em_network_node_t*>(malloc(sizeof(em_network_node_t)));
     memset(grandchild1, 0, sizeof(em_network_node_t));
-    strncpy(grandchild1->key, "grandchild1", sizeof(grandchild1->key));
-    strncpy(grandchild1->value_str, "grandchild1_value", sizeof(grandchild1->value_str));
+    snprintf(grandchild1->key, sizeof(grandchild1->key), "%s", "grandchild1");
+    snprintf(grandchild1->value_str, sizeof(grandchild1->value_str), "%s", "grandchild1_value");
     grandchild1->display_info.collapsed = false;
     grandchild1->display_info.orig_node_ctr = 3;
     grandchild1->display_info.node_ctr = 3;
@@ -997,8 +997,8 @@ TEST(em_net_node_t, free_network_tree_multiple_levels) {
     grandchild1->value_int = 100;
     em_network_node_t *grandchild2 = reinterpret_cast<em_network_node_t*>(malloc(sizeof(em_network_node_t)));
     memset(grandchild2, 0, sizeof(em_network_node_t));
-    strncpy(grandchild2->key, "grandchild2", sizeof(grandchild2->key));
-    strncpy(grandchild2->value_str, "grandchild2_value", sizeof(grandchild2->value_str));
+    snprintf(grandchild2->key, sizeof(grandchild2->key), "%s", "grandchild2");
+    snprintf(grandchild2->value_str, sizeof(grandchild2->value_str), "%s", "grandchild2_value");
     grandchild2->display_info.collapsed = false;
     grandchild2->display_info.orig_node_ctr = 4;
     grandchild2->display_info.node_ctr = 4;
@@ -1010,8 +1010,8 @@ TEST(em_net_node_t, free_network_tree_multiple_levels) {
     // Child2
     em_network_node_t *child2 = reinterpret_cast<em_network_node_t*>(malloc(sizeof(em_network_node_t)));
     memset(child2, 0, sizeof(em_network_node_t));
-    strncpy(child2->key, "child2", sizeof(child2->key));
-    strncpy(child2->value_str, "child2_value", sizeof(child2->value_str));
+    snprintf(child2->key, sizeof(child2->key), "%s", "child2");
+    snprintf(child2->value_str, sizeof(child2->value_str), "%s", "child2_value");
     child2->display_info.collapsed = false;
     child2->display_info.orig_node_ctr = 5;
     child2->display_info.node_ctr = 5;
@@ -1062,8 +1062,8 @@ TEST(em_net_node_t, free_network_tree_all_data_types) {
     const size_t numTypes = sizeof(types) / sizeof(types[0]);
     em_network_node_t *root = reinterpret_cast<em_network_node_t*>(malloc(sizeof(em_network_node_t)));
     memset(root, 0, sizeof(em_network_node_t));
-    strncpy(root->key, "root_all_types", sizeof(root->key));
-    strncpy(root->value_str, "value_root", sizeof(root->value_str));
+    snprintf(root->key, sizeof(root->key), "%s", "root_all_types");
+    snprintf(root->value_str, sizeof(root->value_str), "%s", "value_root");
     root->type = types[0];
     root->num_children = (numTypes > 1) ? 1 : 0;
     for (unsigned int i = 0; i < EM_MAX_DM_CHILDREN; i++) root->child[i] = nullptr;
@@ -1073,10 +1073,10 @@ TEST(em_net_node_t, free_network_tree_all_data_types) {
         memset(newNode, 0, sizeof(em_network_node_t));
         char keyBuffer[128];
         snprintf(keyBuffer, sizeof(keyBuffer), "node_%zu", i);
-        strncpy(newNode->key, keyBuffer, sizeof(newNode->key));
+        snprintf(newNode->key, sizeof(newNode->key), "%s", keyBuffer);
         char valueBuffer[128];
         snprintf(valueBuffer, sizeof(valueBuffer), "value_%zu", i);
-        strncpy(newNode->value_str, valueBuffer, sizeof(newNode->value_str));
+        snprintf(newNode->value_str, sizeof(newNode->value_str), "%s", valueBuffer);
         newNode->type = types[i];
         newNode->num_children = (i < numTypes - 1) ? 1 : 0;
         for (unsigned int j = 0; j < EM_MAX_DM_CHILDREN; j++) newNode->child[j] = nullptr;
@@ -1113,8 +1113,8 @@ TEST(em_net_node_t, free_network_tree_max_children) {
     std::cout << "Entering free_network_tree_max_children test" << std::endl;
     em_network_node_t *root = reinterpret_cast<em_network_node_t*>(malloc(sizeof(em_network_node_t)));
     memset(root, 0, sizeof(em_network_node_t));
-    strncpy(root->key, "root_max_children", sizeof(root->key));
-    strncpy(root->value_str, "value_root_max", sizeof(root->value_str));
+    snprintf(root->key, sizeof(root->key), "%s", "root_max_children");
+    snprintf(root->value_str, sizeof(root->value_str), "%s", "value_root_max");
     root->type = em_network_node_data_type_obj;
     root->num_children = EM_MAX_DM_CHILDREN;
 
@@ -1123,7 +1123,7 @@ TEST(em_net_node_t, free_network_tree_max_children) {
         memset(child, 0, sizeof(em_network_node_t));
         char keyBuffer[128];
         snprintf(keyBuffer, sizeof(keyBuffer), "child_%u", i);
-        strncpy(child->key, keyBuffer, sizeof(child->key));
+        snprintf(child->key, sizeof(child->key), "%s", keyBuffer);
         root->child[i] = child;
     }
     EXPECT_NO_THROW({
@@ -1183,9 +1183,9 @@ TEST(em_net_node_t, free_network_tree_node_singlenode)
     em_network_node_t *node = reinterpret_cast<em_network_node_t*>(malloc(sizeof(em_network_node_t)));
     memset(node, 0, sizeof(em_network_node_t));
     const char *testKey = "SingleNodeKey";
-    strncpy(node->key, testKey, sizeof(node->key));
+    snprintf(node->key, sizeof(node->key), "%s", testKey);
     const char *testValue = "SingleNodeValue";
-    strncpy(node->value_str, testValue, sizeof(node->value_str));
+    snprintf(node->value_str, sizeof(node->value_str), "%s", testValue);
     node->display_info.collapsed = false;
     node->display_info.orig_node_ctr = 1;
     node->display_info.node_ctr = 1;
@@ -1224,14 +1224,14 @@ TEST(em_net_node_t, free_network_tree_node_with_children)
     em_network_node_t *parent = reinterpret_cast<em_network_node_t*>(malloc(sizeof(em_network_node_t)));
     memset(parent, 0, sizeof(em_network_node_t));
     const char *parentKey = "ParentNode";
-    strncpy(parent->key, parentKey, sizeof(parent->key));
+    snprintf(parent->key, sizeof(parent->key), "%s", parentKey);
     parent->display_info.collapsed = false;
     parent->display_info.orig_node_ctr = 1;
     parent->display_info.node_ctr = 1;
     parent->display_info.node_pos = 0;
     parent->type = em_network_node_data_type_obj;
     const char *parentValue = "ParentValue";
-    strncpy(parent->value_str, parentValue, sizeof(parent->value_str));
+    snprintf(parent->value_str, sizeof(parent->value_str), "%s", parentValue);
     parent->value_int = 100;
     parent->num_children = 2;
     for (unsigned int i = 0; i < parent->num_children; ++i)
@@ -1240,14 +1240,14 @@ TEST(em_net_node_t, free_network_tree_node_with_children)
         memset(parent->child[i], 0, sizeof(em_network_node_t));
         char childKey[128];
         std::snprintf(childKey, sizeof(childKey), "ChildNode_%u", i);
-        strncpy(parent->child[i]->key, childKey, sizeof(parent->child[i]->key));
+        snprintf(parent->child[i]->key, sizeof(parent->child[i]->key), "%s", childKey);
         parent->child[i]->display_info.collapsed = false;
         parent->child[i]->display_info.orig_node_ctr = 2;
         parent->child[i]->display_info.node_ctr = 1;
         parent->child[i]->display_info.node_pos = i;
         parent->child[i]->type = em_network_node_data_type_string;
         const char *childValue = "ChildValue";
-        strncpy(parent->child[i]->value_str, childValue, sizeof(parent->child[i]->value_str));
+        snprintf(parent->child[i]->value_str, sizeof(parent->child[i]->value_str), "%s", childValue);
         parent->child[i]->value_int = i * 10;
         parent->child[i]->num_children = 0;
     }
@@ -1279,35 +1279,35 @@ TEST(em_net_node_t, free_network_tree_node_with_nested_nodes)
     std::cout << "Entering free_network_tree_node_with_nested_nodes test" << std::endl;
     em_network_node_t *root = reinterpret_cast<em_network_node_t*>(malloc(sizeof(em_network_node_t)));
     memset(root, 0, sizeof(em_network_node_t));
-    strncpy(root->key, "RootNode", sizeof(root->key));
+    snprintf(root->key, sizeof(root->key), "%s", "RootNode");
     root->display_info.collapsed = false;
     root->display_info.orig_node_ctr = 1;
     root->display_info.node_ctr = 1;
     root->display_info.node_pos = 0;
     root->type = em_network_node_data_type_obj;
-    strncpy(root->value_str, "RootValue", sizeof(root->value_str));
+    snprintf(root->value_str, sizeof(root->value_str), "%s", "RootValue");
     root->value_int = 200;
     root->num_children = 1;
     root->child[0] = reinterpret_cast<em_network_node_t*>(malloc(sizeof(em_network_node_t)));
     memset(root->child[0], 0, sizeof(em_network_node_t));
-    strncpy(root->child[0]->key, "Level1Child", sizeof(root->child[0]->key));
+    snprintf(root->child[0]->key, sizeof(root->child[0]->key), "%s", "Level1Child");
     root->child[0]->display_info.collapsed = true;
     root->child[0]->display_info.orig_node_ctr = 2;
     root->child[0]->display_info.node_ctr = 1;
     root->child[0]->display_info.node_pos = 0;
     root->child[0]->type = em_network_node_data_type_obj;
-    strncpy(root->child[0]->value_str, "Level1Value", sizeof(root->child[0]->value_str));
+    snprintf(root->child[0]->value_str, sizeof(root->child[0]->value_str), "%s", "Level1Value");
     root->child[0]->value_int = 300;
     root->child[0]->num_children = 1;
     root->child[0]->child[0] = reinterpret_cast<em_network_node_t*>(malloc(sizeof(em_network_node_t)));
     memset(root->child[0]->child[0], 0, sizeof(em_network_node_t));
-    strncpy(root->child[0]->child[0]->key, "Level2Child", sizeof(root->child[0]->child[0]->key));
+    snprintf(root->child[0]->child[0]->key, sizeof(root->child[0]->child[0]->key), "%s", "Level2Child");
     root->child[0]->child[0]->display_info.collapsed = false;
     root->child[0]->child[0]->display_info.orig_node_ctr = 3;
     root->child[0]->child[0]->display_info.node_ctr = 1;
     root->child[0]->child[0]->display_info.node_pos = 0;
     root->child[0]->child[0]->type = em_network_node_data_type_string;
-    strncpy(root->child[0]->child[0]->value_str, "Level2Value", sizeof(root->child[0]->child[0]->value_str));
+    snprintf(root->child[0]->child[0]->value_str, sizeof(root->child[0]->child[0]->value_str), "%s", "Level2Value");
     root->child[0]->child[0]->value_int = 400;
     root->child[0]->child[0]->num_children = 0;
     EXPECT_NO_THROW({
@@ -1359,14 +1359,14 @@ TEST(em_net_node_t, free_network_tree_node_VariousEnumTypeValues)
         memset(node, 0, sizeof(em_network_node_t));
         char keyBuffer[128];
         std::snprintf(keyBuffer, sizeof(keyBuffer), "EnumNode_%zu", i);
-        strncpy(node->key, keyBuffer, sizeof(node->key));
+        snprintf(node->key, sizeof(node->key), "%s", keyBuffer);
         node->display_info.collapsed = false;
         node->display_info.orig_node_ctr = 1;
         node->display_info.node_ctr = 1;
         node->display_info.node_pos = static_cast<unsigned int>(i);
         node->type = enumValues[i];
         const char *value = "EnumValue";
-        strncpy(node->value_str, value, sizeof(node->value_str));
+        snprintf(node->value_str, sizeof(node->value_str), "%s", value);
         node->value_int = 600 + static_cast<unsigned int>(i);
         node->num_children = 0;
         EXPECT_NO_THROW({
@@ -1399,8 +1399,7 @@ TEST(em_net_node_t, free_network_tree_string_dynamic) {
     size_t bufferSize = 50;
     char* networkTreeStr = reinterpret_cast<char*>(malloc(bufferSize));
     const char* testString = "Network tree info";
-    strncpy(networkTreeStr, testString, bufferSize - 1);
-    networkTreeStr[bufferSize - 1] = '\0';
+    snprintf(networkTreeStr, bufferSize, "%s", testString);
     EXPECT_NO_THROW({
         em_net_node_t node;
         node.free_network_tree_string(networkTreeStr);
@@ -1455,8 +1454,7 @@ TEST(em_net_node_t, free_network_tree_string_nullptr_input) {
 TEST(em_net_node_t, free_node_value_valid_dynamic_string) {
     std::cout << "Entering free_node_value_valid_dynamic_string test" << std::endl;
     char* dynStr = reinterpret_cast<char*>(malloc(50));
-    strncpy(dynStr, "Hello, World!", 50);
-    dynStr[49] = '\0';
+    snprintf(dynStr, 50, "%s", "Hello, World!");
     EXPECT_NO_THROW({
         em_net_node_t::free_node_value(dynStr);
     });
@@ -1515,7 +1513,7 @@ TEST(em_net_node_t, get_child_node_at_index_valid_single_child) {
     parent.num_children = 1;
     for (unsigned int i = 0; i < EM_MAX_DM_CHILDREN; ++i) parent.child[i] = nullptr;
     em_network_node_t* child0 = new em_network_node_t;
-    strncpy(child0->key, "child0", sizeof(child0->key));
+    snprintf(child0->key, sizeof(child0->key), "%s", "child0");
     parent.child[0] = child0;
     em_network_node_t* ret = em_net_node_t::get_child_node_at_index(&parent, 0);
     ASSERT_NE(ret, nullptr);
@@ -1548,9 +1546,9 @@ TEST(em_net_node_t, get_child_node_at_index_valid_middle_child) {
     em_network_node_t parent;
     parent.num_children = 3;
     for (unsigned int i = 0; i < EM_MAX_DM_CHILDREN; ++i) parent.child[i] = nullptr;
-    em_network_node_t* child0 = new em_network_node_t; strncpy(child0->key, "child0", sizeof(child0->key));
-    em_network_node_t* child1 = new em_network_node_t; strncpy(child1->key, "child1", sizeof(child1->key));
-    em_network_node_t* child2 = new em_network_node_t; strncpy(child2->key, "child2", sizeof(child2->key));
+    em_network_node_t* child0 = new em_network_node_t; snprintf(child0->key, sizeof(child0->key), "%s", "child0");
+    em_network_node_t* child1 = new em_network_node_t; snprintf(child1->key, sizeof(child1->key), "%s", "child1");
+    em_network_node_t* child2 = new em_network_node_t; snprintf(child2->key, sizeof(child2->key), "%s", "child2");
     parent.child[0] = child0; parent.child[1] = child1; parent.child[2] = child2;
     unsigned int idx = 1;
     em_network_node_t* ret = em_net_node_t::get_child_node_at_index(&parent, idx);
@@ -1582,9 +1580,9 @@ TEST(em_net_node_t, get_child_node_at_index_valid_last_child) {
     em_network_node_t parent;
     parent.num_children = 3;
     for (unsigned int i = 0; i < EM_MAX_DM_CHILDREN; ++i) parent.child[i] = nullptr;
-    em_network_node_t* child0 = new em_network_node_t; strncpy(child0->key, "child0", sizeof(child0->key));
-    em_network_node_t* child1 = new em_network_node_t; strncpy(child1->key, "child1", sizeof(child1->key));
-    em_network_node_t* child2 = new em_network_node_t; strncpy(child2->key, "child2", sizeof(child2->key));
+    em_network_node_t* child0 = new em_network_node_t; snprintf(child0->key, sizeof(child0->key), "%s", "child0");
+    em_network_node_t* child1 = new em_network_node_t; snprintf(child1->key, sizeof(child1->key), "%s", "child1");
+    em_network_node_t* child2 = new em_network_node_t; snprintf(child2->key, sizeof(child2->key), "%s", "child2");
     parent.child[0] = child0; parent.child[1] = child1; parent.child[2] = child2;
     unsigned int idx = 2;
     em_network_node_t* ret = em_net_node_t::get_child_node_at_index(&parent, idx);
@@ -1672,8 +1670,8 @@ TEST(em_net_node_t, get_child_node_at_index_index_out_of_bound) {
     em_network_node_t parent;
     parent.num_children = 2;
     for (unsigned int i = 0; i < EM_MAX_DM_CHILDREN; ++i) parent.child[i] = nullptr;
-    em_network_node_t* child0 = new em_network_node_t; strncpy(child0->key, "child0", sizeof(child0->key));
-    em_network_node_t* child1 = new em_network_node_t; strncpy(child1->key, "child1", sizeof(child1->key));
+    em_network_node_t* child0 = new em_network_node_t; snprintf(child0->key, sizeof(child0->key), "%s", "child0");
+    em_network_node_t* child1 = new em_network_node_t; snprintf(child1->key, sizeof(child1->key), "%s", "child1");
     parent.child[0] = child0; parent.child[1] = child1;
     unsigned int idx = 5;
     em_network_node_t* ret = em_net_node_t::get_child_node_at_index(&parent, idx);
@@ -1786,7 +1784,7 @@ TEST(em_net_node_t, get_network_tree_malformed_JSON_input) {
     em_net_node_t obj;
     char buff[50];
     memset(buff, 0, sizeof(buff));
-    strncpy(buff, "{ \"key\": \"value\"", sizeof(buff)-1);
+    snprintf(buff, sizeof(buff), "%s", "{ \"key\": \"value\"");
     em_network_node_t* tree = em_net_node_t::get_network_tree(buff);
     ASSERT_EQ(tree, nullptr);
     std::cout << "Exiting get_network_tree_malformed_JSON_input test" << std::endl;
@@ -1816,7 +1814,7 @@ TEST(em_net_node_t, get_network_tree_valid_simple_JSON_input) {
     std::cout << "Entering get_network_tree_valid_simple_JSON_input test" << std::endl;
     char buff[128];
     memset(buff, 0, sizeof(buff));
-    strncpy(buff, "{ \"key\": \"value\" }", sizeof(buff) - 1);
+    snprintf(buff, sizeof(buff), "%s", "{ \"key\": \"value\" }");
     em_network_node_t* tree = em_net_node_t::get_network_tree(buff);
     ASSERT_NE(tree, nullptr);
     EXPECT_EQ(tree->type, em_network_node_data_type_obj);
@@ -1857,7 +1855,7 @@ TEST(em_net_node_t, get_network_tree_valid_nested_JSON_input) {
     std::cout << "Entering get_network_tree_valid_nested_JSON_input test" << std::endl;
     char buff[128];
     memset(buff, 0, sizeof(buff));
-    strncpy(buff, "{ \"outerKey\": { \"innerKey\": 123 } }", sizeof(buff) - 1);
+    snprintf(buff, sizeof(buff), "%s", "{ \"outerKey\": { \"innerKey\": 123 } }");
     std::cout << "Invoking get_network_tree with buff = " << buff << std::endl;
     em_network_node_t* tree = em_net_node_t::get_network_tree(buff);
     ASSERT_NE(tree, nullptr);
@@ -1903,7 +1901,7 @@ TEST(em_net_node_t, get_network_tree_valid_JSON_array_input) {
     std::cout << "Entering get_network_tree_valid_JSON_array_input test" << std::endl;
     char buff[128];
     memset(buff, 0, sizeof(buff));
-    strncpy(buff, "[1, 2, 3]", sizeof(buff) - 1);
+    snprintf(buff, sizeof(buff), "%s", "[1, 2, 3]");
     em_network_node_t* tree = em_net_node_t::get_network_tree(buff);
     ASSERT_NE(tree, nullptr);
     EXPECT_EQ(tree->type, em_network_node_data_type_array_obj);
@@ -2092,7 +2090,7 @@ TEST(em_net_node_t, get_network_tree_by_key_null_input)
 {
     std::cout << "Entering get_network_tree_by_key_null_input test" << std::endl;
     em_long_string_t key;
-    strncpy(key, "test", sizeof(key));
+    snprintf(key, sizeof(key), "%s", "test");
     em_network_node_t* result = em_net_node_t::get_network_tree_by_key(nullptr, key);
     ASSERT_EQ(result, nullptr);
     std::cout << "Exiting get_network_tree_by_key_null_input test" << std::endl;
@@ -2119,14 +2117,14 @@ TEST(em_net_node_t, get_network_tree_by_key_EmptyKeyInValidTree)
 {
     std::cout << "Entering get_network_tree_by_key_EmptyKeyInValidTree test" << std::endl;
     em_network_node_t root;
-    strncpy(root.key, "anyKey", sizeof(root.key));
+    snprintf(root.key, sizeof(root.key), "%s", "anyKey");
     root.num_children = 0;
     for (int i = 0; i < EM_MAX_DM_CHILDREN; ++i)
     {
         root.child[i] = nullptr;
     }
     em_long_string_t searchKey;
-    strncpy(searchKey, "", sizeof(searchKey));
+    snprintf(searchKey, sizeof(searchKey), "%s", "");
     em_network_node_t* result = em_net_node_t::get_network_tree_by_key(&root, searchKey);
     ASSERT_EQ(result, nullptr);
     std::cout << "Exiting get_network_tree_by_key_EmptyKeyInValidTree test" << std::endl;
@@ -2153,14 +2151,14 @@ TEST(em_net_node_t, get_network_tree_by_key_MatchingKeyAtRoot)
 {
     std::cout << "Entering get_network_tree_by_key_MatchingKeyAtRoot test" << std::endl;
     em_network_node_t root;
-    strncpy(root.key, "root_key", sizeof(root.key));
+    snprintf(root.key, sizeof(root.key), "%s", "root_key");
     root.num_children = 0;
     for (int i = 0; i < EM_MAX_DM_CHILDREN; ++i)
     {
         root.child[i] = nullptr;
     }
     em_long_string_t searchKey;
-    strncpy(searchKey, "root_key", sizeof(searchKey));
+    snprintf(searchKey, sizeof(searchKey), "%s", "root_key");
     em_network_node_t* result = em_net_node_t::get_network_tree_by_key(&root, searchKey);
     ASSERT_NE(result, nullptr);
     EXPECT_STREQ(result->key, "root_key");
@@ -2194,18 +2192,18 @@ TEST(em_net_node_t, get_network_tree_by_key_MatchingKeyInChild)
 {
     std::cout << "Entering get_network_tree_by_key_MatchingKeyInChild test" << std::endl;
     em_network_node_t root;
-    strncpy(root.key, "root", sizeof(root.key));
+    snprintf(root.key, sizeof(root.key), "%s", "root");
     root.num_children = 1;
     for (int i = 0; i < EM_MAX_DM_CHILDREN; ++i)
     {
         root.child[i] = nullptr;
     }
     em_network_node_t child;
-    strncpy(child.key, "child", sizeof(child.key));
+    snprintf(child.key, sizeof(child.key), "%s", "child");
     child.num_children = 0;
     root.child[0] = &child;
     em_long_string_t searchKey;
-    strncpy(searchKey, "child", sizeof(searchKey));
+    snprintf(searchKey, sizeof(searchKey), "%s", "child");
     em_network_node_t* result = em_net_node_t::get_network_tree_by_key(&root, searchKey);
     ASSERT_NE(result, nullptr);
     EXPECT_STREQ(result->key, "child");
@@ -2233,7 +2231,7 @@ TEST(em_net_node_t, get_network_tree_by_key_NoMatchingKey)
 {
     std::cout << "Entering get_network_tree_by_key_NoMatchingKey test" << std::endl;
     em_network_node_t root;
-    strncpy(root.key, "root", sizeof(root.key));
+    snprintf(root.key, sizeof(root.key), "%s", "root");
     root.num_children = 2;
     for (int i = 0; i < EM_MAX_DM_CHILDREN; ++i)
     {
@@ -2241,15 +2239,15 @@ TEST(em_net_node_t, get_network_tree_by_key_NoMatchingKey)
     }
 
     em_network_node_t child1;
-    strncpy(child1.key, "child1", sizeof(child1.key));
+    snprintf(child1.key, sizeof(child1.key), "%s", "child1");
     child1.num_children = 0;
     em_network_node_t child2;
-    strncpy(child2.key, "child2", sizeof(child2.key));
+    snprintf(child2.key, sizeof(child2.key), "%s", "child2");
     child2.num_children = 0;
     root.child[0] = &child1;
     root.child[1] = &child2;
     em_long_string_t searchKey;
-    strncpy(searchKey, "nonexistent", sizeof(searchKey));
+    snprintf(searchKey, sizeof(searchKey), "%s", "nonexistent");
     em_network_node_t* result = em_net_node_t::get_network_tree_by_key(&root, searchKey);
     ASSERT_EQ(result, nullptr);
     std::cout << "Exiting get_network_tree_by_key_NoMatchingKey test" << std::endl;
@@ -2573,7 +2571,7 @@ TEST(em_net_node_t, get_network_tree_node_string_valid_simple_node) {
     unsigned int ident = 0;
     em_network_node_t node;
     memset(&node, 0, sizeof(node));
-    strncpy(node.key, "node1", sizeof(node.key) - 1);
+    snprintf(node.key, sizeof(node.key), "%s", "node1");
     node.type = em_network_node_data_type_number;
     node.value_int = 42;
     node.num_children = 0;
@@ -2609,14 +2607,14 @@ TEST(em_net_node_t, get_network_tree_node_string_valid_composite_node) {
     unsigned int ident = 0;
     em_network_node_t parent;
     memset(&parent, 0, sizeof(parent));
-    strncpy(parent.key, "parent", sizeof(parent.key) - 1);
+    snprintf(parent.key, sizeof(parent.key), "%s", "parent");
     parent.type = em_network_node_data_type_obj;
     parent.num_children = 1;
     em_network_node_t child;
     memset(&child, 0, sizeof(child));
-    strncpy(child.key, "child1", sizeof(child.key) - 1);
+    snprintf(child.key, sizeof(child.key), "%s", "child1");
     child.type = em_network_node_data_type_string;
-    strncpy(child.value_str, "example", sizeof(child.value_str) - 1);
+    snprintf(child.value_str, sizeof(child.value_str), "%s", "example");
     child.num_children = 0;
     parent.child[0] = &child;
     em_net_node_t::get_network_tree_node_string(str, &parent, &ident);
@@ -2654,22 +2652,22 @@ TEST(em_net_node_t, get_network_tree_node_string_valid_deep_recursive) {
     unsigned int ident = 0;
     em_network_node_t root;
     memset(&root, 0, sizeof(root));
-    strncpy(root.key, "root", sizeof(root.key) - 1);
+    snprintf(root.key, sizeof(root.key), "%s", "root");
     root.type = em_network_node_data_type_array_obj;
     root.num_children = 2;
     em_network_node_t child1;
     memset(&child1, 0, sizeof(child1));
-    strncpy(child1.key, "child1", sizeof(child1.key) - 1);
+    snprintf(child1.key, sizeof(child1.key), "%s", "child1");
     child1.type = em_network_node_data_type_false;
     child1.num_children = 0;
     em_network_node_t child2;
     memset(&child2, 0, sizeof(child2));
-    strncpy(child2.key, "child2", sizeof(child2.key) - 1);
+    snprintf(child2.key, sizeof(child2.key), "%s", "child2");
     child2.type = em_network_node_data_type_array_obj;
     child2.num_children = 1;
     em_network_node_t grandchild;
     memset(&grandchild, 0, sizeof(grandchild));
-    strncpy(grandchild.key, "grandchild", sizeof(grandchild.key) - 1);
+    snprintf(grandchild.key, sizeof(grandchild.key), "%s", "grandchild");
     grandchild.type = em_network_node_data_type_true;
     grandchild.num_children = 0;
     child2.child[0] = &grandchild;
@@ -2705,7 +2703,7 @@ TEST(em_net_node_t, get_network_tree_node_string_null_str_pointer) {
     unsigned int ident = 0;
     em_network_node_t node;
     memset(&node, 0, sizeof(node));
-    strncpy(node.key, "node_null_str", sizeof(node.key) - 1);
+    snprintf(node.key, sizeof(node.key), "%s", "node_null_str");
     node.type = em_network_node_data_type_number;
     node.value_int = 100;
     node.num_children = 0;
@@ -2764,9 +2762,9 @@ TEST(em_net_node_t, get_network_tree_node_string_null_pident_pointer) {
     char str[256] = {0};
     em_network_node_t node;
     memset(&node, 0, sizeof(node));
-    strncpy(node.key, "node_null_pident", sizeof(node.key) - 1);
+    snprintf(node.key, sizeof(node.key), "%s", "node_null_pident");
     node.type = em_network_node_data_type_string;
-    strncpy(node.value_str, "test", sizeof(node.value_str) - 1);
+    snprintf(node.value_str, sizeof(node.value_str), "%s", "test");
     node.num_children = 0;
     EXPECT_ANY_THROW({
         em_net_node_t::get_network_tree_node_string(str, &node, nullptr);
@@ -2854,13 +2852,13 @@ TEST(em_net_node_t, get_network_tree_string_NULL_input) {
 TEST(em_net_node_t, get_network_tree_string_single_valid_node) {
     std::cout << "Entering get_network_tree_string_single_valid_node test\n";
     em_network_node_t rootNode = {};
-    strncpy(rootNode.key, "root", sizeof(rootNode.key));
+    snprintf(rootNode.key, sizeof(rootNode.key), "%s", "root");
     rootNode.display_info.collapsed = false;
     rootNode.display_info.orig_node_ctr = 1;
     rootNode.display_info.node_ctr = 1;
     rootNode.display_info.node_pos = 0;
     rootNode.type = em_network_node_data_type_string;
-    strncpy(rootNode.value_str, "sample_value", sizeof(rootNode.value_str));
+    snprintf(rootNode.value_str, sizeof(rootNode.value_str), "%s", "sample_value");
     rootNode.value_int = 0;
     rootNode.num_children = 0;
 
@@ -2902,34 +2900,34 @@ TEST(em_net_node_t, get_network_tree_string_single_valid_node) {
 TEST(em_net_node_t, get_network_tree_string_multilevel_tree) {
     std::cout << "Entering get_network_tree_string_multilevel_tree test\n";
     em_network_node_t rootNode = {};
-    strncpy(rootNode.key, "root", sizeof(rootNode.key));
+    snprintf(rootNode.key, sizeof(rootNode.key), "%s", "root");
     rootNode.display_info.collapsed = false;
     rootNode.display_info.orig_node_ctr = 1;
     rootNode.display_info.node_ctr = 1;
     rootNode.display_info.node_pos = 0;
     rootNode.type = em_network_node_data_type_obj;
-    strncpy(rootNode.value_str, "root_value", sizeof(rootNode.value_str));
+    snprintf(rootNode.value_str, sizeof(rootNode.value_str), "%s", "root_value");
     rootNode.value_int = 0;
 
     em_network_node_t child1 = {};
-    strncpy(child1.key, "child1", sizeof(child1.key));
+    snprintf(child1.key, sizeof(child1.key), "%s", "child1");
     child1.display_info.collapsed = false;
     child1.display_info.orig_node_ctr = 2;
     child1.display_info.node_ctr = 1;
     child1.display_info.node_pos = 0;
     child1.type = em_network_node_data_type_string;
-    strncpy(child1.value_str, "child1_value", sizeof(child1.value_str));
+    snprintf(child1.value_str, sizeof(child1.value_str), "%s", "child1_value");
     child1.value_int = 10;
     child1.num_children = 0;
 
     em_network_node_t child2 = {};
-    strncpy(child2.key, "child2", sizeof(child2.key));
+    snprintf(child2.key, sizeof(child2.key), "%s", "child2");
     child2.display_info.collapsed = true;
     child2.display_info.orig_node_ctr = 3;
     child2.display_info.node_ctr = 1;
     child2.display_info.node_pos = 1;
     child2.type = em_network_node_data_type_number;
-    strncpy(child2.value_str, "child2_value", sizeof(child2.value_str));
+    snprintf(child2.value_str, sizeof(child2.value_str), "%s", "child2_value");
     child2.value_int = 20;
     child2.num_children = 0;
 
@@ -2982,7 +2980,7 @@ TEST(em_net_node_t, get_network_tree_string_enum_values_loop) {
 
         char keyBuffer[128] = {0};
         snprintf(keyBuffer, sizeof(keyBuffer), "enum_%d", enumIndex);
-        strncpy(node.key, keyBuffer, sizeof(node.key));
+        snprintf(node.key, sizeof(node.key), "%s", keyBuffer);
 
         node.display_info.collapsed = (enumIndex % 2 == 0);
 	    node.display_info.orig_node_ctr = static_cast<unsigned int>(enumIndex + 1);
@@ -2991,7 +2989,7 @@ TEST(em_net_node_t, get_network_tree_string_enum_values_loop) {
 
         node.type = static_cast<em_network_node_data_type_t>(enumIndex);
 
-        strncpy(node.value_str, "enum_value", sizeof(node.value_str));
+        snprintf(node.value_str, sizeof(node.value_str), "%s", "enum_value");
         node.value_int = static_cast<unsigned int>(enumIndex * 100);
         node.num_children = 0;
 
@@ -3070,8 +3068,8 @@ TEST(em_net_node_t, get_node_array_value_passing_null_type) {
     node.num_children = 2;
     node.child[0] = new em_network_node_t;
     node.child[1] = new em_network_node_t;
-    strncpy(node.child[0]->value_str, "str1", sizeof(node.child[0]->value_str));
-    strncpy(node.child[1]->value_str, "str2", sizeof(node.child[1]->value_str));
+    snprintf(node.child[0]->value_str, sizeof(node.child[0]->value_str), "%s", "str1");
+    snprintf(node.child[1]->value_str, sizeof(node.child[1]->value_str), "%s", "str2");
     char *result = em_net_node_t::get_node_array_value(&node, NULL);
     ASSERT_EQ(result, nullptr);
     delete node.child[0];
@@ -3112,9 +3110,9 @@ TEST(em_net_node_t, get_node_array_value_valid_array_string) {
         node.child[i]->type = em_network_node_data_type_string;
     }
 
-    strncpy(node.child[0]->value_str, "str1", sizeof(node.child[0]->value_str) - 1);
-    strncpy(node.child[1]->value_str, "str2", sizeof(node.child[1]->value_str) - 1);
-    strncpy(node.child[2]->value_str, "str3", sizeof(node.child[2]->value_str) - 1);
+    snprintf(node.child[0]->value_str, sizeof(node.child[0]->value_str), "%s", "str1");
+    snprintf(node.child[1]->value_str, sizeof(node.child[1]->value_str), "%s", "str2");
+    snprintf(node.child[2]->value_str, sizeof(node.child[2]->value_str), "%s", "str3");
 
     em_network_node_data_type_t outType = em_network_node_data_type_invalid;
 
@@ -3418,8 +3416,7 @@ TEST(em_net_node_t, get_node_from_node_ctr_SingleNodeMatchingDisplayCounter) {
     std::cout << "Entering get_node_from_node_ctr_SingleNodeMatchingDisplayCounter test" << std::endl;
     em_net_node_t netNodeObj;
     em_network_node_t singleNode;
-    strncpy(singleNode.key, "node5", sizeof(singleNode.key) - 1);
-    singleNode.key[sizeof(singleNode.key) - 1] = '\0';
+    snprintf(singleNode.key, sizeof(singleNode.key), "%s", "node5");
     singleNode.display_info.node_ctr = 5;
     singleNode.num_children = 0;
     unsigned int search_ctr = 5;
@@ -3450,8 +3447,7 @@ TEST(em_net_node_t, get_node_from_node_ctr_SingleNodeNonMatchingDisplayCounter) 
     std::cout << "Entering get_node_from_node_ctr_SingleNodeNonMatchingDisplayCounter test" << std::endl;
     em_net_node_t netNodeObj;
     em_network_node_t singleNode;
-    strncpy(singleNode.key, "node5", sizeof(singleNode.key) - 1);
-    singleNode.key[sizeof(singleNode.key) - 1] = '\0';
+    snprintf(singleNode.key, sizeof(singleNode.key), "%s", "node5");
     singleNode.display_info.node_ctr = 5;
     singleNode.num_children = 0;
     unsigned int search_ctr = 10;
@@ -3483,12 +3479,10 @@ TEST(em_net_node_t, get_node_from_node_ctr_MultipleNodesRootMatch) {
     std::cout << "Entering get_node_from_node_ctr_MultipleNodesRootMatch test" << std::endl;
     em_net_node_t netNodeObj;
     em_network_node_t rootNode;
-    strncpy(rootNode.key, "root_node", sizeof(rootNode.key) - 1);
-    rootNode.key[sizeof(rootNode.key) - 1] = '\0';
+    snprintf(rootNode.key, sizeof(rootNode.key), "%s", "root_node");
     rootNode.display_info.node_ctr = 3;
     em_network_node_t childNode;
-    strncpy(childNode.key, "child_node", sizeof(childNode.key) - 1);
-    childNode.key[sizeof(childNode.key) - 1] = '\0';
+    snprintf(childNode.key, sizeof(childNode.key), "%s", "child_node");
     childNode.display_info.node_ctr = 50;
     childNode.num_children = 0;
     rootNode.child[0] = &childNode;
@@ -3522,12 +3516,10 @@ TEST(em_net_node_t, get_node_from_node_ctr_MultipleNodesChildMatch) {
     std::cout << "Entering get_node_from_node_ctr_MultipleNodesChildMatch test" << std::endl;
     em_net_node_t netNodeObj;
     em_network_node_t rootNode;
-    strncpy(rootNode.key, "root_node", sizeof(rootNode.key) - 1);
-    rootNode.key[sizeof(rootNode.key) - 1] = '\0';
+    snprintf(rootNode.key, sizeof(rootNode.key), "%s", "root_node");
     rootNode.display_info.node_ctr = 1;
     em_network_node_t childNode;
-    strncpy(childNode.key, "child_node", sizeof(childNode.key) - 1);
-    childNode.key[sizeof(childNode.key) - 1] = '\0';
+    snprintf(childNode.key, sizeof(childNode.key), "%s", "child_node");
     childNode.display_info.node_ctr = 7;
     childNode.num_children = 0;
     rootNode.child[0] = &childNode;
@@ -3562,19 +3554,16 @@ TEST(em_net_node_t, get_node_from_node_ctr_MultipleNodesDuplicateDisplayCounters
     std::cout << "Entering get_node_from_node_ctr_MultipleNodesDuplicateDisplayCounters test" << std::endl;
     em_net_node_t netNodeObj;
     em_network_node_t rootNode;
-    strncpy(rootNode.key, "root", sizeof(rootNode.key) - 1);
-    rootNode.key[sizeof(rootNode.key) - 1] = '\0';
+    snprintf(rootNode.key, sizeof(rootNode.key), "%s", "root");
     rootNode.display_info.node_ctr = 1;
 
     em_network_node_t firstChild;
-    strncpy(firstChild.key, "first_child_8", sizeof(firstChild.key) - 1);
-    firstChild.key[sizeof(firstChild.key) - 1] = '\0';
+    snprintf(firstChild.key, sizeof(firstChild.key), "%s", "first_child_8");
     firstChild.display_info.node_ctr = 8;
     firstChild.num_children = 0;
 
     em_network_node_t secondChild;
-    strncpy(secondChild.key, "second_child_8", sizeof(secondChild.key) - 1);
-    secondChild.key[sizeof(secondChild.key) - 1] = '\0';
+    snprintf(secondChild.key, sizeof(secondChild.key), "%s", "second_child_8");
     secondChild.display_info.node_ctr = 8;
     secondChild.num_children = 0;
     rootNode.child[0] = &firstChild;
@@ -3611,12 +3600,10 @@ TEST(em_net_node_t, get_node_from_node_ctr_NonExistingDisplayCounter) {
 
     em_net_node_t netNodeObj;
     em_network_node_t rootNode;
-    strncpy(rootNode.key, "root", sizeof(rootNode.key) - 1);
-    rootNode.key[sizeof(rootNode.key) - 1] = '\0';
+    snprintf(rootNode.key, sizeof(rootNode.key), "%s", "root");
     rootNode.display_info.node_ctr = 2;
     em_network_node_t childNode;
-    strncpy(childNode.key, "child", sizeof(childNode.key) - 1);
-    childNode.key[sizeof(childNode.key) - 1] = '\0';
+    snprintf(childNode.key, sizeof(childNode.key), "%s", "child");
     childNode.display_info.node_ctr = 4;
     childNode.num_children = 0;
     rootNode.child[0] = &childNode;
@@ -3648,8 +3635,7 @@ TEST(em_net_node_t, get_node_from_node_ctr_EdgeCaseZeroDisplayCounter) {
     std::cout << "Entering get_node_from_node_ctr_EdgeCaseZeroDisplayCounter test" << std::endl;
     em_net_node_t netNodeObj;
     em_network_node_t zeroNode;
-    strncpy(zeroNode.key, "zero_node", sizeof(zeroNode.key) - 1);
-    zeroNode.key[sizeof(zeroNode.key) - 1] = '\0';
+    snprintf(zeroNode.key, sizeof(zeroNode.key), "%s", "zero_node");
     zeroNode.display_info.node_ctr = 0;
     zeroNode.num_children = 0;
     unsigned int search_ctr = 0;
@@ -3802,8 +3788,7 @@ TEST(em_net_node_t, get_node_scalar_value_String)
     em_net_node_t obj;
     em_network_node_t node;
     node.type = em_network_node_data_type_string;
-    strncpy(node.value_str, "hello world", sizeof(node.value_str) - 1);
-    node.value_str[sizeof(node.value_str) - 1] = '\0';
+    snprintf(node.value_str, sizeof(node.value_str), "%s", "hello world");
     char *result = em_net_node_t::get_node_scalar_value(&node);
     ASSERT_NE(result, nullptr);
     EXPECT_STREQ(result, "hello world");
@@ -4111,13 +4096,13 @@ TEST(em_net_node_t, network_tree_node_to_json_Valid_node_conversion_with_valid_p
     cJSON *parent = cJSON_CreateObject();
     em_net_node_t netNode;
     em_network_node_t node;
-    strncpy(node.key, "node1", sizeof(node.key));
+    snprintf(node.key, sizeof(node.key), "%s", "node1");
     node.display_info.collapsed = false;
     node.display_info.orig_node_ctr = 1;
     node.display_info.node_ctr = 2;
     node.display_info.node_pos = 3;
     node.type = em_network_node_data_type_string;
-    strncpy(node.value_str, "hello", sizeof(node.value_str));
+    snprintf(node.value_str, sizeof(node.value_str), "%s", "hello");
     node.value_int = 0;
     node.num_children = 0;
     cJSON *ret = netNode.network_tree_node_to_json(&node, parent);
@@ -4158,33 +4143,33 @@ TEST(em_net_node_t, network_tree_node_to_json_Valid_node_conversion_with_nested_
     cJSON *parent = cJSON_CreateObject();
     em_net_node_t netNode;
     em_network_node_t parentNode;
-    strncpy(parentNode.key, "parent_node", sizeof(parentNode.key));
+    snprintf(parentNode.key, sizeof(parentNode.key), "%s", "parent_node");
     parentNode.display_info.collapsed = false;
     parentNode.display_info.orig_node_ctr = 10;
     parentNode.display_info.node_ctr = 20;
     parentNode.display_info.node_pos = 30;
     parentNode.type = em_network_node_data_type_obj;
-    strncpy(parentNode.value_str, "", sizeof(parentNode.value_str));
+    snprintf(parentNode.value_str, sizeof(parentNode.value_str), "%s", "");
     parentNode.value_int = 0;
     parentNode.num_children = 2;
     em_network_node_t child1;
-    strncpy(child1.key, "child1", sizeof(child1.key));
+    snprintf(child1.key, sizeof(child1.key), "%s", "child1");
     child1.display_info.collapsed = false;
     child1.display_info.orig_node_ctr = 11;
     child1.display_info.node_ctr = 21;
     child1.display_info.node_pos = 31;
     child1.type = em_network_node_data_type_number;
     child1.value_int = 100;
-    strncpy(child1.value_str, "", sizeof(child1.value_str));
+    snprintf(child1.value_str, sizeof(child1.value_str), "%s", "");
     child1.num_children = 0;
     em_network_node_t child2;
-    strncpy(child2.key, "child2", sizeof(child2.key));
+    snprintf(child2.key, sizeof(child2.key), "%s", "child2");
     child2.display_info.collapsed = false;
     child2.display_info.orig_node_ctr = 12;
     child2.display_info.node_ctr = 22;
     child2.display_info.node_pos = 32;
     child2.type = em_network_node_data_type_string;
-    strncpy(child2.value_str, "child_value", sizeof(child2.value_str));
+    snprintf(child2.value_str, sizeof(child2.value_str), "%s", "child_value");
     child2.value_int = 0;
     child2.num_children = 0;
     parentNode.child[0] = &child1;
@@ -4258,14 +4243,14 @@ TEST(em_net_node_t, network_tree_node_to_json_Negative_null_parent_pointer)
     std::cout << "Entering network_tree_node_to_json_Negative_null_parent_pointer test" << std::endl;
     em_net_node_t netNode;
     em_network_node_t node;
-    strncpy(node.key, "node2", sizeof(node.key));
+    snprintf(node.key, sizeof(node.key), "%s", "node2");
     node.display_info.collapsed = false;
     node.display_info.orig_node_ctr = 5;
     node.display_info.node_ctr = 6;
     node.display_info.node_pos = 7;
     node.type = em_network_node_data_type_number;
     node.value_int = 1234;
-    strncpy(node.value_str, "", sizeof(node.value_str));
+    snprintf(node.value_str, sizeof(node.value_str), "%s", "");
     node.num_children = 0;
     cJSON *ret = netNode.network_tree_node_to_json(&node, nullptr);
     ASSERT_EQ(ret, nullptr);
@@ -4362,23 +4347,23 @@ TEST(em_net_node_t, network_tree_to_json_Complex_Multi_Level_Tree)
     std::cout << "Entering network_tree_to_json_Complex_Multi_Level_Tree test" << std::endl;
 
     em_network_node_t *root = new em_network_node_t{};
-    strncpy(root->key, "root", sizeof(root->key)-1);
+    snprintf(root->key, sizeof(root->key), "%s", "root");
     root->type = em_network_node_data_type_obj;
     root->num_children = 2;
 
     em_network_node_t *child1 = new em_network_node_t{};
-    strncpy(child1->key, "child1", sizeof(child1->key)-1);
+    snprintf(child1->key, sizeof(child1->key), "%s", "child1");
     child1->type = em_network_node_data_type_string;
-    strncpy(child1->value_str, "value1", sizeof(child1->value_str)-1);
+    snprintf(child1->value_str, sizeof(child1->value_str), "%s", "value1");
     child1->num_children = 0;
 
     em_network_node_t *child2 = new em_network_node_t{};
-    strncpy(child2->key, "child2", sizeof(child2->key)-1);
+    snprintf(child2->key, sizeof(child2->key), "%s", "child2");
     child2->type = em_network_node_data_type_array_obj;
     child2->num_children = 1;
 
     em_network_node_t *grandchild1 = new em_network_node_t{};
-    strncpy(grandchild1->key, "grandchild1", sizeof(grandchild1->key)-1);
+    snprintf(grandchild1->key, sizeof(grandchild1->key), "%s", "grandchild1");
     grandchild1->type = em_network_node_data_type_number;
     grandchild1->value_int = 100;
     grandchild1->num_children = 0;
@@ -4453,15 +4438,15 @@ TEST(em_net_node_t, network_tree_to_json_Check_Enum_Values)
     for (size_t i = 0; i < count; i++)
     {
         em_network_node_t root{};
-        strncpy(root.key, "root", sizeof(root.key)-1);
+        snprintf(root.key, sizeof(root.key), "%s", "root");
         root.type = em_network_node_data_type_obj;
         root.num_children = 1;
         em_network_node_t child{};
-        strncpy(child.key, "testkey", sizeof(child.key)-1);
+        snprintf(child.key, sizeof(child.key), "%s", "testkey");
         child.type = enumValues[i];
         child.num_children = 0;
         child.value_int = 123;
-        strncpy(child.value_str, "hello", sizeof(child.value_str)-1);
+        snprintf(child.value_str, sizeof(child.value_str), "%s", "hello");
         root.child[0] = &child;
         cJSON* json_obj = static_cast<cJSON*>(em_net_node_t::network_tree_to_json(&root));
         ASSERT_NE(json_obj, nullptr);
@@ -4552,7 +4537,7 @@ TEST(em_net_node_t, network_tree_to_json_Max_Children_Node)
 {
     std::cout << "Entering network_tree_to_json_Max_Children_Node test" << std::endl;
     em_network_node_t* root = new em_network_node_t{};
-    strncpy(root->key, "max_children", sizeof(root->key) - 1);
+    snprintf(root->key, sizeof(root->key), "%s", "max_children");
     root->display_info.collapsed = false;
     root->display_info.orig_node_ctr = 1;
     root->display_info.node_ctr = 10;
@@ -4836,7 +4821,7 @@ TEST(em_net_node_t, set_node_scalar_value_positive_number_node) {
     node.value_int = 0;
     memset(node.value_str, 0, sizeof(node.value_str));
     char fmt[128] = {0};
-    strncpy(fmt, "4567", sizeof(fmt)-1);
+    snprintf(fmt, sizeof(fmt), "%s", "4567");
     em_net_node_t::set_node_scalar_value(&node, fmt);
     EXPECT_EQ(node.value_int, 4567);
     std::cout << "Exiting set_node_scalar_value_positive_number_node test" << std::endl;
@@ -4866,7 +4851,7 @@ TEST(em_net_node_t, set_node_scalar_value_positive_string_node) {
     node.type = em_network_node_data_type_string;
     memset(node.value_str, 0, sizeof(node.value_str));
     char fmt[128] = {0};
-    strncpy(fmt, "test string", sizeof(fmt)-1);
+    snprintf(fmt, sizeof(fmt), "%s", "test string");
     em_net_node_t::set_node_scalar_value(&node, fmt);
     EXPECT_STREQ(node.value_str, "test string");
     std::cout << "Exiting set_node_scalar_value_positive_string_node test" << std::endl;
@@ -4898,7 +4883,7 @@ TEST(em_net_node_t, set_node_scalar_value_positive_boolean_node_true) {
     node.value_int = 0;
     memset(node.value_str, 0, sizeof(node.value_str));
     char fmt[128] = {0};
-    strncpy(fmt, "1", sizeof(fmt)-1);
+    snprintf(fmt, sizeof(fmt), "%s", "1");
     em_net_node_t::set_node_scalar_value(&node, fmt);
     EXPECT_EQ(node.value_int, 1);
     std::cout << "Exiting set_node_scalar_value_positive_boolean_node_true test" << std::endl;
@@ -4933,7 +4918,7 @@ TEST(em_net_node_t, set_node_scalar_value_positive_boolean_node_false) {
     node.value_int = 1;
     memset(node.value_str, 0, sizeof(node.value_str));
     char fmt[128] = {0};
-    strncpy(fmt, "0", sizeof(fmt)-1);
+    snprintf(fmt, sizeof(fmt), "%s", "0");
     em_net_node_t::set_node_scalar_value(&node, fmt);
     EXPECT_EQ(node.value_int, 0);
     std::cout << "Exiting set_node_scalar_value_positive_boolean_node_false test" << std::endl;
@@ -4959,7 +4944,7 @@ TEST(em_net_node_t, set_node_scalar_value_positive_boolean_node_false) {
 TEST(em_net_node_t, set_node_scalar_value_negative_null_node_pointer) {
     std::cout << "Entering set_node_scalar_value_negative_null_node_pointer test" << std::endl;
     char fmt[128] = {0};
-    strncpy(fmt, "123", sizeof(fmt)-1);
+    snprintf(fmt, sizeof(fmt), "%s", "123");
     EXPECT_ANY_THROW({
         em_net_node_t::set_node_scalar_value(nullptr, fmt);    
     });

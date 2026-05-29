@@ -56,11 +56,9 @@ TEST(em_cmd_beacon_report_t, em_cmd_beacon_report_t_create_valid_parameters) {
     std::cout << "Entering em_cmd_beacon_report_t_create_valid_parameters test" << std::endl;
     em_cmd_params_t param;
     const char *fixedStr = "ValidFixedArguments";
-    strncpy(param.u.args.fixed_args, fixedStr, sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", fixedStr);
     const char *arg0 = "Argument1";
-    strncpy(param.u.args.args[0], arg0, sizeof(param.u.args.args[0]) - 1);
-    param.u.args.args[0][sizeof(param.u.args.args[0]) - 1] = '\0';
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", arg0);
     param.u.args.num_args = 1;
     dm_easy_mesh_t dm;
     std::cout << "Invoking em_cmd_beacon_report_t with fixed_args: " << param.u.args.fixed_args << " and argument[0]: " << param.u.args.args[0] << std::endl;
@@ -174,11 +172,9 @@ TEST(em_cmd_beacon_report_t, em_cmd_beacon_report_t_create_minimal_valid_paramet
     std::cout << "Entering em_cmd_beacon_report_t_create_minimal_valid_parameters test" << std::endl;
     em_cmd_params_t param;
     const char *minFixed = "a";
-    strncpy(param.u.args.fixed_args, minFixed, sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args)-1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", minFixed);
     const char *minArg = "b";
-    strncpy(param.u.args.args[0], minArg, sizeof(param.u.args.args[0]) - 1);
-    param.u.args.args[0][sizeof(param.u.args.args[0])-1] = '\0';
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", minArg);
     param.u.args.num_args = 1;
     dm_easy_mesh_t dm;
     std::cout << "Invoking em_cmd_beacon_report_t with minimal fixed_args: " << param.u.args.fixed_args << " and minimal argument: " << param.u.args.args[0] << std::endl;
@@ -225,7 +221,7 @@ TEST(em_cmd_beacon_report_t, em_cmd_beacon_report_t_empty_fixed_args) {
     em_cmd_params_t params{};
     params.u.args.num_args = 0;
     const char *emptyStr = "";
-    strncpy(params.u.args.fixed_args, emptyStr, sizeof(params.u.args.fixed_args));
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", emptyStr);
     std::cout << "Passed fixed_args (expected empty): '" << params.u.args.fixed_args << "'" << std::endl;
     dm_easy_mesh_t dm;
     std::cout << "dm_easy_mesh_t object created" << std::endl;

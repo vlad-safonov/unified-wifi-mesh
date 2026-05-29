@@ -47,12 +47,10 @@ TEST(em_cmd_get_radio_t, ConstructorHandlesValidInputs) {
     em_cmd_params_t param;
     memset(&param, 0, sizeof(param));
     const char testFixedArgs[] = "TestFixedArgs";
-    strncpy(param.u.args.fixed_args, testFixedArgs, sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", testFixedArgs);
     param.u.args.num_args = 1;
     const char testArg[] = "Arg1";
-    strncpy(param.u.args.args[0], testArg, sizeof(param.u.args.args[0]) - 1);
-    param.u.args.args[0][sizeof(param.u.args.args[0]) - 1] = '\0';
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", testArg);
     dm_easy_mesh_t dm;
     em_cmd_get_radio_t obj(param, dm);
     EXPECT_EQ(obj.m_type, em_cmd_type_get_radio);

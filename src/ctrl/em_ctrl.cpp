@@ -77,7 +77,7 @@ void em_ctrl_t::handle_dm_commit(em_bus_event_t *evt)
         em_printfout("data model mac: %s and info->net_id : %s\n",mac_str, info->net_id);
         memcpy(new_dm.m_device.m_device_info.id.dev_mac, info->mac, sizeof(mac_addr_t));
         memcpy(new_dm.m_device.m_device_info.intf.mac, info->mac, sizeof(mac_addr_t));
-        strncpy(new_dm.m_device.m_device_info.id.net_id, info->net_id, strlen(info->net_id) + 1);
+        snprintf(new_dm.m_device.m_device_info.id.net_id, sizeof(new_dm.m_device.m_device_info.id.net_id), "%s", info->net_id);
         em_printfout("data model dev mac: %s and int.mac: %s\n", util::mac_to_string(new_dm.m_device.m_device_info.id.dev_mac).c_str(),
             util::mac_to_string(new_dm.m_device.m_device_info.intf.mac).c_str());
 
@@ -826,7 +826,7 @@ em_t *em_ctrl_t::find_em_for_msg_type(unsigned char *data, unsigned int len, em_
                 }
                 //dm = create_data_model(GLOBAL_NET_ID, const_cast<const em_interface_t *> (&intf), profile);
                 memcpy(dm_commit.mac, intf.mac, sizeof(mac_addr_t));
-                strncpy(dm_commit.net_id, GLOBAL_NET_ID, sizeof(dm_commit.net_id));
+                snprintf(dm_commit.net_id, sizeof(dm_commit.net_id), "%s", GLOBAL_NET_ID);
                 io_process(em_bus_event_type_dm_commit, reinterpret_cast<unsigned char *> (&dm_commit), sizeof(em_commit_info_t));
                 em_printfout("[%s] Creating data model for mac: %s net: %s\n", __func__, mac_str1, GLOBAL_NET_ID);
             } else {

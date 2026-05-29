@@ -211,7 +211,7 @@ int dm_network_list_t::sync_db(db_client_t& db_client, void *ctx)
 
 	memset(&info, 0, sizeof(em_network_info_t));
 	util::get_date_time_rfc3399(date_time, EM_DATE_TIME_BUFF_SZ);
-	strncpy(info.timestamp, date_time, sizeof(em_long_string_t));
+	snprintf(info.timestamp, sizeof(em_long_string_t), "%s", date_time);
 
     // there is only one row in network
     while (db_client.next_result(ctx)) {

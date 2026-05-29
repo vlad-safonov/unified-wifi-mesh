@@ -51,7 +51,7 @@ em_cmd_dev_test_t::em_cmd_dev_test_t(em_cmd_params_t param, dm_easy_mesh_t& dm)
 	m_orch_desc[3].op = dm_orch_type_em_test;
     m_orch_desc[3].submit = true;
 
-    strncpy(m_name, "dev_test", strlen("dev_test") + 1);
+    snprintf(m_name, sizeof("dev_test"), "%s", "dev_test");
     m_svc = em_service_type_ctrl;
     init(dm);
 

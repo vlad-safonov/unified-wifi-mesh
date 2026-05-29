@@ -49,8 +49,7 @@ TEST(em_cmd_channel_pref_query_t, em_cmd_channel_pref_query_t_em_service_type_ct
     em_service_type_t service = em_service_type_ctrl;
     em_cmd_params_t param{};
     const char *ctrlFixedArg = "FixedArgsCtrl";
-    strncpy(param.u.args.fixed_args, ctrlFixedArg,
-            sizeof(param.u.args.fixed_args) - 1);
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", ctrlFixedArg);
     dm_easy_mesh_t dm{};
     em_cmd_channel_pref_query_t query(service, param, dm);
     std::cout << "Constructed with service type (after override): " << static_cast<int>(query.get_svc()) << std::endl;
@@ -94,8 +93,7 @@ TEST(em_cmd_channel_pref_query_t, em_cmd_channel_pref_query_t_em_service_type_ag
     em_service_type_t service = em_service_type_agent;
     em_cmd_params_t param{};
     const char *agentFixedArg = "FixedArgsAgent";
-    strncpy(param.u.args.fixed_args, agentFixedArg,
-            sizeof(param.u.args.fixed_args) - 1);
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", agentFixedArg);
     dm_easy_mesh_t dm{};
     em_cmd_channel_pref_query_t query(service, param, dm);
     std::cout << "Constructed with service type (after override): " << static_cast<int>(query.get_svc()) << std::endl;
@@ -136,8 +134,7 @@ TEST(em_cmd_channel_pref_query_t, em_cmd_channel_pref_query_t_em_service_type_cl
     em_service_type_t service = em_service_type_cli;
     em_cmd_params_t param{};
     const char *cliFixedArg = "FixedArgsCLI";
-    strncpy(param.u.args.fixed_args, cliFixedArg,
-            sizeof(param.u.args.fixed_args) - 1);
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", cliFixedArg);
     dm_easy_mesh_t dm{};
     em_cmd_channel_pref_query_t query(service, param, dm);
     std::cout << "Constructed with service type (after override): " << static_cast<int>(query.get_svc()) << std::endl;

@@ -51,8 +51,7 @@ TEST(em_cmd_scan_result_t, em_cmd_scan_result_t_valid_initialization) {
     memset(&params, 0, sizeof(em_cmd_params_t));
     const char testFixedArgs[] = "TestFixedArgsValue";
     params.u.scan_params.op_class[0].num_channels = 5;
-    strncpy(params.u.args.fixed_args, testFixedArgs, sizeof(params.u.args.fixed_args) - 1);
-    params.u.args.fixed_args[sizeof(params.u.args.fixed_args) - 1] = '\0';
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", testFixedArgs);
     dm_easy_mesh_t dm;
     std::cout << "dm_easy_mesh_t instance created." << std::endl;
     std::cout << "Invoking constructor with parameters set with fixed_args value: " << params.u.args.fixed_args << std::endl;
@@ -98,8 +97,7 @@ TEST(em_cmd_scan_result_t, em_cmd_scan_result_t_empty_parameters) {
     std::cout << "Entering em_cmd_scan_result_t_empty_parameters test" << std::endl;
     em_cmd_params_t params;
     params.u.args.num_args = 0;
-    strncpy(params.u.args.fixed_args, "", sizeof(params.u.args.fixed_args)-1);
-    params.u.args.fixed_args[sizeof(params.u.args.fixed_args)-1] = '\0';
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", "");
     params.u.scan_params.op_class[0].num_channels = 0;
     dm_easy_mesh_t dm;
     std::cout << "Invoking constructor with empty parameters prepared with fixed_args: \"" << params.u.args.fixed_args << "\"" << std::endl;    
@@ -147,14 +145,12 @@ TEST(em_cmd_scan_result_t, em_cmd_scan_result_t_ctor_max_fixed_args)
     char maxStr[128];
     memset(maxStr, 'X', sizeof(maxStr) - 1);
     maxStr[sizeof(maxStr) - 1] = '\0';
-    strncpy(param.u.args.fixed_args, maxStr, sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", maxStr);
     param.u.args.num_args = 5;
     char maxArg[128];
     memset(maxArg, 'Y', sizeof(maxArg) - 1);
     maxArg[sizeof(maxArg) - 1] = '\0';
-    strncpy(param.u.args.args[0], maxArg, sizeof(param.u.args.args[0]) - 1);
-    param.u.args.args[0][sizeof(param.u.args.args[0]) - 1] = '\0';
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", maxArg);
     dm_easy_mesh_t dm;
     std::cout << "Invoking em_cmd_scan_result_t with fixed_args: " << param.u.args.fixed_args << std::endl;
     em_cmd_scan_result_t cmd(param, dm);

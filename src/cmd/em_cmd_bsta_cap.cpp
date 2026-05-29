@@ -32,7 +32,7 @@ em_cmd_bsta_cap_t::em_cmd_bsta_cap_t(em_cmd_params_t param, dm_easy_mesh_t& dm)
    m_orch_desc[0].op = dm_orch_type_bsta_cap_query;
    m_orch_desc[0].submit = true;
 
-   strncpy(m_name, "bsta_cap", strlen("bsta_cap") + 1);
+   snprintf(m_name, sizeof("bsta_cap"), "%s", "bsta_cap");
    m_svc = em_service_type_ctrl;
    init(dm);
 

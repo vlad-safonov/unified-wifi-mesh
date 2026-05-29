@@ -49,7 +49,7 @@ em_cmd_mld_reconfig_t::em_cmd_mld_reconfig_t()
     m_orch_desc[0].op = dm_orch_type_mld_reconfig;
     m_orch_desc[0].submit = true;
 
-    strncpy(m_name, "mld_reconfig", strlen("mld_reconfig") + 1);
+    snprintf(m_name, sizeof("mld_reconfig"), "%s", "mld_reconfig");
     m_svc = em_service_type_ctrl;
     init(dm);
 

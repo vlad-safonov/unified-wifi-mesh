@@ -49,7 +49,7 @@ em_cmd_set_channel_t::em_cmd_set_channel_t(em_cmd_params_t param, dm_easy_mesh_t
     m_orch_desc[0].op = dm_orch_type_channel_sel;
     m_orch_desc[0].submit = true;
 
-    strncpy(m_name, "set_channel", strlen("set_channel") + 1);
+    snprintf(m_name, sizeof("set_channel"), "%s", "set_channel");
     m_svc = em_service_type_ctrl;
     init(dm);
 

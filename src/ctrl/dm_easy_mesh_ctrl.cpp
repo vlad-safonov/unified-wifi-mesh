@@ -106,7 +106,7 @@ bus_error_t em_ctrl_t::cmd_setssid(const char *method_name, const bus_data_prop_
     // Initialize subdoc with NetworkSSIDList template.
     subdoc = reinterpret_cast<em_subdoc_info_t *>(buff);
     memset(subdoc, 0, sizeof(em_subdoc_info_t));
-    strncpy(subdoc->name, "NetworkSSIDList", sizeof(subdoc->name) - 1);
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "NetworkSSIDList");
 
     // get current config for NetworkSSIDList and parse as JSON.
     em_ctrl_t *em_ctrl = em_ctrl_t::get_em_ctrl_instance();
@@ -443,7 +443,7 @@ invalid:
     /* Prepare subdoc to be processed with command */
     subdoc = reinterpret_cast<em_subdoc_info_t *>(buff);
     memset(subdoc, 0, sizeof(em_subdoc_info_t));
-    strncpy(subdoc->name, "SteerWiFiBackhaul", sizeof(subdoc->name) - 1);
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "SteerWiFiBackhaul");
 
     /* Create json with root "wfa-dataelements:SteerWiFiBackhaul" and fill
      * with necessary parameters we extract from path */
@@ -679,7 +679,7 @@ invalid:
     /* Prepare subdoc to be processed with command */
     subdoc = reinterpret_cast<em_subdoc_info_t *>(buff);
     memset(subdoc, 0, sizeof(em_subdoc_info_t));
-    strncpy(subdoc->name, "ChannelScanRequest", sizeof(subdoc->name) - 1);
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "ChannelScanRequest");
 
     /* Create json with root "wfa-dataelements:ChannelScanRequest" and fill
      * with necessary parameters we extract from path */
@@ -1022,7 +1022,7 @@ invalid:
     /* Prepare subdoc to be processed with command */
     subdoc = reinterpret_cast<em_subdoc_info_t *>(buff);
     memset(subdoc, 0, sizeof(em_subdoc_info_t));
-    strncpy(subdoc->name, "ClientSteer", sizeof(subdoc->name) - 1);
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "ClientSteer");
 
     /* Create json with root "wfa-dataelements:ClientSteer" and fill
      * with necessary parameters we extract from path */
@@ -1397,7 +1397,7 @@ invalid:
     /* Prepare subdoc to be processed with command */
     subdoc = reinterpret_cast<em_subdoc_info_t *>(buff);
     memset(subdoc, 0, sizeof(em_subdoc_info_t));
-    strncpy(subdoc->name, "Disassociate", sizeof(subdoc->name) - 1);
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "Disassociate");
 
     /* Create json with root "wfa-dataelements:Disassociate" and fill
      * with necessary parameters we extract from path */
@@ -1627,7 +1627,7 @@ int dm_easy_mesh_ctrl_t::analyze_config_renew(em_bus_event_t *evt, em_cmd_t *pcm
     printf("%s:%d: Radio: %s\n", __func__, __LINE__, radio_str);
 
     evt->params.u.args.num_args = 1;
-    strncpy(evt->params.u.args.args[0], radio_str, sizeof(em_long_string_t));
+    snprintf(evt->params.u.args.args[0], sizeof(em_long_string_t), "%s", radio_str);
     pcmd[num] = new em_cmd_cfg_renew_t(em_service_type_ctrl, evt->params, dm);
 
     tmp = pcmd[num];
@@ -1670,11 +1670,11 @@ int dm_easy_mesh_ctrl_t::analyze_sta_assoc_event(em_bus_event_t *evt, em_cmd_t *
         //sta_mac_str, (params->assoc.assoc_event == 1)?"associated with":"disassociated from", bss_mac_str, dev_mac_str);
 
     evt->params.u.args.num_args = 4;
-    strncpy(evt->params.u.args.args[0], dev_mac_str, sizeof(em_long_string_t));
-    strncpy(evt->params.u.args.args[1], bss_mac_str, sizeof(em_long_string_t));
-    strncpy(evt->params.u.args.args[2], sta_mac_str, sizeof(em_long_string_t));
+    snprintf(evt->params.u.args.args[0], sizeof(em_long_string_t), "%s", dev_mac_str);
+    snprintf(evt->params.u.args.args[1], sizeof(em_long_string_t), "%s", bss_mac_str);
+    snprintf(evt->params.u.args.args[2], sizeof(em_long_string_t), "%s", sta_mac_str);
     len = (params->assoc.assoc_event == 1)?strlen("Assoc") + 1:strlen("Disassoc") + 1;
-    strncpy(evt->params.u.args.args[3], (params->assoc.assoc_event == 1)?"Assoc":"Disassoc", len);
+    snprintf(evt->params.u.args.args[3], len, "%s", (params->assoc.assoc_event == 1)?"Assoc":"Disassoc");
     pdm = get_data_model(GLOBAL_NET_ID, params->dev);
     if (pdm == NULL) {
         printf("%s:%d: Could not find data model for dev: %s\n", __func__, __LINE__, dev_mac_str);
@@ -1754,8 +1754,8 @@ int dm_easy_mesh_ctrl_t::analyze_m2_tx(em_bus_event_t *evt, em_cmd_t *pcmd[])
     printf("%s:%d: Radio: %s AL MAC: %s\n", __func__, __LINE__, radio_str, al_str);
 
     evt->params.u.args.num_args = 2;
-    strncpy(evt->params.u.args.args[0], radio_str, sizeof(em_long_string_t));
-    strncpy(evt->params.u.args.args[1], al_str, sizeof(em_long_string_t));
+    snprintf(evt->params.u.args.args[0], sizeof(em_long_string_t), "%s", radio_str);
+    snprintf(evt->params.u.args.args[1], sizeof(em_long_string_t), "%s", al_str);
     pcmd[num] = new em_cmd_em_config_t(evt->params, dm);
     tmp = pcmd[num];
     num++;
@@ -2119,7 +2119,7 @@ int dm_easy_mesh_ctrl_t::analyze_dpp_start(em_bus_event_t *evt, em_cmd_t *cmd[])
 
     dm_device_t *dev = get_first_device();
     if (dev != NULL && dev->m_device_info.country_code[0] != '\0') {
-        strncpy(country_code, dev->m_device_info.country_code, sizeof(em_tiny_string_t));
+        snprintf(country_code, sizeof(em_tiny_string_t), "%s", dev->m_device_info.country_code);
     }
     
 
@@ -2657,7 +2657,7 @@ int dm_easy_mesh_ctrl_t::analyze_bsta_cap_req(em_bus_event_t *evt, em_cmd_t *pcm
     em_printfout("analyze radio mac '%s' for bsta cap request", evt->u.raw_buff);
 
     evt->params.u.args.num_args = 1;
-    strncpy(evt->params.u.args.args[0], reinterpret_cast<const char*>(evt->u.raw_buff), sizeof(mac_addr_str_t));
+    snprintf(evt->params.u.args.args[0], sizeof(mac_addr_str_t), "%s", reinterpret_cast<const char*>(evt->u.raw_buff));
 
     pcmd[num] = new em_cmd_bsta_cap_t(evt->params, dm);
     num++;
@@ -3226,7 +3226,7 @@ void dm_easy_mesh_ctrl_t::get_config(em_long_string_t net_id, em_subdoc_info_t *
 
     tmp = cJSON_Print(parent);
     em_printfout("Subdoc: %s", tmp);
-    strncpy(subdoc->buff, tmp, strlen(tmp) + 1);
+    snprintf(subdoc->buff, sizeof(subdoc->buff), "%s", tmp);
     cJSON_free(parent);
 }
 
@@ -4077,7 +4077,7 @@ bus_error_t dm_easy_mesh_ctrl_t::network_get_inner(char *event_name, raw_data_t 
 
     em_string_t str_val = { 0 };
     if (strcmp(param, "ID") == 0) {
-        strncpy(str_val, GLOBAL_NET_ID, sizeof(str_val) - 1);
+        snprintf(str_val, sizeof(str_val), "%s", GLOBAL_NET_ID);
         rc = dm_ctrl->raw_data_set(p_data, str_val);
     } else if (strcmp(param, "ControllerID") == 0) {
         dm_easy_mesh_t *dm = dm_ctrl->get_first_dm();
@@ -4248,8 +4248,7 @@ bus_error_t dm_easy_mesh_ctrl_t::device_get_inner(char *event_name, raw_data_t *
         std::vector<em_short_string_t> tmp(n);
 
         for (size_t i = 0; i < n; i++) {
-            std::strncpy(tmp[i], di->backhaul_down_mac[i], sizeof(tmp[i]) - 1);
-            tmp[i][sizeof(tmp[i]) - 1] = '\0';
+            snprintf(tmp[i], sizeof(tmp[i]), "%s", di->backhaul_down_mac[i]);
         }
         dm_ctrl->fill_comma_sep(tmp.data(), n, val_str);
         rc = dm_ctrl->raw_data_set(p_data, val_str);
@@ -4391,8 +4390,7 @@ bus_error_t dm_easy_mesh_ctrl_t::device_tget_inner(char *event_name, raw_data_t 
         std::vector<em_short_string_t> tmp(n);
 
         for (size_t i = 0; i < n; i++) {
-            std::strncpy(tmp[i], di->backhaul_down_mac[i], sizeof(tmp[i]) - 1);
-            tmp[i][sizeof(tmp[i]) - 1] = '\0';
+            snprintf(tmp[i], sizeof(tmp[i]), "%s", di->backhaul_down_mac[i]);
         }
         dm_ctrl->fill_comma_sep(tmp.data(), n, val_str);
         dm_ctrl->property_append_tail(&property, root, idx, "BackhaulDownMACAddress", val_str);

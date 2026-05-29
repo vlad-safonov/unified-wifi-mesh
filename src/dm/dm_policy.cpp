@@ -45,7 +45,7 @@ int dm_policy_t::decode(const cJSON *obj, void *parent_id, em_policy_id_type_t t
 
     memset(&m_policy, 0, sizeof(em_policy_t));
 	parse_dev_radio_mac_from_key(static_cast<char *>(parent_id), &id);
-	strncpy(m_policy.id.net_id, id.net_id, sizeof(em_long_string_t));
+	snprintf(m_policy.id.net_id, sizeof(em_long_string_t), "%s", id.net_id);
 	memcpy(m_policy.id.dev_mac, id.dev_mac, sizeof(mac_address_t));
 	memcpy(m_policy.id.radio_mac, id.radio_mac, sizeof(mac_address_t));
 	m_policy.id.type = type;	
@@ -238,7 +238,7 @@ void dm_policy_t::operator = (const dm_policy_t& obj)
     this->m_policy.sta_traffic_stats = obj.m_policy.sta_traffic_stats;
     this->m_policy.sta_link_metric = obj.m_policy.sta_link_metric;
     this->m_policy.sta_status = obj.m_policy.sta_status;
-    strncpy(this->m_policy.managed_sta_marker, obj.m_policy.managed_sta_marker, sizeof(em_long_string_t));
+    snprintf(this->m_policy.managed_sta_marker, sizeof(em_long_string_t), "%s", obj.m_policy.managed_sta_marker);
     memcpy(&this->m_policy.def_8021q_settings, &obj.m_policy.def_8021q_settings, sizeof(em_8021q_settings_policy_t));
     memcpy(&m_policy.link_stats_alarm_cfg, &obj.m_policy.link_stats_alarm_cfg, sizeof(em_link_stats_alarm_cfg_t));
     memcpy(&m_policy.client_filters, &obj.m_policy.client_filters, sizeof(em_client_filters_cfg_t));
@@ -250,12 +250,12 @@ int dm_policy_t::parse_dev_radio_mac_from_key(const char *key, em_policy_id_t *i
     char *tmp, *remain;
     unsigned int i = 0;
 
-    strncpy(str, key, strlen(key) + 1);
+    snprintf(str, sizeof(str), "%s", key);
     remain = str;
     while ((tmp = strchr(remain, '@')) != NULL) {
         if (i == 0) {
             *tmp = 0;
-            strncpy(id->net_id, remain, strlen(remain) + 1);
+            snprintf(id->net_id, sizeof(id->net_id), "%s", remain);
             tmp++;
             remain = tmp;
         } else if (i == 1) {

@@ -50,7 +50,7 @@ em_cmd_sta_steer_t::em_cmd_sta_steer_t(em_cmd_steer_params_t params)
     m_orch_desc[0].op = dm_orch_type_sta_steer;
     m_orch_desc[0].submit = true;
 
-    strncpy(m_name, "steer_sta", strlen("steer_sta") + 1);
+    snprintf(m_name, sizeof("steer_sta"), "%s", "steer_sta");
     m_svc = em_service_type_agent;
     init(dm);
 

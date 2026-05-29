@@ -1066,7 +1066,7 @@ TEST_F(em_orch_ctrl_t_TEST, is_em_ready_for_orch_exec_valid_inputs_return_true)
     for (size_t i = 0; i < totalTypes; i++) {
         em_cmd_t cmd{};
         em_interface_t ruid;
-        strncpy(ruid.name, "Validname", sizeof(ruid.name));
+        snprintf(ruid.name, sizeof(ruid.name), "%s", "Validname");
         unsigned char mac[6] = {0x1A, 0x1B, 0x2C, 0x3D, 0x4E, 0x5A};
         memcpy(ruid.mac, mac, sizeof(mac));
         ruid.media = em_media_type_ieee80211b_24;
@@ -1111,7 +1111,7 @@ TEST_F(em_orch_ctrl_t_TEST, is_em_ready_for_orch_exec_valid_mtype_state)
     std::cout << "Entering is_em_ready_for_orch_exec_valid_mtype_state test" << std::endl;
     em_cmd_t cmd{};
     em_interface_t ruid;
-    strncpy(ruid.name, "Validname", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Validname");
     unsigned char mac[6] = {0x1A, 0x1B, 0x2C, 0x3D, 0x4E, 0x5A};
     memcpy(ruid.mac, mac, sizeof(mac));
     ruid.media = em_media_type_ieee80211b_24;
@@ -1152,7 +1152,7 @@ TEST_F(em_orch_ctrl_t_TEST, is_em_ready_for_orch_exec_mtype_none)
     std::cout << "Entering is_em_ready_for_orch_exec_mtype_none test" << std::endl;
     em_cmd_t cmd{};
     em_interface_t ruid;
-    strncpy(ruid.name, "Validname", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Validname");
     unsigned char mac[6] = {0x1A, 0x1B, 0x2C, 0x3D, 0x4E, 0x5A};
     memcpy(ruid.mac, mac, sizeof(mac));
     ruid.media = em_media_type_ieee80211b_24;
@@ -1192,7 +1192,7 @@ TEST_F(em_orch_ctrl_t_TEST, is_em_ready_for_orch_exec_null_cmd)
 {
     std::cout << "Entering is_em_ready_for_orch_exec_null_cmd test" << std::endl;
     em_interface_t ruid;
-    strncpy(ruid.name, "Validname", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Validname");
     unsigned char mac[6] = {0x1A, 0x1B, 0x2C, 0x3D, 0x4E, 0x5A};
     memcpy(ruid.mac, mac, sizeof(mac));
     ruid.media = em_media_type_ieee80211b_24;
@@ -1262,7 +1262,7 @@ TEST_F(em_orch_ctrl_t_TEST, is_em_ready_for_orch_fini_start_dpp_command) {
     em_cmd_t cmd{};
     cmd.m_type = em_cmd_type_set_radio;
     em_interface_t ruid;
-    strncpy(ruid.name, "Validname", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Validname");
     unsigned char mac[6] = {0x1A, 0x1B, 0x2C, 0x3D, 0x4E, 0x5A};
     memcpy(ruid.mac, mac, sizeof(mac));
     ruid.media = em_media_type_ieee80211b_24;
@@ -1300,7 +1300,7 @@ TEST_F(em_orch_ctrl_t_TEST, is_em_ready_for_orch_fini_mtype_sta_assoc) {
     em_cmd_t cmd{};
     cmd.m_type = em_cmd_type_sta_assoc;
     em_interface_t ruid;
-    strncpy(ruid.name, "Validname", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Validname");
     unsigned char mac[6] = {0x1A, 0x1B, 0x2C, 0x3D, 0x4E, 0x5A};
     memcpy(ruid.mac, mac, sizeof(mac));
     ruid.media = em_media_type_ieee80211b_24;
@@ -1344,7 +1344,7 @@ TEST_F(em_orch_ctrl_t_TEST, is_em_ready_for_orch_fini_set_ssid_not_ready) {
     em_cmd_t cmd{};
     cmd.m_type = em_cmd_type_sta_link_metrics;
     em_interface_t ruid;
-    strncpy(ruid.name, "Validname", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Validname");
     unsigned char mac[6] = {0x1A, 0x1B, 0x2C, 0x3D, 0x4E, 0x5A};
     memcpy(ruid.mac, mac, sizeof(mac));
     ruid.media = em_media_type_ieee80211b_24;
@@ -1382,7 +1382,7 @@ TEST_F(em_orch_ctrl_t_TEST, is_em_ready_for_orch_fini_sta_assoc_not_ready) {
     em_cmd_t cmd{};
     cmd.m_type = em_cmd_type_vap_config;
     em_interface_t ruid;
-    strncpy(ruid.name, "Validname", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Validname");
     unsigned char mac[6] = {0x1A, 0x1B, 0x2C, 0x3D, 0x4E, 0x5A};
     memcpy(ruid.mac, mac, sizeof(mac));
     ruid.media = em_media_type_ieee80211b_24;
@@ -1420,7 +1420,7 @@ TEST_F(em_orch_ctrl_t_TEST, orch_transient_valid_inputs)
     em_cmd_t pcmd{};
     pcmd.m_type = em_cmd_type_em_config;
     em_interface_t ruid;
-    strncpy(ruid.name, "Validname", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Validname");
     unsigned char mac[6] = {0x1A, 0x1B, 0x2C, 0x3D, 0x4E, 0x5A};
     memcpy(ruid.mac, mac, sizeof(mac));
     ruid.media = em_media_type_ieee80211b_24;
@@ -1458,7 +1458,7 @@ TEST_F(em_orch_ctrl_t_TEST, orch_transient_null_pcmd)
 {
     std::cout << "Entering orch_transient_null_pcmd test" << std::endl;
 	em_interface_t ruid;
-    strncpy(ruid.name, "Validname", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Validname");
     unsigned char mac[6] = {0x1A, 0x1B, 0x2C, 0x3D, 0x4E, 0x5A};
     memcpy(ruid.mac, mac, sizeof(mac));
     ruid.media = em_media_type_ieee80211b_24;
@@ -1530,7 +1530,7 @@ TEST_F(em_orch_ctrl_t_TEST, pre_process_cancel_unhandled_command)
     em_cmd_t pcmd{};
     pcmd.m_type = static_cast<em_cmd_type_t>(999);
     em_interface_t ruid;
-    strncpy(ruid.name, "Validname", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Validname");
     unsigned char mac[6] = {0x1A, 0x1B, 0x2C, 0x3D, 0x4E, 0x5A};
     memcpy(ruid.mac, mac, sizeof(mac));
     ruid.media = em_media_type_ieee80211b_24;
@@ -1567,7 +1567,7 @@ TEST_F(em_orch_ctrl_t_TEST, pre_process_cancel_null_pcmd)
 {
     std::cout << "Entering pre_process_cancel_null_pcmd test" << std::endl;
     em_interface_t ruid;
-    strncpy(ruid.name, "Validname", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Validname");
     unsigned char mac[6] = {0x1A, 0x1B, 0x2C, 0x3D, 0x4E, 0x5A};
     memcpy(ruid.mac, mac, sizeof(mac));
     ruid.media = em_media_type_ieee80211b_24;

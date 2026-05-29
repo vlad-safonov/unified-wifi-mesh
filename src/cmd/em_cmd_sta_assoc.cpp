@@ -51,7 +51,7 @@ em_cmd_sta_assoc_t::em_cmd_sta_assoc_t(em_cmd_params_t param, dm_easy_mesh_t& dm
     m_orch_desc[1].op = dm_orch_type_topo_publish;
     m_orch_desc[1].submit = true;
 
-    strncpy(m_name, "sta_assoc", strlen("sta_assoc") + 1);
+    snprintf(m_name, sizeof("sta_assoc"), "%s", "sta_assoc");
     m_svc = em_service_type_ctrl;
     init(dm);
 

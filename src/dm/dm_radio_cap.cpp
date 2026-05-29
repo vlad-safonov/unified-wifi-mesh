@@ -47,19 +47,19 @@ int dm_radio_cap_t::decode(const cJSON *obj, void *parent_id)
 
 /*
     if ((tmp = cJSON_GetObjectItem(obj, "HTCapabilities")) != NULL) {
-		strncpy(m_radio_cap_info.ht_cap, cJSON_GetStringValue(tmp), strlen(cJSON_GetStringValue(tmp)));
+		snprintf(m_radio_cap_info.ht_cap, strlen(cJSON_GetStringValue(tmp)), "%s", cJSON_GetStringValue(tmp));
     }
 
     if ((tmp = cJSON_GetObjectItem(obj, "VHTCapabilities")) != NULL) {
-		strncpy(m_radio_cap_info.vht_cap, cJSON_GetStringValue(tmp), strlen(cJSON_GetStringValue(tmp)));
+		snprintf(m_radio_cap_info.vht_cap, strlen(cJSON_GetStringValue(tmp)), "%s", cJSON_GetStringValue(tmp));
     }
 
     if ((tmp = cJSON_GetObjectItem(obj, "HECapabilities")) != NULL) {
-		strncpy(m_radio_cap_info.he_cap, cJSON_GetStringValue(tmp), strlen(cJSON_GetStringValue(tmp)));
+		snprintf(m_radio_cap_info.he_cap, strlen(cJSON_GetStringValue(tmp)), "%s", cJSON_GetStringValue(tmp));
     }
 
     if ((tmp = cJSON_GetObjectItem(obj, "EHTCapabilities")) != NULL) {
-		strncpy(m_radio_cap_info.eht_cap, cJSON_GetStringValue(tmp), strlen(cJSON_GetStringValue(tmp)));
+		snprintf(m_radio_cap_info.eht_cap, strlen(cJSON_GetStringValue(tmp)), "%s", cJSON_GetStringValue(tmp));
     }
 
     if ((tmp = cJSON_GetObjectItem(obj, "NumberOfOpClass")) != NULL) {

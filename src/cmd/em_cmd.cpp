@@ -171,7 +171,7 @@ char *em_cmd_t::status_to_string(em_cmd_out_status_t status, char *str)
     }
 
     tmp = cJSON_Print(obj);
-    strncpy(str, tmp, strlen(tmp) + 1);
+    snprintf(str, sizeof(str), "%s", tmp);
     cJSON_free(tmp);
     cJSON_Delete(obj);
 
@@ -287,22 +287,22 @@ void em_cmd_t::init()
             break;
 
         case em_cmd_type_get_device:
-            strncpy(m_name, "get_device", strlen("get_device") + 1);
+            snprintf(m_name, sizeof("get_device"), "%s", "get_device");
             m_svc = em_service_type_ctrl;
             break;
 
         case em_cmd_type_remove_device:
-            strncpy(m_name, "remove_device", strlen("remove_device") + 1);
+            snprintf(m_name, sizeof("remove_device"), "%s", "remove_device");
             m_svc = em_service_type_ctrl;
             break;
 
         case em_cmd_type_get_radio:
-            strncpy(m_name, "get_radio", strlen("get_radio") + 1);
+            snprintf(m_name, sizeof("get_radio"), "%s", "get_radio");
             m_svc = em_service_type_ctrl;
             break;
 
         case em_cmd_type_set_radio:
-            strncpy(m_name, "set_radio", strlen("set_radio") + 1);
+            snprintf(m_name, sizeof("set_radio"), "%s", "set_radio");
             m_svc = em_service_type_ctrl;
             break;
 
@@ -402,42 +402,42 @@ void em_cmd_t::init()
             break;
 
         case em_cmd_type_topo_sync:
-            strncpy(m_name, "topo_sync", strlen("topo_sync") + 1);
+            snprintf(m_name, sizeof("topo_sync"), "%s", "topo_sync");
             m_svc = em_service_type_ctrl;
             break;
 
         case em_cmd_type_sta_assoc:
-            strncpy(m_name, "sta_assoc", strlen("sta_assoc") + 1);
+            snprintf(m_name, sizeof("sta_assoc"), "%s", "sta_assoc");
             m_svc = em_service_type_ctrl;
             break;
 
         case em_cmd_type_sta_link_metrics:
-            strncpy(m_name, "sta_link_metrics", strlen("sta_link_metrics") + 1);
+            snprintf(m_name, sizeof("sta_link_metrics"), "%s", "sta_link_metrics");
             m_svc = em_service_type_ctrl;
             break;
 
         case em_cmd_type_sta_steer:
-            strncpy(m_name, "sta_steer", strlen("sta_steer") + 1);
+            snprintf(m_name, sizeof("sta_steer"), "%s", "sta_steer");
             m_svc = em_service_type_ctrl;
             break;
 
         case em_cmd_type_sta_disassoc:
-            strncpy(m_name, "sta_disassoc", strlen("sta_disassoc") + 1);
+            snprintf(m_name, sizeof("sta_disassoc"), "%s", "sta_disassoc");
             m_svc = em_service_type_ctrl;
             break;
 
         case em_cmd_type_em_config:
-            strncpy(m_name, "em_config", strlen("em_config") + 1);
+            snprintf(m_name, sizeof("em_config"), "%s", "em_config");
             m_svc = em_service_type_ctrl;
             break;
         
 		case em_cmd_type_get_policy:
-            strncpy(m_name, "get_policy", strlen("get_policy") + 1);
+            snprintf(m_name, sizeof("get_policy"), "%s", "get_policy");
             m_svc = em_service_type_ctrl;
             break;
 		
 		case em_cmd_type_set_policy:
-            strncpy(m_name, "set_policy", strlen("set_policy") + 1);
+            snprintf(m_name, sizeof("set_policy"), "%s", "set_policy");
             m_svc = em_service_type_ctrl;
             break;
 
@@ -462,7 +462,7 @@ void em_cmd_t::init()
             break;
 
         case em_cmd_type_get_link_quality_report:
-            strncpy(m_name, "get_alarm_report", strlen("get_alarm_report") + 1);
+            snprintf(m_name, sizeof("get_alarm_report"), "%s", "get_alarm_report");
             m_svc = em_service_type_ctrl;
             break;
 

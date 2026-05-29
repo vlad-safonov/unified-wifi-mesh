@@ -57,9 +57,9 @@ TEST(em_cmd_topo_sync_t, em_cmd_topo_sync_t_valid_parameters)
     const char* testName = "em_cmd_topo_sync_t_valid_parameters";
     std::cout << "Entering " << testName << " test" << std::endl;
     em_cmd_params_t cmdParam{};
-    strncpy(cmdParam.u.args.fixed_args, "topo_sync", sizeof(cmdParam.u.args.fixed_args) - 1);
+    snprintf(cmdParam.u.args.fixed_args, sizeof(cmdParam.u.args.fixed_args), "%s", "topo_sync");
     em_network_info_t netInfo{};
-    strncpy(netInfo.id, "net1", sizeof(netInfo.id) - 1);
+    snprintf(netInfo.id, sizeof(netInfo.id), "%s", "net1");
     dm_network_t network(&netInfo);
     dm_easy_mesh_t dm(network);
     std::cout << "Command param fixed_args: " << cmdParam.u.args.fixed_args << std::endl;
@@ -156,9 +156,9 @@ TEST(em_cmd_topo_sync_t, em_cmd_topo_sync_t_custom_network)
     const char* testName = "em_cmd_topo_sync_t_custom_network";
     std::cout << "Entering " << testName << " test" << std::endl;
     em_cmd_params_t cmdParam{};
-    strncpy(cmdParam.u.args.fixed_args, "topo_sync", sizeof(cmdParam.u.args.fixed_args) - 1);
+    snprintf(cmdParam.u.args.fixed_args, sizeof(cmdParam.u.args.fixed_args), "%s", "topo_sync");
     em_network_info_t netInfo{};
-    strncpy(netInfo.id, "myNetwork42", sizeof(netInfo.id) - 1);
+    snprintf(netInfo.id, sizeof(netInfo.id), "%s", "myNetwork42");
     dm_network_t network(&netInfo);
     dm_easy_mesh_t dm(network);
     em_cmd_topo_sync_t topo(cmdParam, dm);

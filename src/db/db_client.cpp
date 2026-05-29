@@ -160,12 +160,10 @@
          return -1;
      }
 
-     strncpy(username, path, user_len);
-     username[user_len] = '\0';
+     snprintf(username, user_len, "%s", path);
 
      tmp++; // Move past '@'
-     strncpy(password, tmp, sizeof(password) - 1);
-     password[sizeof(password) - 1] = '\0';
+     snprintf(password, sizeof(password), "%s", tmp);
 
      printf("%s:%d: user:%s pass:%s\n", __func__, __LINE__, username, password);
 

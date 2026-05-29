@@ -814,7 +814,7 @@ int dm_easy_mesh_t::decode_config_reset(em_subdoc_info_t *subdoc, const char *ke
 			preference_obj = cJSON_GetArrayItem(preference_list_obj, static_cast<int> (i));
 
 			if ((obj = cJSON_GetObjectItem(preference_obj, "rpi")) != NULL) {
-				strncpy(m_preference[m_num_preferences].platform, "rpi", strlen("rpi") + 1);
+				snprintf(m_preference[m_num_preferences].platform, sizeof("rpi"), "%s", "rpi");
 				if (strncmp(cJSON_GetStringValue(obj), "eth", strlen("eth")) == 0) {
 					m_preference[m_num_preferences].media = em_media_type_ieee8023ab;
 				} else if (strncmp(cJSON_GetStringValue(obj), "wlan", strlen("wlan")) == 0) {
@@ -824,7 +824,7 @@ int dm_easy_mesh_t::decode_config_reset(em_subdoc_info_t *subdoc, const char *ke
 			} 
 
 			if ((obj = cJSON_GetObjectItem(preference_obj, "sim")) != NULL) {
-				strncpy(m_preference[m_num_preferences].platform, "sim", strlen("sim") + 1);
+				snprintf(m_preference[m_num_preferences].platform, sizeof("sim"), "%s", "sim");
 				if (strncmp(cJSON_GetStringValue(obj), "ens", strlen("ens")) == 0) {
 					m_preference[m_num_preferences].media = em_media_type_ieee8023ab;
 				}
@@ -832,7 +832,7 @@ int dm_easy_mesh_t::decode_config_reset(em_subdoc_info_t *subdoc, const char *ke
 			}
 
 			if ((obj = cJSON_GetObjectItem(preference_obj, "bpi")) != NULL) {
-                                strncpy(m_preference[m_num_preferences].platform, "bpi", strlen("bpi") + 1);
+                                snprintf(m_preference[m_num_preferences].platform, sizeof("bpi"), "%s", "bpi");
                                 if (strncmp(cJSON_GetStringValue(obj), "erouter", strlen("erouter")) == 0) {
                                         m_preference[m_num_preferences].media = em_media_type_ieee8023ab;
                                 }
@@ -1997,7 +1997,7 @@ int dm_easy_mesh_t::get_interfaces_list(em_interface_t interfaces[], unsigned in
 				(strncmp(tmp->ifa_name, "eth3", strlen("eth3")) != 0) &&
 				((!strncmp(tmp->ifa_name, "brlan0", strlen("brlan0"))) ||
 				(strncmp(tmp->ifa_name, "br", strlen("br")) != 0))){
-            strncpy(interfaces[num].name, tmp->ifa_name, strlen(tmp->ifa_name) + 1);
+            snprintf(interfaces[num].name, sizeof(interfaces[num].name), "%s", tmp->ifa_name);
 			if (strstr(tmp->ifa_name, "eth") != NULL) {
 				interfaces[num].media = em_media_type_ieee8023ab;
 			} else if (strstr(tmp->ifa_name, "erouter") != NULL) {
@@ -3238,7 +3238,7 @@ void dm_easy_mesh_t::update_scan_results(em_scan_result_t *scan_result)
 
     em_scan_result_id_t *id = &scan_result->id;
 
-    strncpy(id->net_id, netid, strlen(netid) + 1);
+    snprintf(id->net_id, sizeof(id->net_id), "%s", netid);
 	memcpy(id->dev_mac, get_agent_al_interface_mac(), sizeof(mac_address_t));
     id->scanner_type = em_scanner_type_radio;
 
@@ -3300,7 +3300,7 @@ void dm_easy_mesh_t::update_ap_mld_info(em_ap_mld_info_t *ap_mld_info)
 
     // Update MLD fields
     target_mld->mac_addr_valid = ap_mld_info->mac_addr_valid;
-    strncpy(target_mld->ssid, ap_mld_info->ssid, sizeof(ssid_t));
+    snprintf(target_mld->ssid, sizeof(ssid_t), "%s", ap_mld_info->ssid);
     memcpy(target_mld->mac_addr, ap_mld_info->mac_addr, sizeof(mac_address_t));
     target_mld->str = ap_mld_info->str;
     target_mld->nstr = ap_mld_info->nstr;
@@ -3389,7 +3389,7 @@ void dm_easy_mesh_t::set_db_cfg_param(db_cfg_type_t cfg_type, const char *criter
 	}
 
 	m_db_cfg_param.db_cfg_type |= static_cast<unsigned int> (cfg_type);
-	strncpy(m_db_cfg_param.db_cfg_criteria[index], criteria, strlen(criteria));
+	snprintf(m_db_cfg_param.db_cfg_criteria[index], strlen(criteria), "%s", criteria);
 }
 
 char *dm_easy_mesh_t::db_cfg_type_get_criteria(db_cfg_type_t cfg_type)

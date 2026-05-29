@@ -46,7 +46,7 @@ TEST(em_cmd_get_ssid_t, em_cmd_get_ssid_t_valid_parameters)
     std::cout << "Entering em_cmd_get_ssid_t_valid_parameters test" << std::endl;
     em_cmd_params_t param;
     const char* testSsid = "TestSSID";
-    strncpy(param.u.args.fixed_args, testSsid, sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", testSsid);
     dm_easy_mesh_t dm;
     em_cmd_get_ssid_t cmd(param, dm);
     EXPECT_STREQ("TestSSID", cmd.m_param.u.args.fixed_args);
@@ -77,7 +77,7 @@ TEST(em_cmd_get_ssid_t, em_cmd_get_ssid_t_empty_string)
 {
     std::cout << "Entering em_cmd_get_ssid_t_empty_string test" << std::endl;
     em_cmd_params_t param;
-    strncpy(param.u.args.fixed_args, "", sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "");
     dm_easy_mesh_t dm;
     em_cmd_get_ssid_t cmd(param, dm);
     EXPECT_STREQ("", cmd.m_param.u.args.fixed_args);
@@ -110,7 +110,7 @@ TEST(em_cmd_get_ssid_t, em_cmd_get_ssid_t_max_length)
     memset(longSsid, 'A', 127);
     longSsid[127] = '\0';
     em_cmd_params_t param;
-    strncpy(param.u.args.fixed_args, longSsid, sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", longSsid);
     dm_easy_mesh_t dm;
     em_cmd_get_ssid_t cmd(param, dm);
     EXPECT_STREQ(longSsid, cmd.m_param.u.args.fixed_args);

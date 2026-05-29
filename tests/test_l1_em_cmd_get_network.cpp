@@ -49,10 +49,10 @@ TEST(em_cmd_get_network_t, em_cmd_get_network_t_ValidInputConstruction)
     std::cout << "Entering em_cmd_get_network_t_ValidInputConstruction test" << std::endl;
     em_cmd_params_t param;
     param.u.args.num_args = 1;
-    strncpy(param.u.args.fixed_args, "GET_NETWORK", sizeof(param.u.args.fixed_args));
-    strncpy(param.u.args.args[0], "Param1", sizeof(param.u.args.args[0]));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "GET_NETWORK");
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", "Param1");
     em_network_node_t dummy_node;
-    strncpy(dummy_node.key, "dummy_node", sizeof(dummy_node.key));
+    snprintf(dummy_node.key, sizeof(dummy_node.key), "%s", "dummy_node");
     param.net_node = &dummy_node;
     dm_easy_mesh_t dm;
     em_cmd_get_network_t cmd(param, dm);
@@ -85,9 +85,9 @@ TEST(em_cmd_get_network_t, em_cmd_get_network_t_ValidMinimalInput)
     std::cout << "Entering em_cmd_get_network_t_ValidMinimalInput test" << std::endl;
     em_cmd_params_t param;
     param.u.args.num_args = 0;
-    strncpy(param.u.args.fixed_args, "", sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "");
     em_network_node_t dummy_nodeMin;
-    strncpy(dummy_nodeMin.key, "min_node", sizeof(dummy_nodeMin.key));
+    snprintf(dummy_nodeMin.key, sizeof(dummy_nodeMin.key), "%s", "min_node");
     param.net_node = &dummy_nodeMin;
     dm_easy_mesh_t dm;
     em_cmd_get_network_t cmd(param, dm);
@@ -124,8 +124,8 @@ TEST(em_cmd_get_network_t, em_cmd_get_network_t_NullNetworkNode)
     std::cout << "Entering em_cmd_get_network_t_NullNetworkNode test" << std::endl;
     em_cmd_params_t param;
     param.u.args.num_args = 1;
-    strncpy(param.u.args.fixed_args, "GET_NETWORK", sizeof(param.u.args.fixed_args));
-    strncpy(param.u.args.args[0], "Param1", sizeof(param.u.args.args[0]));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "GET_NETWORK");
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", "Param1");
     param.net_node = nullptr;
     dm_easy_mesh_t dm;
     em_cmd_get_network_t cmd(param, dm);
@@ -162,14 +162,14 @@ TEST(em_cmd_get_network_t, em_cmd_get_network_t_BoundaryMaxArguments)
 
     em_cmd_params_t param;
     param.u.args.num_args = EM_CLI_MAX_ARGS;
-    strncpy(param.u.args.fixed_args, "GET_NETWORK", sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "GET_NETWORK");
     for (unsigned int i = 0; i < EM_CLI_MAX_ARGS; i++) {
         char arg[128];
         std::snprintf(arg, sizeof(arg), "Arg%d", i);
-        strncpy(param.u.args.args[i], arg, sizeof(param.u.args.args[i]));
+        snprintf(param.u.args.args[i], sizeof(param.u.args.args[i]), "%s", arg);
     }
     em_network_node_t dummy_nodeBoundary;
-    strncpy(dummy_nodeBoundary.key, "boundary_node", sizeof(dummy_nodeBoundary.key));
+    snprintf(dummy_nodeBoundary.key, sizeof(dummy_nodeBoundary.key), "%s", "boundary_node");
     param.net_node = &dummy_nodeBoundary;
     dm_easy_mesh_t dm;
     em_cmd_get_network_t cmd(param, dm);

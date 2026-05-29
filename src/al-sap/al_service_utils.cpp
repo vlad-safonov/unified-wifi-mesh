@@ -22,7 +22,7 @@ struct sockaddr_un createUnixSocketAddress(const std::string &path)
 {
     struct sockaddr_un address = {0};
     address.sun_family = AF_UNIX;
-    strncpy(address.sun_path, path.c_str(), sizeof(address.sun_path) - 1);
+    snprintf(address.sun_path, sizeof(address.sun_path), "%s", path.c_str());
     return address;
 }
 

@@ -223,27 +223,27 @@ char *dm_network_ssid_t::haul_type_to_string(em_haul_type_t type, em_string_t   
 {
 	switch (type) {
 		case em_haul_type_fronthaul:
-			strncpy(str, "Fronthaul", strlen("Fronthaul") + 1);
+			snprintf(str, sizeof("Fronthaul"), "%s", "Fronthaul");
 			break;
 
 		case em_haul_type_backhaul:
-			strncpy(str, "Backhaul", strlen("Backhaul") + 1);
+			snprintf(str, sizeof("Backhaul"), "%s", "Backhaul");
 			break;
 		
 		case em_haul_type_iot:
-			strncpy(str, "IoT", strlen("IoT") + 1);
+			snprintf(str, sizeof("IoT"), "%s", "IoT");
 			break;
 
 		case em_haul_type_configurator:
-			strncpy(str, "Configurator", strlen("Configurator") + 1);
+			snprintf(str, sizeof("Configurator"), "%s", "Configurator");
 			break;
 
 		case em_haul_type_hotspot:
-			strncpy(str, "Hotspot", strlen("Hotspot") + 1);
+			snprintf(str, sizeof("Hotspot"), "%s", "Hotspot");
 			break;
 
 		case em_haul_type_max:
-			strncpy(str, "Unknown", strlen("Unknown") + 1);
+			snprintf(str, sizeof("Unknown"), "%s", "Unknown");
 			break;
 	}
 

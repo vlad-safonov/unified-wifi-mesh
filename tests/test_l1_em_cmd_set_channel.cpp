@@ -43,8 +43,7 @@
 TEST(em_cmd_set_channel_t, em_cmd_set_channel_t_valid_channel_6) {
     std::cout << "Entering em_cmd_set_channel_t_valid_channel_6 test" << std::endl;
     em_cmd_params_t param{};
-    strncpy(param.u.args.fixed_args, "6", sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args)-1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "6");
     dm_easy_mesh_t dm{};
     std::cout << "Invoking em_cmd_set_channel_t with fixed_args = \"" << param.u.args.fixed_args << "\"" << std::endl;
     em_cmd_set_channel_t cmd(param, dm);
@@ -80,8 +79,7 @@ TEST(em_cmd_set_channel_t, em_cmd_set_channel_t_valid_channel_6) {
 TEST(em_cmd_set_channel_t, em_cmd_set_channel_t_valid_channel_11) {
     std::cout << "Entering em_cmd_set_channel_t_valid_channel_11 test" << std::endl;
     em_cmd_params_t param{};
-    strncpy(param.u.args.fixed_args, "11", sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args)-1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "11");
     dm_easy_mesh_t dm{};
     std::cout << "Invoking em_cmd_set_channel_t with fixed_args = \"" << param.u.args.fixed_args << "\"" << std::endl;
     em_cmd_set_channel_t cmd(param, dm);
@@ -158,8 +156,7 @@ TEST(em_cmd_set_channel_t, em_cmd_set_channel_t_empty_channel_input) {
 TEST(em_cmd_set_channel_t, em_cmd_set_channel_t_non_numeric_channel_input) {
     std::cout << "Entering em_cmd_set_channel_t_non_numeric_channel_input test" << std::endl;
     em_cmd_params_t param{};
-    strncpy(param.u.args.fixed_args, "abc", sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args)-1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "abc");
     dm_easy_mesh_t dm{};
     std::cout << "Invoking em_cmd_set_channel_t with fixed_args = \"" << param.u.args.fixed_args << "\"" << std::endl;
     em_cmd_set_channel_t cmd(param, dm);

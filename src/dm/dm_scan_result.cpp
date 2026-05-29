@@ -53,7 +53,7 @@ int dm_scan_result_t::decode(const cJSON *obj, void *parent_id)
 
 	if ((tmp = cJSON_GetObjectItem(obj, "TimeStamp")) != NULL) {
 		str = cJSON_GetStringValue(tmp);
-		strncpy(m_scan_result.timestamp, str, strlen(str) + 1);
+		snprintf(m_scan_result.timestamp, sizeof(m_scan_result.timestamp), "%s", str);
 	}
 
 	if ((tmp = cJSON_GetObjectItem(obj, "Utilization")) != NULL) {
@@ -78,7 +78,7 @@ int dm_scan_result_t::decode(const cJSON *obj, void *parent_id)
 		
 		if ((tmp = cJSON_GetObjectItem(arr_item, "SSID")) != NULL) {
 			str = cJSON_GetStringValue(tmp); 
-			strncpy(m_scan_result.neighbor[m_scan_result.num_neighbors].ssid, str, strlen(str) + 1);
+			snprintf(m_scan_result.neighbor[m_scan_result.num_neighbors].ssid, sizeof(m_scan_result.neighbor[m_scan_result.num_neighbors].ssid), "%s", str);
 		}
 			
 		if ((tmp = cJSON_GetObjectItem(arr_item, "SignalStrength")) != NULL) {
@@ -174,12 +174,12 @@ int dm_scan_result_t::parse_scan_result_id_from_key(const char *key, em_scan_res
 	    return -1;
     }
 
-    strncpy(str, key, strlen(key) + 1);
+    snprintf(str, sizeof(str), "%s", key);
     remain = str;
     while ((tmp = strchr(remain, '@')) != NULL) {
         if (i == 0) {
             *tmp = 0;
-            strncpy(id->net_id, remain, strlen(remain) + 1);
+            snprintf(id->net_id, sizeof(id->net_id), "%s", remain);
             tmp++;  
             remain = tmp;
         } else if (i == 1) {

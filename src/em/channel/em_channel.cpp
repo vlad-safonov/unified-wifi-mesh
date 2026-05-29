@@ -2097,7 +2097,7 @@ void em_channel_t::fill_scan_result(dm_scan_result_t *scan_res, em_channel_scan_
 	mac_addr_str_t bssid_str;
 
 	scan_res->m_scan_result.scan_status = res->scan_status;
-	strncpy(scan_res->m_scan_result.timestamp, res->timestamp, static_cast<size_t>(res->timestamp_len + 1));
+	snprintf(scan_res->m_scan_result.timestamp, static_cast<size_t>(res->timestamp_len + 1), "%s", res->timestamp);
 
 	tmp = reinterpret_cast<unsigned char *> (res) + sizeof(em_channel_scan_result_t) + res->timestamp_len;
 	
@@ -2124,8 +2124,7 @@ void em_channel_t::fill_scan_result(dm_scan_result_t *scan_res, em_channel_scan_
         memcpy(&ssid_len, tmp, sizeof(unsigned char));
         tmp += sizeof(unsigned char);
 
-        strncpy(nbr->ssid, reinterpret_cast<char *> (tmp), static_cast<size_t>(ssid_len + 1));
-        nbr->ssid[ssid_len] = '\0';
+        snprintf(nbr->ssid, static_cast<size_t>(ssid_len + 1), "%s", reinterpret_cast<char *> (tmp));
         tmp += ssid_len;
 
         memcpy(&nbr->signal_strength, tmp, sizeof(unsigned char));
@@ -2209,7 +2208,7 @@ int em_channel_t::handle_channel_scan_rprt(unsigned char *buff, unsigned int len
         if (tlv->type == em_tlv_type_channel_scan_rslt) {
             res = reinterpret_cast<em_channel_scan_result_t *> (tlv->value);
 
-            strncpy(id.net_id, dm->m_network.m_net_info.id, sizeof(em_long_string_t));	
+            snprintf(id.net_id, sizeof(em_long_string_t), "%s", dm->m_network.m_net_info.id);	
             memcpy(id.dev_mac, dm->m_device.m_device_info.intf.mac, sizeof(mac_address_t));
             memcpy(id.scanner_mac, res->ruid, sizeof(mac_address_t));
             id.op_class = res->op_class;

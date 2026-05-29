@@ -49,7 +49,7 @@ em_cmd_beacon_report_t::em_cmd_beacon_report_t(em_cmd_params_t param, dm_easy_me
     m_orch_desc[0].op = dm_orch_type_beacon_report;
     m_orch_desc[0].submit = true;
 
-    strncpy(m_name, "beacon_report", strlen("beacon_report") + 1);
+    snprintf(m_name, sizeof("beacon_report"), "%s", "beacon_report");
     m_svc = em_service_type_ctrl;
     init(dm);
 

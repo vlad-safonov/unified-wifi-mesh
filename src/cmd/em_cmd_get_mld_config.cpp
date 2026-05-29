@@ -47,7 +47,7 @@ em_cmd_get_mld_config_t::em_cmd_get_mld_config_t(em_cmd_params_t param, dm_easy_
     m_orch_op_idx = 0;
     m_num_orch_desc = 0;
 
-    strncpy(m_name, "get_mld_config", strlen("get_mld_config") + 1);
+    snprintf(m_name, sizeof("get_mld_config"), "%s", "get_mld_config");
     m_svc = em_service_type_agent;
     init(dm);
 

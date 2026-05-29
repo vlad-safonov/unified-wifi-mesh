@@ -132,7 +132,7 @@ public:
 	 *
 	 * @note Ensure that the name is null-terminated and does not exceed the buffer size.
 	 */
-	void set_dev_interface_name(char *name) { strncpy(m_device_info.intf.name, name, strlen(name) + 1); }
+	void set_dev_interface_name(char *name) { snprintf(m_device_info.intf.name, sizeof(m_device_info.intf.name), "%s", name); }
 	
     
 	/**!

@@ -48,9 +48,9 @@ TEST(em_cmd_remove_device_t, em_cmd_remove_device_t_valid_remove)
     std::cout << "Entering em_cmd_remove_device_t_valid_remove test" << std::endl;
     em_cmd_params_t params;
     memset(&params, 0, sizeof(params));
-    strncpy(params.u.args.fixed_args, "remove_device", sizeof(params.u.args.fixed_args)-1);
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", "remove_device");
     params.u.args.num_args = 1;
-    strncpy(params.u.args.args[0], "Arg0", sizeof(params.u.args.args[0]));
+    snprintf(params.u.args.args[0], sizeof(params.u.args.args[0]), "%s", "Arg0");
     dm_easy_mesh_t dm;
     em_cmd_remove_device_t cmd(params, dm);
     EXPECT_EQ(cmd.m_type, em_cmd_type_remove_device);
@@ -136,16 +136,16 @@ TEST(em_cmd_remove_device_t, em_cmd_remove_device_t_max_params)
     em_cmd_params_t params;
     memset(&params, 0, sizeof(params));
     const char* removeDeviceStr = "remove_device";
-    strncpy(params.u.args.fixed_args, removeDeviceStr, sizeof(params.u.args.fixed_args)-1);
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", removeDeviceStr);
     params.u.args.num_args = EM_CLI_MAX_ARGS;
     for (unsigned int i = 0; i < params.u.args.num_args; i++) {
         char longId[128];
         memset(longId, 'X', sizeof(longId)-1);
         longId[127] = '\0';
         if(i == 0) {
-            strncpy(longId, "MAX_DEVICE", sizeof(longId) - 1);
+            snprintf(longId, sizeof(longId), "%s", "MAX_DEVICE");
         }
-        strncpy(params.u.args.args[i], longId, sizeof(params.u.args.args[i])-1);
+        snprintf(params.u.args.args[i], sizeof(params.u.args.args[i]), "%s", longId);
     }
     dm_easy_mesh_t dm;
     em_cmd_remove_device_t cmd(params, dm);

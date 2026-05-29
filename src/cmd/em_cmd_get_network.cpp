@@ -47,7 +47,7 @@ em_cmd_get_network_t::em_cmd_get_network_t(em_cmd_params_t param, dm_easy_mesh_t
     m_orch_op_idx = 0;
     m_num_orch_desc = 0;
 
-    strncpy(m_name, "get_network", strlen("get_network") + 1);
+    snprintf(m_name, sizeof("get_network"), "%s", "get_network");
     m_svc = em_service_type_agent;
     init(dm);
 

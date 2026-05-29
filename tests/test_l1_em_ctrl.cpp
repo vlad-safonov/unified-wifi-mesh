@@ -38,8 +38,7 @@ protected:
         __lsan_enable();
     }    
     void setup_interface(em_interface_t &intf, const char* name, const unsigned char mac[6]) {
-        strncpy(intf.name, name, sizeof(intf.name)-1);
-        intf.name[sizeof(intf.name)-1] = '\0';
+        snprintf(intf.name, sizeof(intf.name), "%s", name);
         memcpy(intf.mac, mac, sizeof(intf.mac));
     }
 };
@@ -892,7 +891,7 @@ TEST_F(em_ctrl_t_Test, handle_dm_commit_valid_dm) {
     em_bus_event_t evt = {};
     evt.type = em_bus_event_type_dm_commit;
     memcpy(evt.u.commit.mac, mac, sizeof(mac));
-    strncpy(evt.u.commit.net_id, "Network1", sizeof(evt.u.commit.net_id));
+    snprintf(evt.u.commit.net_id, sizeof(evt.u.commit.net_id), "%s", "Network1");
     EXPECT_NO_THROW(ctrl.handle_dm_commit(&evt));
     std::cout << "Exiting handle_dm_commit_valid_dm test" << std::endl;
 }
@@ -922,7 +921,7 @@ TEST_F(em_ctrl_t_Test, handle_dm_commit_nonexistent_dm) {
     evt.type = em_bus_event_type_dm_commit;
     unsigned char mac[6] = {0xAA,0xBB,0xCC,0xDD,0xEE,0xFF};
     memcpy(evt.u.commit.mac, mac, sizeof(mac));
-    strncpy(evt.u.commit.net_id, "NonExistentNetwork", sizeof(evt.u.commit.net_id));
+    snprintf(evt.u.commit.net_id, sizeof(evt.u.commit.net_id), "%s", "NonExistentNetwork");
     EXPECT_NO_THROW(ctrl.handle_dm_commit(&evt));
     std::cout << "Exiting handle_dm_commit_nonexistent_dm test" << std::endl;
 }
@@ -964,12 +963,12 @@ TEST_F(em_ctrl_t_Test, handle_dm_commit_multiple_dms) {
     em_bus_event_t evt1 = {};
     evt1.type = em_bus_event_type_dm_commit;
     memcpy(evt1.u.commit.mac, mac1, sizeof(mac1));
-    strncpy(evt1.u.commit.net_id, "Network1", sizeof(evt1.u.commit.net_id));
+    snprintf(evt1.u.commit.net_id, sizeof(evt1.u.commit.net_id), "%s", "Network1");
     EXPECT_NO_THROW(ctrl.handle_dm_commit(&evt1));
     em_bus_event_t evt2 = {};
     evt2.type = em_bus_event_type_dm_commit;
     memcpy(evt2.u.commit.mac, mac2, sizeof(mac2));
-    strncpy(evt2.u.commit.net_id, "Network2", sizeof(evt2.u.commit.net_id));
+    snprintf(evt2.u.commit.net_id, sizeof(evt2.u.commit.net_id), "%s", "Network2");
     EXPECT_NO_THROW(ctrl.handle_dm_commit(&evt2));
     std::cout << "Exiting handle_dm_commit_multiple_dms test" << std::endl;
 }
@@ -2494,7 +2493,7 @@ TEST_F(em_ctrl_t_Test, create_node_valid)
     em_interface_t ruid{};
     unsigned char mac[6] = {0x28, 0x11, 0x22, 0x33, 0x44, 0x55};
     memcpy(ruid.mac, mac, sizeof(mac));
-    strncpy(ruid.name, "eth0", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "eth0");
     ruid.media = em_media_type_ieee8023ab;
     dm_easy_mesh_t dm;
     em_t* node = ctrl.create_node(&ruid, em_freq_band_5, &dm, false, em_profile_type_3, em_service_type_agent);
@@ -2556,8 +2555,8 @@ TEST_F(em_ctrl_t_Test, create_node_different_mac)
     unsigned char mac2[6] = {0x22,0x11,0x22,0x33,0x44,0x06};
     memcpy(ruid1.mac, mac1, sizeof(mac1));
     memcpy(ruid2.mac, mac2, sizeof(mac2));
-    strncpy(ruid1.name, "eth1", sizeof(ruid1.name));
-    strncpy(ruid2.name, "eth2", sizeof(ruid2.name));
+    snprintf(ruid1.name, sizeof(ruid1.name), "%s", "eth1");
+    snprintf(ruid2.name, sizeof(ruid2.name), "%s", "eth2");
     ruid1.media = em_media_type_ieee80211n_24;
     ruid2.media = em_media_type_ieee80211n_24;
     dm_easy_mesh_t dm;
@@ -2595,7 +2594,7 @@ TEST_F(em_ctrl_t_Test, delete_node_existing_ieee8023ab)
     em_interface_t ruid{};
     unsigned char mac[6] = {0x10,0x20,0x30,0x40,0x50,0x60};
     memcpy(ruid.mac, mac, sizeof(mac));
-    strncpy(ruid.name, "Node_ieee8023ab", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Node_ieee8023ab");
     ruid.media = em_media_type_ieee8023ab;
     dm_easy_mesh_t dm;
     em_t* node = ctrl.create_node(&ruid, em_freq_band_5, &dm, false, em_profile_type_1, em_service_type_agent);
@@ -2630,7 +2629,7 @@ TEST_F(em_ctrl_t_Test, delete_node_existing_ieee80211b_24)
     em_interface_t ruid{};
     unsigned char mac[6] = {0x11,0x21,0x31,0x41,0x51,0x61};
     memcpy(ruid.mac, mac, sizeof(mac));
-    strncpy(ruid.name, "Node_ieee80211b_24", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Node_ieee80211b_24");
     ruid.media = em_media_type_ieee80211b_24;
     dm_easy_mesh_t dm;
     em_t* node = ctrl.create_node(&ruid, em_freq_band_5, &dm, false, em_profile_type_1, em_service_type_agent);
@@ -2665,7 +2664,7 @@ TEST_F(em_ctrl_t_Test, delete_node_existing_ieee80211g_24)
     em_interface_t ruid{};
     unsigned char mac[6] = {0x12,0x22,0x32,0x42,0x52,0x62};
     memcpy(ruid.mac, mac, sizeof(mac));
-    strncpy(ruid.name, "Node_ieee80211g_24", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Node_ieee80211g_24");
     ruid.media = em_media_type_ieee80211g_24;
     dm_easy_mesh_t dm;
     em_t* node = ctrl.create_node(&ruid, em_freq_band_5, &dm, false, em_profile_type_1, em_service_type_agent);
@@ -2700,7 +2699,7 @@ TEST_F(em_ctrl_t_Test, delete_node_existing_ieee80211a_5)
     em_interface_t ruid{};
     unsigned char mac[6] = {0x13,0x23,0x33,0x43,0x53,0x63};
     memcpy(ruid.mac, mac, sizeof(mac));
-    strncpy(ruid.name, "Node_ieee80211a_5", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Node_ieee80211a_5");
     ruid.media = em_media_type_ieee80211a_5;
     dm_easy_mesh_t dm;
     em_t* node = ctrl.create_node(&ruid, em_freq_band_5, &dm, false, em_profile_type_1, em_service_type_agent);
@@ -2737,7 +2736,7 @@ TEST_F(em_ctrl_t_Test, delete_node_existing_ieee80211n_24)
     em_interface_t ruid{};
     unsigned char mac[6] = {0x14,0x24,0x34,0x44,0x54,0x64};
     memcpy(ruid.mac, mac, sizeof(mac));
-    strncpy(ruid.name, "Node_ieee80211n_24", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Node_ieee80211n_24");
     ruid.media = em_media_type_ieee80211n_24;
     dm_easy_mesh_t dm;
     em_t* node = ctrl.create_node(&ruid, em_freq_band_5, &dm, false, em_profile_type_1, em_service_type_agent);
@@ -2773,7 +2772,7 @@ TEST_F(em_ctrl_t_Test, delete_node_existing_ieee80211n_5)
     em_interface_t ruid{};
     unsigned char mac[6] = {0x15,0x25,0x35,0x45,0x55,0x65};
     memcpy(ruid.mac, mac, sizeof(mac));
-    strncpy(ruid.name, "Node_ieee80211n_5", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Node_ieee80211n_5");
     ruid.media = em_media_type_ieee80211n_5;
     dm_easy_mesh_t dm;
     em_t* node = ctrl.create_node(&ruid, em_freq_band_5, &dm, false, em_profile_type_1, em_service_type_agent);
@@ -2809,7 +2808,7 @@ TEST_F(em_ctrl_t_Test, delete_node_existing_ieee80211ac_5)
     em_interface_t ruid{};
     unsigned char mac[6] = {0x16,0x26,0x36,0x46,0x56,0x66};
     memcpy(ruid.mac, mac, sizeof(mac));
-    strncpy(ruid.name, "Node_ieee80211ac_5", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Node_ieee80211ac_5");
     ruid.media = em_media_type_ieee80211ac_5;
     dm_easy_mesh_t dm;
     em_t* node = ctrl.create_node(&ruid, em_freq_band_5, &dm, false, em_profile_type_1, em_service_type_agent);
@@ -2846,7 +2845,7 @@ TEST_F(em_ctrl_t_Test, delete_node_existing_ieee80211ad_60)
     em_interface_t ruid{};
     unsigned char mac[6] = {0x17,0x27,0x37,0x47,0x57,0x67};
     memcpy(ruid.mac, mac, sizeof(mac));
-    strncpy(ruid.name, "Node_ieee80211ad_60", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Node_ieee80211ad_60");
     ruid.media = em_media_type_ieee80211ad_60;
     dm_easy_mesh_t dm;
     em_t* node = ctrl.create_node(&ruid, em_freq_band_5, &dm, false, em_profile_type_1, em_service_type_agent);
@@ -2881,7 +2880,7 @@ TEST_F(em_ctrl_t_Test, delete_node_existing_ieee80211af)
     em_interface_t ruid{};
     unsigned char mac[6] = {0x18,0x28,0x38,0x48,0x58,0x68};
     memcpy(ruid.mac, mac, sizeof(mac));
-    strncpy(ruid.name, "Node_ieee80211af", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "Node_ieee80211af");
     ruid.media = em_media_type_ieee80211af;
     dm_easy_mesh_t dm;
     em_t* node = ctrl.create_node(&ruid, em_freq_band_5, &dm, false, em_profile_type_1, em_service_type_agent);
@@ -2918,10 +2917,10 @@ TEST_F(em_ctrl_t_Test, delete_node_one_of_multiple_nodes)
     unsigned char mac1[6] = {0x01,0x01,0x01,0x01,0x01,0x01};
     unsigned char mac2[6] = {0x02,0x02,0x02,0x02,0x02,0x02};
     memcpy(ruid1.mac, mac1, sizeof(mac1));
-    strncpy(ruid1.name, "eth0", sizeof(ruid1.name));
+    snprintf(ruid1.name, sizeof(ruid1.name), "%s", "eth0");
     ruid1.media = em_media_type_ieee8023ab;
     memcpy(ruid2.mac, mac2, sizeof(mac2));
-    strncpy(ruid2.name, "wlan0", sizeof(ruid2.name));
+    snprintf(ruid2.name, sizeof(ruid2.name), "%s", "wlan0");
     ruid2.media = em_media_type_ieee80211n_5;
     dm_easy_mesh_t dm;
     ASSERT_NE(ctrl.create_node(&ruid1, em_freq_band_5, &dm, false,
@@ -2957,7 +2956,7 @@ TEST_F(em_ctrl_t_Test, delete_node_nonexistent_node)
     em_interface_t ruid{};
     unsigned char mac[6] = {0xAA,0xBB,0xCC,0xDD,0xEE,0xFF};
     memcpy(ruid.mac, mac, sizeof(mac));
-    strncpy(ruid.name, "ethX", sizeof(ruid.name));
+    snprintf(ruid.name, sizeof(ruid.name), "%s", "ethX");
     ruid.media = em_media_type_ieee8023ab;
     EXPECT_NO_THROW({
         ctrl.delete_node(&ruid);
@@ -3018,14 +3017,14 @@ TEST_F(em_ctrl_t_Test, delete_nodes_valid)
     em_interface_t node1{};
     unsigned char mac1[6] = {0x10,0x20,0x30,0x40,0x50,0x60};
     memcpy(node1.mac, mac1, sizeof(mac1));
-    strncpy(node1.name, "radio1", sizeof(node1.name));
+    snprintf(node1.name, sizeof(node1.name), "%s", "radio1");
     node1.media = em_media_type_ieee8023ab;
     em_t* n1 = ctrl.create_node(&node1, em_freq_band_5, &dm, false, em_profile_type_1, em_service_type_agent);
     ASSERT_NE(n1, nullptr);
     em_interface_t node2{};
     unsigned char mac2[6] = {0x11,0x21,0x31,0x41,0x51,0x61};
     memcpy(node2.mac, mac2, sizeof(node2.mac));
-    strncpy(node2.name, "radio2", sizeof(node2.name));
+    snprintf(node2.name, sizeof(node2.name), "%s", "radio2");
     node2.media = em_media_type_ieee8023ab;
     em_t* n2 = ctrl.create_node(&node2, em_freq_band_5, &dm, false, em_profile_type_1, em_service_type_agent);
     ASSERT_NE(n2, nullptr);

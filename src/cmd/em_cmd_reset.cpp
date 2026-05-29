@@ -50,7 +50,7 @@ em_cmd_reset_t::em_cmd_reset_t(em_cmd_params_t param, dm_easy_mesh_t& dm)
     m_orch_desc[2].op = dm_orch_type_db_reset;
     m_orch_desc[3].op = dm_orch_type_db_cfg;
 
-    strncpy(m_name, "reset", strlen("reset") + 1);
+    snprintf(m_name, sizeof("reset"), "%s", "reset");
     m_svc = em_service_type_ctrl;
     init(dm);
 

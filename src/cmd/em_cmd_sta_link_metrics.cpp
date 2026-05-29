@@ -47,7 +47,7 @@ em_cmd_sta_link_metrics_t::em_cmd_sta_link_metrics_t(dm_easy_mesh_t& dm)
     m_orch_desc[0].op = dm_orch_type_sta_link_metrics;
     m_orch_desc[0].submit = true;
 
-    strncpy(m_name, "sta_link_metrics", strlen("sta_link_metrics") + 1);
+    snprintf(m_name, sizeof("sta_link_metrics"), "%s", "sta_link_metrics");
     m_svc = em_service_type_ctrl;
     init(dm);
 

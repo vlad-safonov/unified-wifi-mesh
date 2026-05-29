@@ -605,8 +605,7 @@ TEST(em_dev_test_t, encode_valid_verbose_no_testprogress)
     std::cout << "Entering encode_valid_verbose_no_testprogress test" << std::endl;
     const size_t buff_size = 4096;
     em_subdoc_info_t* subdoc = AllocateSubdocBuffer(buff_size);
-    strncpy(subdoc->name, "dev_test_verbose", sizeof(subdoc->name) - 1);
-    subdoc->name[sizeof(subdoc->name) - 1] = '\0';
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "dev_test_verbose");
     hash_map_t* m_em_map = new hash_map_t();
     em_dev_test_t devTest{};
     for (int i = 0; i < em_dev_test_type_max; ++i)
@@ -662,7 +661,7 @@ TEST(em_dev_test_t, encode_valid_compact_no_testprogress)
     std::cout << "Entering encode_valid_compact_no_testprogress test" << std::endl;
     size_t buff_size = 4096;
     em_subdoc_info_t* subdoc = AllocateSubdocBuffer(buff_size);
-    strncpy(subdoc->name, "dev_test_compact", sizeof(subdoc->name)-1);
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "dev_test_compact");
     hash_map_t* m_em_map = new hash_map_t();
     em_dev_test_t devTest{};
     for (int i = 0; i < em_dev_test_type_max; ++i) {
@@ -721,8 +720,7 @@ TEST(em_dev_test_t, encode_valid_verbose_testinprogress)
     std::cout << "Entering encode_valid_verbose_testinprogress test" << std::endl;
     const size_t buff_size = 4096;
     em_subdoc_info_t* subdoc = AllocateSubdocBuffer(buff_size);
-    strncpy(subdoc->name, "dev_test_verbose_inprogress", sizeof(subdoc->name)-1);
-    subdoc->name[sizeof(subdoc->name) - 1] = '\0';
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "dev_test_verbose_inprogress");
     hash_map_t* m_em_map = new hash_map_t();
     em_dev_test_t devTest{};
     for (int i = 0; i < em_dev_test_type_max; ++i)
@@ -774,7 +772,7 @@ TEST(em_dev_test_t, encode_valid_compact_testinprogress)
     std::cout << "Entering encode_valid_compact_testinprogress test" << std::endl;
     size_t buff_size = 4096;
     em_subdoc_info_t* subdoc = AllocateSubdocBuffer(buff_size);
-    strncpy(subdoc->name, "dev_test_compact_inprogress", sizeof(subdoc->name)-1);
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "dev_test_compact_inprogress");
     hash_map_t* m_em_map = new hash_map_t();
     em_dev_test_t devTest{};
     for (int i = 0; i < em_dev_test_type_max; ++i) {
@@ -859,7 +857,7 @@ TEST(em_dev_test_t, encode_null_m_em_map)
     std::cout << "Entering encode_null_m_em_map test" << std::endl;
     size_t buff_size = 4096;
     em_subdoc_info_t* subdoc = AllocateSubdocBuffer(buff_size);
-    strncpy(subdoc->name, "dev_test_null_map", sizeof(subdoc->name)-1);
+    snprintf(subdoc->name, sizeof(subdoc->name), "%s", "dev_test_null_map");
     em_dev_test_t devTest{};
     for (int i = 0; i < em_dev_test_type_max; ++i)
     {

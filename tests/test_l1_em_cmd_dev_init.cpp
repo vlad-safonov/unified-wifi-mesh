@@ -51,9 +51,7 @@ TEST(em_cmd_dev_init_t, em_cmd_dev_init_t_valid_initialization) {
     std::cout << "Entering em_cmd_dev_init_t_valid_initialization test" << std::endl;
     em_cmd_params_t param{};
     const char *testFixedArg = "TestFixedArg";
-    strncpy(param.u.args.fixed_args, testFixedArg,
-            sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", testFixedArg);
     std::cout << "Parameter fixed_args set to: " << param.u.args.fixed_args << std::endl;
     dm_easy_mesh_t dm{};
     std::cout << "dm_easy_mesh_t object created at address: " << &dm << std::endl;
@@ -123,7 +121,7 @@ TEST(em_cmd_dev_init_t, em_cmd_dev_init_t_empty_params) {
  * | Variation / Step | Description | Test Data | Expected Result | Notes |
  * | :----: | --------- | ---------- |-------------- | ----- |
  * | 01 | Calculate fixed arguments buffer size and create a maximum boundary string | fixedSize = sizeof(static_cast<em_cmd_args_t*>(nullptr)->fixed_args), maxFixed = string('X', fixedSize - 1) | Buffer size correctly determined and maxFixed string created with (fixedSize - 1) 'X' characters | Should be successful |
- * | 02 | Populate the parameter structure with the maximum boundary fixed_args | param.u.args.fixed_args set using strncpy with maxFixed; ensuring null termination | The fixed_args field in param holds the maxFixed string with proper null termination | Should be successful |
+ * | 02 | Populate the parameter structure with the maximum boundary fixed_args | param.u.args.fixed_args set using snprintf with maxFixed | The fixed_args field in param holds the maxFixed string with proper null termination | Should be successful |
  * | 03 | Invoke the em_cmd_dev_init_t constructor with the prepared parameters and dummy dm object | Input: param (with fixed_args), dm (instance of dm_easy_mesh_t) | Instance created where: m_type == em_cmd_type_dev_init, m_name equals "dev_init", fixed_args equal to maxFixed, m_num_orch_desc == 2, orch_desc[0].op equals dm_orch_type_al_insert, orch_desc[0].submit is false, and m_svc equals em_service_type_agent | Should Pass |
  * | 04 | Call the deinit method on the created instance | instance.deinit() | Instance deinitialized and resources released properly | Should be successful |
  */
@@ -134,8 +132,7 @@ TEST(em_cmd_dev_init_t, em_cmd_dev_init_t_max_boundary) {
     std::string maxFixed(fixedSize - 1, 'X');
     em_cmd_params_t param{};
     std::cout << "Setting max-length fixed_args (" << maxFixed.size() << " chars)" << std::endl;
-    strncpy(param.u.args.fixed_args, maxFixed.c_str(), fixedSize - 1);
-    param.u.args.fixed_args[fixedSize - 1] = '\0';
+    snprintf(param.u.args.fixed_args, fixedSize, "%s", maxFixed.c_str());
     dm_easy_mesh_t dm{};
     std::cout << "Invoking constructor..." << std::endl;
     em_cmd_dev_init_t instance(param, dm);

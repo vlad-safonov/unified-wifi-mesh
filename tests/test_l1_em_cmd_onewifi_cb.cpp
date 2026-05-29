@@ -47,12 +47,10 @@ TEST(em_cmd_ow_cb_t, em_cmd_ow_cb_t_valid_instance_creation)
     std::cout << "Entering em_cmd_ow_cb_t_em_cmd_ow_cb_t_valid_instance_creation test" << std::endl;
     em_cmd_params_t param{};
     const char* fixedStr = "TestCommand";
-    strncpy(param.u.args.fixed_args, fixedStr, sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", fixedStr);
     param.u.args.num_args = 1;
     const char* argStr = "Arg1";
-    strncpy(param.u.args.args[0], argStr, sizeof(param.u.args.args[0]) - 1);
-    param.u.args.args[0][sizeof(param.u.args.args[0]) - 1] = '\0';
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", argStr);
     dm_easy_mesh_t dm;
     std::cout << "Invoking em_cmd_ow_cb_t constructor with custom fixed_args: " << param.u.args.fixed_args << " and args[0]: " << param.u.args.args[0] << std::endl;
     em_cmd_ow_cb_t obj(param, dm);
@@ -101,7 +99,7 @@ TEST(em_cmd_ow_cb_t, em_cmd_ow_cb_t_empty_fixed_args)
     em_cmd_params_t param{};
     param.u.args.num_args = 0;
     const char *emptyStr = "";
-    strncpy(param.u.args.fixed_args, emptyStr, sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", emptyStr);
     dm_easy_mesh_t dm;
     std::cout << "Invoking em_cmd_ow_cb_t constructor with param.u.args.fixed_args: " << param.u.args.fixed_args << std::endl;
     em_cmd_ow_cb_t obj(param, dm);
@@ -147,8 +145,8 @@ TEST(em_cmd_ow_cb_t, em_cmd_ow_cb_t_ConstructWithMaxSSIDLength)
     maxSsid[127] = '\0';
     em_cmd_params_t params;
     params.u.args.num_args = 1;
-    strncpy(params.u.args.args[0], maxSsid, sizeof(params.u.args.args[0]));
-    strncpy(params.u.args.fixed_args, maxSsid, sizeof(params.u.args.fixed_args));
+    snprintf(params.u.args.args[0], sizeof(params.u.args.args[0]), "%s", maxSsid);
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", maxSsid);
     dm_easy_mesh_t dm;
     em_cmd_ow_cb_t obj(params, dm);
     std::cout << "Invoked em_cmd_ap_metrics_report_t with fixed_args of length " << strlen(params.u.args.fixed_args) << std::endl;

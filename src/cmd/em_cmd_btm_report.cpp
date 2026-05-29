@@ -50,7 +50,7 @@ em_cmd_btm_report_t::em_cmd_btm_report_t(em_cmd_btm_report_params_t params)
     m_orch_desc[0].op = dm_orch_type_sta_steer_btm_report;
     m_orch_desc[0].submit = true;
 
-    strncpy(m_name, "btm_report", strlen("btm_report") + 1);
+    snprintf(m_name, sizeof("btm_report"), "%s", "btm_report");
     m_svc = em_service_type_agent;
     init(dm);
 

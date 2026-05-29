@@ -775,7 +775,7 @@ TEST(dm_network_t_Test, RetrieveColocatedAgentInterfaceName_ValidString) {
 TEST(dm_network_t_Test, RetrieveControllerInterfaceWhenNetworkInfoIsProperlyInitialized) {
     std::cout << "Entering RetrieveControllerInterfaceWhenNetworkInfoIsProperlyInitialized" << std::endl;
     em_network_info_t net_info{};
-    strncpy(net_info.ctrl_id.name, "eth0", sizeof(em_interface_name_t));
+    snprintf(net_info.ctrl_id.name, sizeof(em_interface_name_t), "%s", "eth0");
     unsigned char mac[6] = {0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E};
     memcpy(net_info.ctrl_id.mac, mac, sizeof(mac_address_t));
     net_info.ctrl_id.media = em_media_type_ieee8023ab;

@@ -47,8 +47,8 @@ TEST(em_cmd_sta_assoc_t, em_cmd_sta_assoc_t_valid_parameters) {
     std::cout << "Entering em_cmd_sta_assoc_t_valid_parameters test" << std::endl;
     em_cmd_params_t validParam;
     validParam.u.args.num_args = 1;
-    strncpy(validParam.u.args.args[0], "ValidArg", sizeof(validParam.u.args.args[0]));
-    strncpy(validParam.u.args.fixed_args, "FixedValid", sizeof(validParam.u.args.fixed_args));
+    snprintf(validParam.u.args.args[0], sizeof(validParam.u.args.args[0]), "%s", "ValidArg");
+    snprintf(validParam.u.args.fixed_args, sizeof(validParam.u.args.fixed_args), "%s", "FixedValid");
     dm_easy_mesh_t dm;
     std::cout << "Invoking em_cmd_sta_assoc_t fixed_args: " << validParam.u.args.fixed_args << std::endl;
     em_cmd_sta_assoc_t assoc(validParam, dm);
@@ -94,7 +94,7 @@ TEST(em_cmd_sta_assoc_t, em_cmd_sta_assoc_t_valid_minimal_parameters) {
     std::cout << "Entering em_cmd_sta_assoc_t_valid_minimal_parameters test" << std::endl;
     em_cmd_params_t param{};
     param.u.args.num_args = 0;
-    strncpy(param.u.args.fixed_args, "", sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "");
     dm_easy_mesh_t dm;
     std::cout << "Invoking em_cmd_sta_assoc_t with fixed_args: " << param.u.args.fixed_args << std::endl;
     em_cmd_sta_assoc_t assoc(param, dm);
@@ -140,14 +140,12 @@ TEST(em_cmd_sta_assoc_t, em_cmd_sta_assoc_t_ctor_max_fixed_args) {
     char maxStr[128];
     memset(maxStr, 'X', sizeof(maxStr) - 1);
     maxStr[sizeof(maxStr) - 1] = '\0';
-    strncpy(param.u.args.fixed_args, maxStr, sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", maxStr);
     param.u.args.num_args = 5;
     char maxArg[128];
     memset(maxArg, 'Y', sizeof(maxArg) - 1);
     maxArg[sizeof(maxArg) - 1] = '\0';
-    strncpy(param.u.args.args[0], maxArg, sizeof(param.u.args.args[0]) - 1);
-    param.u.args.args[0][sizeof(param.u.args.args[0]) - 1] = '\0';
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", maxArg);
     dm_easy_mesh_t dm;
     em_cmd_sta_assoc_t assoc(param, dm);
     EXPECT_EQ(assoc.m_param.u.args.num_args, 5);

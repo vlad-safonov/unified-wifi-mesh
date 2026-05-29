@@ -187,7 +187,7 @@ int dm_op_class_t::parse_op_class_id_from_key(const char *key, em_op_class_id_t 
     char *tmp, *remain;
     unsigned int i = 0;
 
-    strncpy(str, key, strlen(key) + 1);
+    snprintf(str, sizeof(str), "%s", key);
     remain = str;
     while ((tmp = strchr(remain, '@')) != NULL) {
         if (i == 0) {

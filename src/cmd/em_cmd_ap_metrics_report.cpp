@@ -48,7 +48,7 @@ em_cmd_ap_metrics_report_t::em_cmd_ap_metrics_report_t(em_cmd_params_t param, dm
     m_num_orch_desc = 1;
     m_orch_desc[0].submit = true;
 
-    strncpy(m_name, "ap_metrics_report", strlen("ap_metrics_report") + 1);
+    snprintf(m_name, sizeof("ap_metrics_report"), "%s", "ap_metrics_report");
     m_svc = em_service_type_agent;
     init(dm);
 

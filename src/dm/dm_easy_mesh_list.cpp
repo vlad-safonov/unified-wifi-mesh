@@ -141,7 +141,7 @@ void dm_easy_mesh_list_t::put_network(const char *key, const dm_network_t *net)
 		dm = create_data_model(key, &net_info->ctrl_id, em_profile_type_3, true);
 		pnet = dm->get_network();
 		*pnet = *net;	
-		strncpy(m_network_list[m_num_networks], key, strlen(key));
+		snprintf(m_network_list[m_num_networks], strlen(key), "%s", key);
 		m_num_networks++;
     } else {
         dm = static_cast<dm_easy_mesh_t *> (hash_map_get_first(m_list));
@@ -850,13 +850,13 @@ void dm_easy_mesh_list_t::put_network_ssid(const char *key, const dm_network_ssi
     unsigned int i;
     bool found = false;
 
-    strncpy(key_copy, key, strlen(key) + 1);
+    snprintf(key_copy, sizeof(key_copy), "%s", key);
 
     if ((ptr = strchr(key_copy, '@')) == NULL) {
         //printf("%s:%d: Corrupted id for network ssid\n", __func__, __LINE__);
         return;
     }
-    strncpy(net_id, ptr + 1, strlen(ptr));
+    snprintf(net_id, sizeof(net_id), "%s", ptr + 1);
     *ptr = 0;
 
 
@@ -1609,7 +1609,7 @@ dm_easy_mesh_t *dm_easy_mesh_list_t::create_data_model(const char *net_id, const
 
     dev = dm->get_device();
     memcpy(dev->m_device_info.intf.mac, al_intf->mac, sizeof(mac_address_t));
-    strncpy(dev->m_device_info.id.net_id, net_id, strlen(net_id) + 1);
+    snprintf(dev->m_device_info.id.net_id, sizeof(dev->m_device_info.id.net_id), "%s", net_id);
 	if (controller == true) {
 		dev->m_device_info.id.media = dm->m_network.m_net_info.media;
 		//TODO: Monitor Checks

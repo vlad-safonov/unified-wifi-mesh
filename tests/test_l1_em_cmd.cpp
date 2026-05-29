@@ -308,8 +308,7 @@ TEST(em_cmd_t, CloneFull)
     em_cmd_t orig;
     orig.m_type = em_cmd_type_set_policy;
     orig.m_param.u.args.num_args = 1;
-    strncpy(orig.m_param.u.args.fixed_args, "FixedArgs",
-            sizeof(orig.m_param.u.args.fixed_args)-1);
+    snprintf(orig.m_param.u.args.fixed_args, sizeof(orig.m_param.u.args.fixed_args), "%s", "FixedArgs");
     orig.m_orch_op_idx = 0;
     orig.m_num_orch_desc = 1;
     orig.m_orch_desc[0].op = dm_orch_type_net_insert;
@@ -356,9 +355,7 @@ TEST(em_cmd_t, CloneDeepCopy)
     original.m_orch_op_idx = 0;
     original.m_type = em_cmd_type_get_network;
     original.m_param.u.args.num_args = 0;
-    strncpy(original.m_param.u.args.fixed_args,
-            "OriginalFixed",
-            sizeof(original.m_param.u.args.fixed_args)-1);
+    snprintf(original.m_param.u.args.fixed_args, sizeof(original.m_param.u.args.fixed_args), "%s", "OriginalFixed");
     em_cmd_t* cloneObj = original.clone();
     ASSERT_NE(cloneObj, nullptr);
     EXPECT_EQ(cloneObj->m_type, original.m_type);
@@ -443,9 +440,7 @@ TEST(em_cmd_t, CloneIndependence)
     em_cmd_t orig;
     orig.m_type = em_cmd_type_reset;
     orig.m_param.u.args.num_args = 1;
-    strncpy(orig.m_param.u.args.fixed_args,
-            "OriginalFixed",
-            sizeof(orig.m_param.u.args.fixed_args)-1);
+    snprintf(orig.m_param.u.args.fixed_args, sizeof(orig.m_param.u.args.fixed_args), "%s", "OriginalFixed");
     orig.m_orch_op_idx = 0;
     orig.m_num_orch_desc = 2;     // use <= 16 (array size)
     for (unsigned int i = 0; i < orig.m_num_orch_desc; i++) {
@@ -455,9 +450,7 @@ TEST(em_cmd_t, CloneIndependence)
     em_cmd_t* clone = orig.clone_for_next();
     ASSERT_NE(clone, nullptr); // must not be NULL
     clone->m_param.u.args.num_args = 42;
-    strncpy(clone->m_param.u.args.fixed_args,
-            "Changed",
-            sizeof(clone->m_param.u.args.fixed_args)-1);
+    snprintf(clone->m_param.u.args.fixed_args, sizeof(clone->m_param.u.args.fixed_args), "%s", "Changed");
     clone->m_orch_desc[0].op = dm_orch_type_net_delete;
     clone->m_orch_desc[0].submit = false;
     EXPECT_EQ(orig.m_param.u.args.num_args, 1);
@@ -496,8 +489,7 @@ TEST(em_cmd_t, CloneStringIntegrity)
     std::cout << "Entering CloneStringIntegrity test" << std::endl;
     em_cmd_t orig;
     orig.m_param.u.args.num_args = 1;
-    strncpy(orig.m_param.u.args.fixed_args, "FixedArgs",
-            sizeof(orig.m_param.u.args.fixed_args)-1);
+    snprintf(orig.m_param.u.args.fixed_args, sizeof(orig.m_param.u.args.fixed_args), "%s", "FixedArgs");
     orig.m_orch_op_idx = 0;
     orig.m_num_orch_desc = 2;
     orig.m_orch_desc[0].op = dm_orch_type_net_insert;
@@ -850,8 +842,7 @@ TEST(em_cmd_t, PositiveCopyEnumLoop) {
         // Populate simple parameter
         evt.params.u.args.num_args = 1;
         const char* loopArg = "LoopArg";
-        strncpy(evt.params.u.args.args[0], loopArg, sizeof(evt.params.u.args.args[0]) - 1);
-        evt.params.u.args.args[0][sizeof(evt.params.u.args.args[0]) - 1] = '\0';
+        snprintf(evt.params.u.args.args[0], sizeof(evt.params.u.args.args[0]), "%s", loopArg);
         std::cout << "[Loop " << i << "] Assigned evt.params.u.args.args[0] = "
                   << evt.params.u.args.args[0] << std::endl;
 
@@ -1065,15 +1056,12 @@ TEST(em_cmd_t, DumpBusEvent_ValidPointerLoop) {
     em_bus_event_t evt_obj;
     memset(&evt_obj, 0, sizeof(evt_obj));
     const char *subdoc_name = "SubdocName";
-    strncpy(evt_obj.u.subdoc.name, subdoc_name, sizeof(evt_obj.u.subdoc.name) - 1);
-    evt_obj.u.subdoc.name[sizeof(evt_obj.u.subdoc.name) - 1] = '\0';
+    snprintf(evt_obj.u.subdoc.name, sizeof(evt_obj.u.subdoc.name), "%s", subdoc_name);
     evt_obj.params.u.args.num_args = 2;
     const char *arg0 = "arg0";
     const char *arg1 = "arg1";
-    strncpy(evt_obj.params.u.args.args[0], arg0, sizeof(evt_obj.params.u.args.args[0]) - 1);
-    evt_obj.params.u.args.args[0][sizeof(evt_obj.params.u.args.args[0]) - 1] = '\0';
-    strncpy(evt_obj.params.u.args.args[1], arg1, sizeof(evt_obj.params.u.args.args[1]) - 1);
-    evt_obj.params.u.args.args[1][sizeof(evt_obj.params.u.args.args[1]) - 1] = '\0';
+    snprintf(evt_obj.params.u.args.args[0], sizeof(evt_obj.params.u.args.args[0]), "%s", arg0);
+    snprintf(evt_obj.params.u.args.args[1], sizeof(evt_obj.params.u.args.args[1]), "%s", arg1);
     for (int type = em_bus_event_type_none; type < em_bus_event_type_max; ++type) {
         em_bus_event_t *evt = &evt_obj;
         evt->type = static_cast<em_bus_event_type_t>(type);
@@ -1408,10 +1396,10 @@ TEST(em_cmd_t, ValidConstructionNonEmptyCommandParameters)
     param.u.args.num_args = 1;
     // Set first argument as "testArg"
     const char *testArg = "testArg";
-    strncpy(param.u.args.args[0], testArg, sizeof(param.u.args.args[0]));
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", testArg);
     // Set fixed_args as "fixedTest"
     const char *fixedTest = "fixedTest";
-    strncpy(param.u.args.fixed_args, fixedTest, sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", fixedTest);
     // Create a dm_easy_mesh_t object with predefined network id (simulate valid network info)
     dm_easy_mesh_t dm{};
     dm.m_num_radios = 2;
@@ -1502,7 +1490,7 @@ TEST(em_cmd_t, SuccessfulRetrieval)
 {
     std::cout << "Entering SuccessfulRetrieval test" << std::endl;
     em_cmd_t cmd;
-    strncpy(cmd.m_data_model.m_device.m_device_info.intf.name, "AgentAL_Interface", sizeof(cmd.m_data_model.m_device.m_device_info.intf.name));
+    snprintf(cmd.m_data_model.m_device.m_device_info.intf.name, sizeof(cmd.m_data_model.m_device.m_device_info.intf.name), "%s", "AgentAL_Interface");
     unsigned char mac[6] = {0x1A, 0x1B, 0x2C, 0x3D, 0x4E, 0x5A};
     memcpy(cmd.m_data_model.m_device.m_device_info.intf.mac, mac, sizeof(mac));
     cmd.m_data_model.m_device.m_device_info.intf.media = em_media_type_ieee8023ab;
@@ -1586,7 +1574,7 @@ TEST(em_cmd_t, RetrieveALInterfaceMACAddress_WithValidConfiguration) {
  * | :----: | --------- | ---------- |-------------- | ----- |
  * | 01 | Create an em_cmd_t object using its default constructor | None | Object is created without throwing an exception | Should be successful |
  * | 02 | Allocate a buffer of size 50 and copy the string "command_arg" into it, ensuring null termination | argBuffer = new char[50], content = "command_arg" | Buffer is allocated and initialized with "command_arg" | Should be successful |
- * | 03 | Assign the fixed_args pointer in the em_cmd_t object using strncpy and ensure null termination | cmd.m_param.u.args.fixed_args, source string = "command_arg" | fixed_args in the object contains "command_arg" | Should be successful |
+ * | 03 | Assign the fixed_args pointer in the em_cmd_t object using snprintf | cmd.m_param.u.args.fixed_args, source string = "command_arg" | fixed_args in the object contains "command_arg" | Should be successful |
  * | 04 | Invoke the get_arg() method on the object to retrieve the fixed_args string | Method: get_arg(), returns fixed_args value | Returned string equals "command_arg" | Should Pass |
  * | 05 | Validate the returned string using EXPECT_STREQ representing the expected outcome | Expected string: "command_arg", Actual: value from get_arg() | EXPECT_STREQ assertion passes confirming the string match | Should be successful |
  * | 06 | Deallocate the dynamically allocated memory for argBuffer | delete[] argBuffer | Memory is successfully released without issues | Should be successful |
@@ -1599,15 +1587,13 @@ TEST(em_cmd_t, Retrieve_non_empty_fixed_args_string) {
         em_cmd_t cmd;
         std::cout << "Created em_cmd_t object using default constructor." << std::endl;
 
-        // Allocate and assign non-empty fixed args using strncpy
+        // Allocate and assign non-empty fixed args using snprintf
         char *argBuffer = new char[50];
         std::cout << "Allocating buffer for fixed_args and copying 'command_arg'." << std::endl;
-        strncpy(argBuffer, "command_arg", 50);
-        argBuffer[49] = '\0';  // ensure null termination
+        snprintf(argBuffer, 50, "%s", "command_arg");
 
         // Set the fixed_args pointer
-        strncpy(cmd.m_param.u.args.fixed_args, argBuffer, sizeof(cmd.m_param.u.args.fixed_args));
-        cmd.m_param.u.args.fixed_args[sizeof(cmd.m_param.u.args.fixed_args)-1] = '\0'; // ensure null-termination
+        snprintf(cmd.m_param.u.args.fixed_args, sizeof(cmd.m_param.u.args.fixed_args), "%s", argBuffer);
 	    std::cout << "Assigned fixed_args with value: " << argBuffer << std::endl;
 
         // Invoke get_arg() method and log the invocation and returned value
@@ -1642,8 +1628,8 @@ TEST(em_cmd_t, Retrieve_non_empty_fixed_args_string) {
  * | Variation / Step | Description | Test Data | Expected Result | Notes |
  * | :----: | --------- | ---------- | -------------- | ----- |
  * | 01 | Create em_cmd_t object using the default constructor. | None | em_cmd_t object is created successfully. | Should be successful |
- * | 02 | Allocate a 50-character buffer and copy an empty string using strncpy. | buffer size = 50, source = "" | Buffer contains an empty string with proper null-termination. | Should be successful |
- * | 03 | Assign the empty string to cmd.m_param.u.args.fixed_args using strncpy and ensure null-termination. | fixed_args pointer, source = "" | fixed_args is assigned an empty string with null-termination. | Should be successful |
+ * | 02 | Allocate a 50-character buffer and copy an empty string using snprintf. | buffer size = 50, source = "" | Buffer contains an empty string with proper null-termination. | Should be successful |
+ * | 03 | Assign the empty string to cmd.m_param.u.args.fixed_args using snprintf. | fixed_args pointer, source = "" | fixed_args is assigned an empty string with null-termination. | Should be successful |
  * | 04 | Invoke the get_arg() method to retrieve the fixed_args string. | API call: get_arg(), internal state: fixed_args = "" | get_arg() returns an empty string. | Should Pass |
  * | 05 | Validate that the returned value is an empty string using EXPECT_STREQ. | retVal = "", expected = "" | Assertion passes confirming that fixed_args is empty. | Should Pass |
  * | 06 | Deallocate the dynamically allocated memory for the buffer. | delete[] argBuffer | Memory is deallocated successfully. | Should be successful |
@@ -1652,14 +1638,12 @@ TEST(em_cmd_t, Retrieve_empty_fixed_args_string) {
     std::cout << "Entering Retrieve_empty_fixed_args_string test" << std::endl;
     em_cmd_t cmd;
     std::cout << "Created em_cmd_t object using default constructor." << std::endl;
-    // Allocate and assign empty fixed args using strncpy
+    // Allocate and assign empty fixed args using snprintf
     char *argBuffer = new char[50];
     std::cout << "Allocating buffer for fixed_args and copying empty string." << std::endl;
-    strncpy(argBuffer, "", 50);
-    argBuffer[49] = '\0';
+    snprintf(argBuffer, 50, "%s", "");
     // Set the fixed_args pointer
-    strncpy(cmd.m_param.u.args.fixed_args, argBuffer, sizeof(cmd.m_param.u.args.fixed_args));
-    cmd.m_param.u.args.fixed_args[sizeof(cmd.m_param.u.args.fixed_args)-1] = '\0'; // ensure null-termination
+    snprintf(cmd.m_param.u.args.fixed_args, sizeof(cmd.m_param.u.args.fixed_args), "%s", argBuffer);
     std::cout << "Assigned fixed_args with empty string." << std::endl;
     // Invoke get_arg() method and log the invocation and returned value
     std::cout << "Invoking get_arg() method." << std::endl;
@@ -1838,7 +1822,7 @@ TEST(em_cmd_t, InvalidBusEventType_EqualToMax) {
 /**
  * @brief Validates that the default constructor of em_cmd_t allows setting and retrieving of the command name correctly.
  *
- * This test verifies that a default constructed em_cmd_t object can successfully store a command name (using strncpy)
+ * This test verifies that a default constructed em_cmd_t object can successfully store a command name (using snprintf)
  * and that the get_cmd_name() method properly returns the stored value. The objective is to ensure that no exceptions
  * are thrown during these operations and that the return value from get_cmd_name() is both non-null and matches the expected string.
  *
@@ -1853,7 +1837,7 @@ TEST(em_cmd_t, InvalidBusEventType_EqualToMax) {
  * **Test Procedure:**
  * | Variation / Step | Description                                                                 | Test Data                                                | Expected Result                                                                       | Notes           |
  * | :--------------: | --------------------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------- | --------------- |
- * | 01               | Create a default constructed object and set command name using strncpy      | em_cmd_t object, m_name = "Sample"                       | Object is created and m_name is set without throwing an exception                     | Should be successful |
+ * | 01               | Create a default constructed object and set command name using snprintf      | em_cmd_t object, m_name = "Sample"                       | Object is created and m_name is set without throwing an exception                     | Should be successful |
  * | 02               | Invoke get_cmd_name() to retrieve the command name and verify its correctness | Function call: get_cmd_name(), expected output "Sample"  | get_cmd_name() returns a non-null pointer with the value "Sample" as verified by assertions | Should Pass     |
  */
 TEST(em_cmd_t, DefaultConstructorCmdName)
@@ -1861,7 +1845,7 @@ TEST(em_cmd_t, DefaultConstructorCmdName)
     std::cout << "Entering DefaultConstructorCmdName test" << std::endl;
     EXPECT_NO_THROW({
         em_cmd_t obj;
-		strncpy(obj.m_name, "Sample", sizeof(obj.m_name) - 1);
+		snprintf(obj.m_name, sizeof(obj.m_name), "%s", "Sample");
         std::cout << "Invoking get_cmd_name() on default constructed object" << std::endl;
         const char *retCmd = obj.get_cmd_name();
         std::cout << "Retrieved command name: " << (retCmd ? retCmd : "NULL") << std::endl;
@@ -2002,7 +1986,7 @@ TEST(em_cmd_t, ExceedingCommandType) {
 TEST(em_cmd_t, ControlALInterfaceValid) {
     std::cout << "Entering ControlALInterfaceValid test" << std::endl;
     em_cmd_t cmd;
-    strncpy(cmd.m_data_model.m_network.m_net_info.colocated_agent_id.name, "brlan0", sizeof(cmd.m_data_model.m_network.m_net_info.colocated_agent_id.name) - 1);
+    snprintf(cmd.m_data_model.m_network.m_net_info.colocated_agent_id.name, sizeof(cmd.m_data_model.m_network.m_net_info.colocated_agent_id.name), "%s", "brlan0");
     unsigned char expected_mac[] = {0x1A, 0x2B, 0x3C, 0x4D, 0x5E, 0x4B};
     memcpy(cmd.m_data_model.m_network.m_net_info.colocated_agent_id.mac, expected_mac, sizeof(expected_mac));
     cmd.m_data_model.m_network.m_net_info.colocated_agent_id.media = em_media_type_ieee8023ab;
@@ -3208,8 +3192,7 @@ TEST(em_cmd_t, get_param_invocation) {
     em_cmd_t obj;
     obj.m_param.net_node = new em_network_node_t;
     obj.m_param.net_node->value_int = 6;
-    strncpy(obj.m_param.net_node->value_str, "Validstring", sizeof(obj.m_param.net_node->value_str) - 1);
-    obj.m_param.net_node->value_str[sizeof(obj.m_param.net_node->value_str) - 1] = '\0';
+    snprintf(obj.m_param.net_node->value_str, sizeof(obj.m_param.net_node->value_str), "%s", "Validstring");
     obj.m_param.net_node->num_children = 2;
     std::cout << "Invoking get_param() method on default constructed em_cmd_t object." << std::endl;
     em_cmd_params_t *param_ptr = obj.get_param();
@@ -3249,7 +3232,7 @@ TEST(em_cmd_t, get_radio_interface_valid_index0) {
 	memcpy(cmd.m_data_model.m_radio[0].m_radio_info.intf.mac, mac, sizeof(mac));
 	cmd.m_data_model.m_radio[0].m_radio_info.intf.media = em_media_type_ieee80211a_5;
     const char *ifaceName0 = "TestInterface0";
-    strncpy(cmd.m_data_model.m_radio[0].m_radio_info.intf.name, ifaceName0, sizeof(cmd.m_data_model.m_radio[0].m_radio_info.intf.name) - 1);
+    snprintf(cmd.m_data_model.m_radio[0].m_radio_info.intf.name, sizeof(cmd.m_data_model.m_radio[0].m_radio_info.intf.name), "%s", ifaceName0);
     unsigned int index = 0;
     std::cout << "Invoking get_radio_interface with index: " << index << std::endl;
     em_interface_t* retrievedIface = cmd.get_radio_interface(index);
@@ -3304,9 +3287,8 @@ TEST(em_cmd_t, get_radio_interface_valid_lastindex) {
     cmd.m_data_model.m_radio[2].m_radio_info.intf.media = em_media_type_ieee80211n_24;
     // Set interface name on radio[0] (though index=2 returns radio[2])
     const char *ifaceName0 = "TestInterface0";
-    strncpy(cmd.m_data_model.m_radio[2].m_radio_info.intf.name,
-            ifaceName0,
-            sizeof(cmd.m_data_model.m_radio[2].m_radio_info.intf.name) - 1);
+    snprintf(cmd.m_data_model.m_radio[2].m_radio_info.intf.name,
+            sizeof(cmd.m_data_model.m_radio[2].m_radio_info.intf.name), "%s", ifaceName0);
     unsigned int index = 2;
     std::cout << "Invoking get_radio_interface with index: " << index << std::endl;
     em_interface_t* retrievedIface = cmd.get_radio_interface(index);
@@ -3355,7 +3337,7 @@ TEST(em_cmd_t, get_radio_interface_index_out_of_range) {
     memcpy(cmd.m_data_model.m_radio[4].m_radio_info.intf.mac, mac, sizeof(mac));
     cmd.m_data_model.m_radio[4].m_radio_info.intf.media = em_media_type_ieee80211n_24;
     const char *ifaceName0 = "TestInterface0";
-    strncpy(cmd.m_data_model.m_radio[4].m_radio_info.intf.name, ifaceName0, sizeof(cmd.m_data_model.m_radio[0].m_radio_info.intf.name) - 1);
+    snprintf(cmd.m_data_model.m_radio[4].m_radio_info.intf.name, sizeof(cmd.m_data_model.m_radio[0].m_radio_info.intf.name), "%s", ifaceName0);
     unsigned int index = 4;
     std::cout << "Invoking get_radio_interface with index: " << index << std::endl;
     em_interface_t* retrievedIface = cmd.get_radio_interface(index);
@@ -3384,7 +3366,7 @@ TEST(em_cmd_t, get_manufacturer_valid_retrieve_valid_manufacturer_name)
 {
     std::cout << "Entering get_manufacturer_valid_retrieve_valid_manufacturer_name test" << std::endl;
     em_cmd_t cmd{};
-    strncpy(cmd.m_data_model.m_device.m_device_info.manufacturer, "Acme Corp", sizeof(cmd.m_data_model.m_device.m_device_info.manufacturer) - 1);
+    snprintf(cmd.m_data_model.m_device.m_device_info.manufacturer, sizeof(cmd.m_data_model.m_device.m_device_info.manufacturer), "%s", "Acme Corp");
     std::cout << "Invoking get_manufacturer()" << std::endl;
     char *result = nullptr;
     result = cmd.get_manufacturer();
@@ -3409,7 +3391,7 @@ TEST(em_cmd_t, get_manufacturer_valid_retrieve_valid_manufacturer_name)
  * **Test Procedure:**
  * | Variation / Step | Description                                                                                | Test Data                                            | Expected Result                                         | Notes           |
  * | :--------------: | ------------------------------------------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------- | --------------- |
- * | 01               | Initialize em_cmd_t object and set manufacturer field to empty using strncpy               | manufacturer = ""                                    | em_cmd_t object manufacturer field contains an empty string | Should be successful |
+ * | 01               | Initialize em_cmd_t object and set manufacturer field to empty using snprintf               | manufacturer = ""                                    | em_cmd_t object manufacturer field contains an empty string | Should be successful |
  * | 02               | Invoke get_manufacturer() on em_cmd_t object to retrieve the manufacturer name             | Input: cmd, Output: result pointer                   | Returns a non-null pointer                              | Should Pass     |
  * | 03               | Validate that the length of the returned manufacturer string is zero                        | Output: result string length, Expected: 0            | API returns an empty string with a length equal to 0     | Should Pass     |
  */
@@ -3417,7 +3399,7 @@ TEST(em_cmd_t, get_manufacturer_empty_retrieve_manufacturer_name_empty)
 {
     std::cout << "Entering get_manufacturer_empty_retrieve_manufacturer_name_empty test" << std::endl;
     em_cmd_t cmd{};
-    strncpy(cmd.m_data_model.m_device.m_device_info.manufacturer, "", sizeof(cmd.m_data_model.m_device.m_device_info.manufacturer) - 1);
+    snprintf(cmd.m_data_model.m_device.m_device_info.manufacturer, sizeof(cmd.m_data_model.m_device.m_device_info.manufacturer), "%s", "");
     std::cout << "Invoking get_manufacturer()" << std::endl;
     char *result = cmd.get_manufacturer();
     ASSERT_NE(result, nullptr);
@@ -3480,7 +3462,7 @@ TEST(em_cmd_t, get_manufacturer_model_ValidModelProperlySet)
 {
     std::cout << "Entering get_manufacturer_model_ValidModelProperlySet test" << std::endl;
     em_cmd_t cmd;
-    strncpy(cmd.m_data_model.m_device.m_device_info.manufacturer_model, "TestModel", sizeof(cmd.m_data_model.m_device.m_device_info.manufacturer_model) - 1);
+    snprintf(cmd.m_data_model.m_device.m_device_info.manufacturer_model, sizeof(cmd.m_data_model.m_device.m_device_info.manufacturer_model), "%s", "TestModel");
     std::cout << "Invoking get_manufacturer_model()" << std::endl;
     char *result = cmd.get_manufacturer_model();
     ASSERT_NE(result, nullptr);
@@ -3514,7 +3496,7 @@ TEST(em_cmd_t, get_manufacturer_model_EmptyModel)
 {
     std::cout << "Entering get_manufacturer_model_EmptyModel test" << std::endl;
     em_cmd_t cmd;
-    strncpy(cmd.m_data_model.m_device.m_device_info.manufacturer_model, "", sizeof(cmd.m_data_model.m_device.m_device_info.manufacturer_model) - 1);
+    snprintf(cmd.m_data_model.m_device.m_device_info.manufacturer_model, sizeof(cmd.m_data_model.m_device.m_device_info.manufacturer_model), "%s", "");
     std::cout << "Invoking get_manufacturer_model()" << std::endl;
     char *result = cmd.get_manufacturer_model();
     ASSERT_NE(result, nullptr);
@@ -3579,8 +3561,7 @@ TEST(em_cmd_t, get_serial_number_valid_serial) {
     std::cout << "Entering get_serial_number_valid_serial test" << std::endl;
     const char* expectedSerial = "ABC123";
     em_cmd_t cmd;
-    strncpy(cmd.m_data_model.m_device.m_device_info.serial_number, expectedSerial, sizeof(cmd.m_data_model.m_device.m_device_info.serial_number) - 1);
-    cmd.m_data_model.m_device.m_device_info.serial_number[sizeof(cmd.m_data_model.m_device.m_device_info.serial_number) - 1] = '\0';
+    snprintf(cmd.m_data_model.m_device.m_device_info.serial_number, sizeof(cmd.m_data_model.m_device.m_device_info.serial_number), "%s", expectedSerial);
     std::cout << "Invoking get_serial_number() on em_cmd_t object" << std::endl;
     char* retSerial = cmd.get_serial_number();
     ASSERT_NE(retSerial, nullptr);
@@ -3614,7 +3595,7 @@ TEST(em_cmd_t, get_serial_number_empty_serial) {
     std::cout << "Entering get_serial_number_empty_serial test" << std::endl;
     const char* expectedSerial = "";
     em_cmd_t cmd;
-    strncpy(cmd.m_data_model.m_device.m_device_info.serial_number, expectedSerial, sizeof(cmd.m_data_model.m_device.m_device_info.serial_number) - 1);
+    snprintf(cmd.m_data_model.m_device.m_device_info.serial_number, sizeof(cmd.m_data_model.m_device.m_device_info.serial_number), "%s", expectedSerial);
     std::cout << "Invoking get_serial_number() on em_cmd_t object" << std::endl;
     char* retSerial = cmd.get_serial_number();
     ASSERT_NE(retSerial, nullptr);
@@ -4153,10 +4134,10 @@ TEST(em_cmd_t, get_radio_data_valid_match)
     cmd.m_data_model.m_wifi_data = static_cast<webconfig_subdoc_data_t*>(calloc(1, sizeof(webconfig_subdoc_data_t)));
     ASSERT_NE(cmd.m_data_model.m_wifi_data, nullptr);
     cmd.m_data_model.m_wifi_data->u.decoded.num_radios = 1;
-    strncpy(cmd.m_data_model.m_wifi_data->u.decoded.radios[0].name,
-            "Interface1", sizeof(cmd.m_data_model.m_wifi_data->u.decoded.radios[0].name) - 1);
+    snprintf(cmd.m_data_model.m_wifi_data->u.decoded.radios[0].name,
+            sizeof(cmd.m_data_model.m_wifi_data->u.decoded.radios[0].name), "%s", "Interface1");
     em_interface_t iface{};
-    strncpy(iface.name, "Interface1", sizeof(iface.name) - 1);
+    snprintf(iface.name, sizeof(iface.name), "%s", "Interface1");
     uint8_t sample_mac[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x1A};
     memcpy(iface.mac, sample_mac, sizeof(sample_mac));
     iface.media = em_media_type_ieee80211n_5;
@@ -4229,7 +4210,7 @@ TEST(em_cmd_t, get_radio_data_no_radios_returns_null)
     ASSERT_NE(cmd.m_data_model.m_wifi_data, nullptr);
     cmd.m_data_model.m_wifi_data->u.decoded.num_radios = 0;
     em_interface_t iface{};
-    strncpy(iface.name, "Interface1", sizeof(iface.name) - 1);
+    snprintf(iface.name, sizeof(iface.name), "%s", "Interface1");
     uint8_t sample_mac[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x1A};
     memcpy(iface.mac, sample_mac, sizeof(sample_mac));
     iface.media = em_media_type_ieee80211n_5;

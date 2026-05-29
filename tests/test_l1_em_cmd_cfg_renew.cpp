@@ -25,14 +25,14 @@
 // Helper function to initialize a dummy em_cmd_params_t structure.
 void initCmdParams(em_cmd_params_t &param, const char *fixedArg)
 {
-    strncpy(param.u.args.fixed_args, fixedArg, sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", fixedArg);
     param.u.args.num_args = 1;
 }
 
 // Helper function to simulate a proper dm_easy_mesh_t initialization.
 void initDmNetwork(dm_easy_mesh_t &dm, const char *netId)
 {
-    strncpy(dm.m_network.m_net_info.id, netId, sizeof(dm.m_network.m_net_info.id));
+    snprintf(dm.m_network.m_net_info.id, sizeof(dm.m_network.m_net_info.id), "%s", netId);
 }
 
 

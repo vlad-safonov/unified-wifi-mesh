@@ -28,8 +28,7 @@ static void fill_common_scan_result_fields(dm_scan_result_t& obj)
 {
     std::cout << "[Helper] Filling common scan_result fields..." << std::endl;
 
-    strncpy(obj.m_scan_result.id.net_id, "COMMON_NET", MAC_STR_LEN - 1);
-    obj.m_scan_result.id.net_id[MAC_STR_LEN - 1] = '\0';
+    snprintf(obj.m_scan_result.id.net_id, MAC_STR_LEN, "%s", "COMMON_NET");
 
     unsigned char devMac[6] = {0xAA, 0xBB, 0xCC, 0x11, 0x22, 0x33};
     memcpy(obj.m_scan_result.id.dev_mac, devMac, sizeof(devMac));
@@ -40,9 +39,7 @@ static void fill_common_scan_result_fields(dm_scan_result_t& obj)
     obj.m_scan_result.id.op_class = 81;
     obj.m_scan_result.id.channel = 100;
 
-    strncpy(obj.m_scan_result.timestamp, "2025-11-05T10:00:00",
-            sizeof(obj.m_scan_result.timestamp) - 1);
-    obj.m_scan_result.timestamp[sizeof(obj.m_scan_result.timestamp) - 1] = '\0';
+    snprintf(obj.m_scan_result.timestamp, sizeof(obj.m_scan_result.timestamp), "%s", "2025-11-05T10:00:00");
 
     obj.m_scan_result.scan_status = 5;
     obj.m_scan_result.util = 20;
@@ -261,10 +258,9 @@ TEST(dm_scan_result_t_Test, InvalidJsonStructure) {
         
         // Simulate an invalid JSON object structure
         char invalidJsonBuffer[10];
-        // Using strncpy to fill the buffer with an invalid JSON string "invalid"
+        // Using snprintf to fill the buffer with an invalid JSON string "invalid"
         const char* invalidStr = "invalid";
-        strncpy(invalidJsonBuffer, invalidStr, sizeof(invalidJsonBuffer)-1);
-        invalidJsonBuffer[sizeof(invalidJsonBuffer)-1] = '\0';
+        snprintf(invalidJsonBuffer, sizeof(invalidJsonBuffer), "%s", invalidStr);
         const cJSON* invalidJson = reinterpret_cast<const cJSON*>(invalidJsonBuffer);
         std::cout << "Constructed invalid cJSON object pointer from buffer: " << static_cast<const void*>(invalidJsonBuffer) << std::endl;
         
@@ -390,11 +386,11 @@ TEST(dm_scan_result_t_Test, CopyPopulated)
     dm_scan_result_t source{};
     em_scan_result_t* scan_res = source.get_scan_result();
 
-    // Populate id.net_id with a valid non-empty string using strncpy
+    // Populate id.net_id with a valid non-empty string using snprintf
     const char* test_net_id = "Valid_Net_ID";
-    strncpy(scan_res->id.net_id, test_net_id, sizeof(scan_res->id.net_id));
+    snprintf(scan_res->id.net_id, sizeof(scan_res->id.net_id), "%s", test_net_id);
     
-    // Populate dev_mac and scanner_mac with valid MAC addresses using strncpy
+    // Populate dev_mac and scanner_mac with valid MAC addresses using snprintf
     const char* dev_mac = "AA:BB:CC:DD:EE:FF";
     memcpy(scan_res->id.dev_mac, dev_mac, sizeof(scan_res->id.dev_mac));
     const char* scanner_mac = "11:22:33:44:55:66";
@@ -409,7 +405,7 @@ TEST(dm_scan_result_t_Test, CopyPopulated)
     
     scan_res->scan_status = 1;
     const char* timestamp = "2021-11-11T10:00:00";
-    strncpy(scan_res->timestamp, timestamp, sizeof(scan_res->timestamp));
+    snprintf(scan_res->timestamp, sizeof(scan_res->timestamp), "%s", timestamp);
     scan_res->util = 50;
     scan_res->noise = 20;
     scan_res->num_neighbors = 3;
@@ -487,7 +483,7 @@ TEST(dm_scan_result_t_Test, IndependenceAfterModification)
     em_scan_result_t* scan_res = source.get_scan_result();
     
     const char* init_net_id = "Initial_Net_ID";
-    strncpy(scan_res->id.net_id, init_net_id, sizeof(scan_res->id.net_id));
+    snprintf(scan_res->id.net_id, sizeof(scan_res->id.net_id), "%s", init_net_id);
     const char* init_dev_mac = "00:11:22:33:44:55";
     memcpy(scan_res->id.dev_mac, init_dev_mac, sizeof(scan_res->id.dev_mac));
     const char* init_scanner_mac = "66:77:88:99:AA:BB";
@@ -497,7 +493,7 @@ TEST(dm_scan_result_t_Test, IndependenceAfterModification)
     scan_res->id.scanner_type = em_scanner_type_sta;
     scan_res->scan_status = 2;
     const char* init_timestamp = "2022-01-01T12:00:00";
-    strncpy(scan_res->timestamp, init_timestamp, sizeof(scan_res->timestamp));
+    snprintf(scan_res->timestamp, sizeof(scan_res->timestamp), "%s", init_timestamp);
     scan_res->util = 60;
     scan_res->noise = 25;
     scan_res->num_neighbors = 5;
@@ -517,7 +513,7 @@ TEST(dm_scan_result_t_Test, IndependenceAfterModification)
     std::cout << "  dev_mac: " << copy_scan->id.dev_mac << std::endl;
     
     const char* mod_net_id = "Modified_Net_ID";
-    strncpy(scan_res->id.net_id, mod_net_id, sizeof(scan_res->id.net_id));
+    snprintf(scan_res->id.net_id, sizeof(scan_res->id.net_id), "%s", mod_net_id);
     const char* mod_dev_mac = "FF:EE:DD:CC:BB:AA";
     memcpy(scan_res->id.dev_mac, mod_dev_mac, sizeof(scan_res->id.dev_mac));
     const char* mod_scanner_mac = "11:22:33:44:55:66";
@@ -527,7 +523,7 @@ TEST(dm_scan_result_t_Test, IndependenceAfterModification)
     scan_res->id.scanner_type = em_scanner_type_radio;
     scan_res->scan_status = 3;
     const char* mod_timestamp = "2023-05-05T15:30:00";
-    strncpy(scan_res->timestamp, mod_timestamp, sizeof(scan_res->timestamp));
+    snprintf(scan_res->timestamp, sizeof(scan_res->timestamp), "%s", mod_timestamp);
     scan_res->util = 70;
     scan_res->noise = 30;
     scan_res->num_neighbors = 7;
@@ -584,7 +580,7 @@ TEST(dm_scan_result_t_Test, TypicalValidInput) {
         em_scan_result_t scan_result{};
         const char* netId = "TestNetwork";
         std::cout << "Setting net_id: " << netId << std::endl;
-        strncpy(scan_result.id.net_id, netId, sizeof(scan_result.id.net_id) - 1);
+        snprintf(scan_result.id.net_id, sizeof(scan_result.id.net_id), "%s", netId);
         
         unsigned char dev_mac[6] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55};
         unsigned char scanner_mac[6] = {0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB};
@@ -612,7 +608,7 @@ TEST(dm_scan_result_t_Test, TypicalValidInput) {
         const char* timestamp = "2023-10-10T12:00:00Z";
         std::cout << "Setting scan_status: " << int(scan_result.scan_status)
                   << ", timestamp: " << timestamp << std::endl;
-        strncpy(scan_result.timestamp, timestamp, sizeof(scan_result.timestamp) - 1);
+        snprintf(scan_result.timestamp, sizeof(scan_result.timestamp), "%s", timestamp);
         
         scan_result.util = 50;
         scan_result.noise = 2;
@@ -694,7 +690,7 @@ TEST(dm_scan_result_t_Test, EmptyValues) {
         em_scan_result_t scan_result{};
         const char* netId = "";
         std::cout << "Setting net_id to empty string" << std::endl;
-        strncpy(scan_result.id.net_id, netId, sizeof(scan_result.id.net_id) - 1);
+        snprintf(scan_result.id.net_id, sizeof(scan_result.id.net_id), "%s", netId);
         
         unsigned char zero_mac[6] = {0, 0, 0, 0, 0, 0};
         std::cout << "Setting dev_mac and scanner_mac to zeros" << std::endl;
@@ -711,7 +707,7 @@ TEST(dm_scan_result_t_Test, EmptyValues) {
         scan_result.scan_status = 0;
         const char* timestamp = "";
         std::cout << "Setting scan_status to 0 and timestamp to empty string" << std::endl;
-        strncpy(scan_result.timestamp, timestamp, sizeof(scan_result.timestamp) - 1);
+        snprintf(scan_result.timestamp, sizeof(scan_result.timestamp), "%s", timestamp);
         
         scan_result.util = 0;
         scan_result.noise = 0;
@@ -799,7 +795,7 @@ TEST(dm_scan_result_t_Test, MaximumBoundaryValues) {
     for (int i = 0; i < 2; i++) {
         em_scan_result_t scan_result{};
         std::cout << "Setting net_id to maximum boundary (127 chars)" << std::endl;
-        strncpy(scan_result.id.net_id, maxNetId, sizeof(scan_result.id.net_id) - 1);
+        snprintf(scan_result.id.net_id, sizeof(scan_result.id.net_id), "%s", maxNetId);
         
         // Set MAC addresses to maximum boundary values
         unsigned char dev_mac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -817,7 +813,7 @@ TEST(dm_scan_result_t_Test, MaximumBoundaryValues) {
         
         scan_result.scan_status = 255;
         std::cout << "Setting scan_status to 255" << std::endl;
-        strncpy(scan_result.timestamp, maxTimestamp, sizeof(scan_result.timestamp) - 1);
+        snprintf(scan_result.timestamp, sizeof(scan_result.timestamp), "%s", maxTimestamp);
         std::cout << "Setting timestamp to maximum boundary string (127 chars)" << std::endl;
         
         scan_result.util = 255;
@@ -897,7 +893,7 @@ TEST(dm_scan_result_t_Test, InvalidScannerType) {
     em_scan_result_t scan_result{};
     const char* netId = "InvalidEnumTest";
     std::cout << "Setting net_id: " << netId << std::endl;
-    strncpy(scan_result.id.net_id, netId, sizeof(scan_result.id.net_id) - 1);
+    snprintf(scan_result.id.net_id, sizeof(scan_result.id.net_id), "%s", netId);
     
     unsigned char dev_mac[6] = {0x10, 0x20, 0x30, 0x40, 0x50, 0x60};
     unsigned char scanner_mac[6] = {0x70, 0x80, 0x90, 0xA0, 0xB0, 0xC0};
@@ -924,7 +920,7 @@ TEST(dm_scan_result_t_Test, InvalidScannerType) {
     scan_result.scan_status = 1;
     const char* timestamp = "2023-10-10T12:00:00Z";
     std::cout << "Setting scan_status: 1 and timestamp: " << timestamp << std::endl;
-    strncpy(scan_result.timestamp, timestamp, sizeof(scan_result.timestamp) - 1);
+    snprintf(scan_result.timestamp, sizeof(scan_result.timestamp), "%s", timestamp);
     
     scan_result.util = 30;
     scan_result.noise = 3;
@@ -973,7 +969,7 @@ TEST(dm_scan_result_t_Test, ExceedNeighbors) {
         em_scan_result_t scan_result{};
         const char* netId = "ExceedNeighborsTest";
         std::cout << "Setting net_id: " << netId << std::endl;
-        strncpy(scan_result.id.net_id, netId, sizeof(scan_result.id.net_id) - 1);
+        snprintf(scan_result.id.net_id, sizeof(scan_result.id.net_id), "%s", netId);
         
         unsigned char dev_mac[6] = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC};
         unsigned char scanner_mac[6] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
@@ -1000,7 +996,7 @@ TEST(dm_scan_result_t_Test, ExceedNeighbors) {
         scan_result.scan_status = 2;
         const char* timestamp = "2023-10-10T15:30:00Z";
         std::cout << "Setting scan_status: 2 and timestamp: " << timestamp << std::endl;
-        strncpy(scan_result.timestamp, timestamp, sizeof(scan_result.timestamp) - 1);
+        snprintf(scan_result.timestamp, sizeof(scan_result.timestamp), "%s", timestamp);
         
         scan_result.util = 40;
         scan_result.noise = 4;
@@ -1050,7 +1046,7 @@ TEST(dm_scan_result_t_Test, ValidScanResult) {
     // Initialize id.net_id with "ValidNetID"
     const char valid_net_id[] = "ValidNetID";
     std::cout << "Setting id.net_id to " << valid_net_id << std::endl;
-    strncpy(scan_result.id.net_id, valid_net_id, sizeof(scan_result.id.net_id));
+    snprintf(scan_result.id.net_id, sizeof(scan_result.id.net_id), "%s", valid_net_id);
 
     // Initialize dev_mac with valid MAC address bytes
     unsigned char valid_dev_mac[6] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55};
@@ -1074,7 +1070,7 @@ TEST(dm_scan_result_t_Test, ValidScanResult) {
 
     const char timestamp[] = "2023-10-10T12:00:00Z";
     std::cout << "Setting timestamp to " << timestamp << std::endl;
-    strncpy(scan_result.timestamp, timestamp, sizeof(scan_result.timestamp));
+    snprintf(scan_result.timestamp, sizeof(scan_result.timestamp), "%s", timestamp);
 
     scan_result.util = 50;
     std::cout << "Setting util to " << static_cast<int>(scan_result.util) << std::endl;
@@ -1169,7 +1165,7 @@ TEST(dm_scan_result_t_Test, NullScanResult) {
  *
  * This test verifies that the dm_scan_result_t constructor can correctly handle scan result structures
  * where the id.net_id and timestamp fields are set to boundary strings of exactly 128 characters. It ensures that the
- * string copying operations using strncpy maintain their integrity without buffer overflow and that the object is constructed
+ * string copying operations using snprintf maintain their integrity without buffer overflow and that the object is constructed
  * without throwing exceptions.
  *
  * **Test Group ID:** Basic: 01@n
@@ -1185,8 +1181,8 @@ TEST(dm_scan_result_t_Test, NullScanResult) {
  * | :----: | --------- | ---------- |-------------- | ----- |
  * | 01 | Log entry indicating the start of the test | None | "Entering BoundaryLongStrings test" log printed | Should be successful |
  * | 02 | Create a boundary string of exactly 128 characters filled with 'B' | Boundary string = 128 characters ('B' repeated, terminated with '\0') | Boundary string is correctly constructed | Should be successful |
- * | 03 | Copy the boundary string to scan_result.id.net_id using strncpy | net_id = boundary string | id.net_id is set with boundary string | Should Pass |
- * | 04 | Copy the boundary string to scan_result.timestamp using strncpy | timestamp = boundary string | timestamp is set with boundary string | Should Pass |
+ * | 03 | Copy the boundary string to scan_result.id.net_id using snprintf | net_id = boundary string | id.net_id is set with boundary string | Should Pass |
+ * | 04 | Copy the boundary string to scan_result.timestamp using snprintf | timestamp = boundary string | timestamp is set with boundary string | Should Pass |
  * | 05 | Fill remaining fields of scan_result with valid values (net_id, MAC addresses, op_class, channel, etc.) | valid_net_id = "BoundaryTest", valid_dev_mac = 0x10,0x20,0x30,0x40,0x50,0x60, valid_scanner_mac = 0xF0,0xE0,0xD0,0xC0,0xB0,0xA0, op_class = 2, channel = 11, scanner_type = em_scanner_type_sta, scan_status = 1, util = 75, noise = 20, num_neighbors = 2, aggr_scan_duration = 200, scan_type = 2 | All fields are set correctly in the scan_result structure | Should Pass |
  * | 06 | Invoke dm_scan_result_t constructor within an EXPECT_NO_THROW block | dm_scan_result_t constructor called with pointer to scan_result | Constructor completes without throwing exception and logs successful construction | Should Pass |
  * | 07 | Verify that m_scan_result.id.net_id matches the boundary string using EXPECT_STREQ | output: m_scan_result.id.net_id, expected = boundary string | m_scan_result.id.net_id equals the boundary string | Should Pass |
@@ -1206,9 +1202,9 @@ TEST(dm_scan_result_t_Test, BoundaryLongStrings) {
     boundary_string[127] = '\0';
 
     std::cout << "Setting id.net_id to boundary string of length 128" << std::endl;
-    strncpy(scan_result.id.net_id, boundary_string, sizeof(scan_result.id.net_id));
+    snprintf(scan_result.id.net_id, sizeof(scan_result.id.net_id), "%s", boundary_string);
     std::cout << "Setting timestamp to boundary string of length 128" << std::endl;
-    strncpy(scan_result.timestamp, boundary_string, sizeof(scan_result.timestamp));
+    snprintf(scan_result.timestamp, sizeof(scan_result.timestamp), "%s", boundary_string);
 
     // Fill other fields with valid values.
     unsigned char valid_dev_mac[6] = {0x10, 0x20, 0x30, 0x40, 0x50, 0x60};
@@ -1269,7 +1265,7 @@ TEST(dm_scan_result_t_Test, ScannerTypeEnumRadio) {
     // Initialize necessary fields with valid data.
     const char valid_net_id[] = "RadioTest";
     std::cout << "Setting id.net_id to " << valid_net_id << std::endl;
-    strncpy(scan_result.id.net_id, valid_net_id, sizeof(scan_result.id.net_id));
+    snprintf(scan_result.id.net_id, sizeof(scan_result.id.net_id), "%s", valid_net_id);
 
     unsigned char valid_dev_mac[6] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
     memcpy(scan_result.id.dev_mac, valid_dev_mac, sizeof(valid_dev_mac));
@@ -1283,7 +1279,7 @@ TEST(dm_scan_result_t_Test, ScannerTypeEnumRadio) {
 
     scan_result.scan_status = 2;
     const char timestamp[] = "2023-11-11T11:11:11Z";
-    strncpy(scan_result.timestamp, timestamp, sizeof(scan_result.timestamp));
+    snprintf(scan_result.timestamp, sizeof(scan_result.timestamp), "%s", timestamp);
     scan_result.util = 60;
     scan_result.noise = 15;
     scan_result.num_neighbors = 4;
@@ -1330,7 +1326,7 @@ TEST(dm_scan_result_t_Test, ScannerTypeEnumSta) {
     // Initialize necessary fields with valid data.
     const char valid_net_id[] = "StaTest";
     std::cout << "Setting id.net_id to " << valid_net_id << std::endl;
-    strncpy(scan_result.id.net_id, valid_net_id, sizeof(scan_result.id.net_id));
+    snprintf(scan_result.id.net_id, sizeof(scan_result.id.net_id), "%s", valid_net_id);
 
     unsigned char valid_dev_mac[6] = {0x11, 0x12, 0x13, 0x14, 0x15, 0x16};
     memcpy(scan_result.id.dev_mac, valid_dev_mac, sizeof(valid_dev_mac));
@@ -1344,7 +1340,7 @@ TEST(dm_scan_result_t_Test, ScannerTypeEnumSta) {
 
     scan_result.scan_status = 3;
     const char timestamp[] = "2023-12-12T12:12:12Z";
-    strncpy(scan_result.timestamp, timestamp, sizeof(scan_result.timestamp));
+    snprintf(scan_result.timestamp, sizeof(scan_result.timestamp), "%s", timestamp);
     scan_result.util = 65;
     scan_result.noise = 18;
     scan_result.num_neighbors = 5;
@@ -1527,7 +1523,7 @@ TEST(dm_scan_result_t_Test, PreExistingDataEncoding) {
     const char *preKey = "preexisting_key";
     const char *preValue = "preexisting_value";
     char buffer[32];
-    strncpy(buffer, preValue, sizeof(buffer)-1);
+    snprintf(buffer, sizeof(buffer), "%s", preValue);
     cJSON_AddStringToObject(obj, preKey, buffer);
 
     char *beforePrint = cJSON_Print(obj);
@@ -1663,7 +1659,7 @@ TEST(dm_scan_result_t_Test, Modify_Scan_Result_Through_Retrieved_Pointer) {
  * | Variation / Step | Description | Test Data | Expected Result | Notes |
  * | :----: | --------- | ---------- |-------------- | ----- |
  * | 01 | Log the entry message indicating the start of the test | No input values | Console outputs the entry message | Should be successful |
- * | 02 | Initialize externalScanResult, assign net_id using strncpy | input: testNetId = "ExternalNetworkID", externalScanResult.id.net_id updated to "ExternalNetworkID" | externalScanResult.id.net_id equals "ExternalNetworkID" | Should be successful |
+ * | 02 | Initialize externalScanResult, assign net_id using snprintf | input: testNetId = "ExternalNetworkID", externalScanResult.id.net_id updated to "ExternalNetworkID" | externalScanResult.id.net_id equals "ExternalNetworkID" | Should be successful |
  * | 03 | Set externalScanResult.scan_status to 42 | input: scan_status = 42 | externalScanResult.scan_status equals 42 | Should be successful |
  * | 04 | Construct dm_scan_result_t using the pointer to externalScanResult | input: externalScanResult pointer | Object constructed; internal scan result pointer allocated | Should Pass |
  * | 05 | Retrieve the internal scan result pointer via get_scan_result() | function call: obj.get_scan_result() | internalScanResult is not the same as externalScanResult pointer | Should Pass |
@@ -1672,11 +1668,11 @@ TEST(dm_scan_result_t_Test, Modify_Scan_Result_Through_Retrieved_Pointer) {
 TEST(dm_scan_result_t_Test, Validate_Internal_Member_Usage_On_Constructor_With_External_Pointer) {
     std::cout << "Entering Validate_Internal_Member_Usage_On_Constructor_With_External_Pointer test" << std::endl;
     
-    // Create an external scan_result structure and assign test values using strncpy
+    // Create an external scan_result structure and assign test values using snprintf
     em_scan_result_t externalScanResult{};
     const char* testNetId = "ExternalNetworkID";
     std::cout << "Assigning external scan_result net_id value: " << testNetId << std::endl;
-    strncpy(externalScanResult.id.net_id, testNetId, sizeof(externalScanResult.id.net_id));
+    snprintf(externalScanResult.id.net_id, sizeof(externalScanResult.id.net_id), "%s", testNetId);
     
     externalScanResult.scan_status = 42;
     std::cout << "Assigning external scan_result scan_status value: " 
@@ -1740,7 +1736,7 @@ TEST(dm_scan_result_t_Test, PositiveMatch_AllFieldsIdentical)
     
     em_scan_result_id_t id{};
     std::cout << "Assigning net_id with \"TEST_NET\"" << std::endl;
-    strncpy(id.net_id, "TEST_NET", sizeof(id.net_id));
+    snprintf(id.net_id, sizeof(id.net_id), "%s", "TEST_NET");
 
     unsigned char expectedDevMac[6] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
     for (int i = 0; i < 6; ++i) {
@@ -1832,7 +1828,7 @@ TEST(dm_scan_result_t_Test, NegativeMatch_Mismatch_net_id)
 
     em_scan_result_id_t id{};
     std::cout << "Assigning net_id with \"WRONG_NET\"" << std::endl;
-    strncpy(id.net_id, "WRONG_NET", sizeof(id.net_id));
+    snprintf(id.net_id, sizeof(id.net_id), "%s", "WRONG_NET");
 
     unsigned char expectedDevMac[6] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
     for (int i = 0; i < 6; ++i) {
@@ -1897,7 +1893,7 @@ TEST(dm_scan_result_t_Test, NegativeMatch_Mismatch_dev_mac)
     
     em_scan_result_id_t id{};
     std::cout << "Assigning net_id with \"TEST_NET\"" << std::endl;
-    strncpy(id.net_id, "TEST_NET", sizeof(id.net_id));
+    snprintf(id.net_id, sizeof(id.net_id), "%s", "TEST_NET");
     
     unsigned char wrongDevMac[6] = {0xFF, 0x02, 0x03, 0x04, 0x05, 0x06};
     for (int i = 0; i < 6; ++i) {
@@ -1963,7 +1959,7 @@ TEST(dm_scan_result_t_Test, NegativeMatch_Mismatch_scanner_mac)
     
     em_scan_result_id_t id{};
     std::cout << "Assigning net_id with \"TEST_NET\"" << std::endl;
-    strncpy(id.net_id, "TEST_NET", sizeof(id.net_id));
+    snprintf(id.net_id, sizeof(id.net_id), "%s", "TEST_NET");
     
     unsigned char expectedDevMac[6] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
     for (int i = 0; i < 6; ++i) {
@@ -2028,7 +2024,7 @@ TEST(dm_scan_result_t_Test, NegativeMatch_Mismatch_op_class)
     
     em_scan_result_id_t id{};
     std::cout << "Assigning net_id with \"TEST_NET\"" << std::endl;
-    strncpy(id.net_id, "TEST_NET", sizeof(id.net_id));
+    snprintf(id.net_id, sizeof(id.net_id), "%s", "TEST_NET");
 
     unsigned char expectedDevMac[6] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
     for (int i = 0; i < 6; ++i) {
@@ -2088,7 +2084,7 @@ TEST(dm_scan_result_t_Test, NegativeMatch_Mismatch_channel)
     
     em_scan_result_id_t id{};
     std::cout << "Assigning net_id with \"TEST_NET\"" << std::endl;
-    strncpy(id.net_id, "TEST_NET", sizeof(id.net_id));
+    snprintf(id.net_id, sizeof(id.net_id), "%s", "TEST_NET");
     
     unsigned char expectedDevMac[6] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
     for (int i = 0; i < 6; ++i) {
@@ -2151,7 +2147,7 @@ TEST(dm_scan_result_t_Test, ScannerTypeVariation)
     // Case 1: scanner_type = em_scanner_type_radio (expected: true)
     em_scan_result_id_t idRadio{};
     std::cout << "Case 1: Setting net_id with \"TEST_NET\"" << std::endl;
-    strncpy(idRadio.net_id, "TEST_NET", sizeof(idRadio.net_id));
+    snprintf(idRadio.net_id, sizeof(idRadio.net_id), "%s", "TEST_NET");
     
     unsigned char expectedDevMac[6] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
     for (int i = 0; i < 6; ++i) {
@@ -2184,7 +2180,7 @@ TEST(dm_scan_result_t_Test, ScannerTypeVariation)
     // Case 2: scanner_type = em_scanner_type_sta (expected: false)
     em_scan_result_id_t idSta;
     std::cout << "Case 2: Setting net_id with \"TEST_NET\"" << std::endl;
-    strncpy(idSta.net_id, "TEST_NET", sizeof(idSta.net_id));
+    snprintf(idSta.net_id, sizeof(idSta.net_id), "%s", "TEST_NET");
     
     for (int i = 0; i < 6; ++i) {
         idSta.dev_mac[i] = expectedDevMac[i];
@@ -2373,11 +2369,9 @@ TEST(dm_scan_result_t_Test, AssignmentOperatorSourceZeroFields) {
         std::cout << "Invoking init() on source object to zero out scan_result" << std::endl;
         source.init();
 
-        strncpy(target.m_scan_result.id.net_id, "NON_ZERO", MAC_STR_LEN - 1);
-        target.m_scan_result.id.net_id[MAC_STR_LEN - 1] = '\0';
+        snprintf(target.m_scan_result.id.net_id, MAC_STR_LEN, "%s", "NON_ZERO");
 
-        strncpy(target.m_scan_result.timestamp, "NON_ZERO_TS", MAC_STR_LEN - 1);
-        target.m_scan_result.timestamp[MAC_STR_LEN - 1] = '\0';
+        snprintf(target.m_scan_result.timestamp, MAC_STR_LEN, "%s", "NON_ZERO_TS");
 
         target.m_scan_result.scan_status = 55;
         target.m_scan_result.util = 77;
@@ -2502,20 +2496,16 @@ TEST(dm_scan_result_t_Test, AssignmentOperatorBoundaryStringValues) {
         memset(maxStr, 'A', MAC_STR_LEN - 1);
         maxStr[MAC_STR_LEN - 1] = '\0';
 
-        strncpy(source.m_scan_result.id.net_id, maxStr, MAC_STR_LEN - 1);
-        source.m_scan_result.id.net_id[MAC_STR_LEN - 1] = '\0';
+        snprintf(source.m_scan_result.id.net_id, MAC_STR_LEN, "%s", maxStr);
 
-        strncpy(source.m_scan_result.timestamp, maxStr, MAC_STR_LEN - 1);
-        source.m_scan_result.timestamp[MAC_STR_LEN - 1] = '\0';
+        snprintf(source.m_scan_result.timestamp, MAC_STR_LEN, "%s", maxStr);
 
         std::cout << "Assigned source.net_id: " << source.m_scan_result.id.net_id << std::endl;
         std::cout << "Assigned source.timestamp: " << source.m_scan_result.timestamp << std::endl;
 
-        strncpy(target.m_scan_result.id.net_id, "DIFFERENT", MAC_STR_LEN - 1);
-        target.m_scan_result.id.net_id[MAC_STR_LEN - 1] = '\0';
+        snprintf(target.m_scan_result.id.net_id, MAC_STR_LEN, "%s", "DIFFERENT");
 
-        strncpy(target.m_scan_result.timestamp, "DIFF_TIMESTAMP", MAC_STR_LEN - 1);
-        target.m_scan_result.timestamp[MAC_STR_LEN - 1] = '\0';
+        snprintf(target.m_scan_result.timestamp, MAC_STR_LEN, "%s", "DIFF_TIMESTAMP");
 
         std::cout << "Before assignment, target.net_id: " << target.m_scan_result.id.net_id << std::endl;
         std::cout << "Before assignment, target.timestamp: " << target.m_scan_result.timestamp << std::endl;
@@ -2706,9 +2696,9 @@ TEST(dm_scan_result_t_Test, DifferentNetId)
     
     // Set net_id differently
     std::cout << "Setting obj1 id.net_id to 'Net123'" << std::endl;
-    strncpy(obj1.m_scan_result.id.net_id, "Net123", sizeof(obj1.m_scan_result.id.net_id));
+    snprintf(obj1.m_scan_result.id.net_id, sizeof(obj1.m_scan_result.id.net_id), "%s", "Net123");
     std::cout << "Setting obj2 id.net_id to 'Net456'" << std::endl;
-    strncpy(obj2.m_scan_result.id.net_id, "Net456", sizeof(obj2.m_scan_result.id.net_id));
+    snprintf(obj2.m_scan_result.id.net_id, sizeof(obj2.m_scan_result.id.net_id), "%s", "Net456");
     
     std::cout << "Invoking operator== on obj1 with obj2" << std::endl;
     bool result = obj1.operator==(obj2);
@@ -3048,9 +3038,9 @@ TEST(dm_scan_result_t_Test, DifferentTimestamp)
     
     // Set timestamp differently
     std::cout << "Assigning obj1 timestamp to '2023-01-01T12:00:00'" << std::endl;
-    strncpy(obj1.m_scan_result.timestamp, "2023-01-01T12:00:00", sizeof(obj1.m_scan_result.timestamp));
+    snprintf(obj1.m_scan_result.timestamp, sizeof(obj1.m_scan_result.timestamp), "%s", "2023-01-01T12:00:00");
     std::cout << "Assigning obj2 timestamp to '2023-01-02T12:00:00'" << std::endl;
-    strncpy(obj2.m_scan_result.timestamp, "2023-01-02T12:00:00", sizeof(obj2.m_scan_result.timestamp));
+    snprintf(obj2.m_scan_result.timestamp, sizeof(obj2.m_scan_result.timestamp), "%s", "2023-01-02T12:00:00");
     
     std::cout << "Invoking operator== on obj1 with obj2" << std::endl;
     bool result = obj1.operator==(obj2);
@@ -3478,13 +3468,13 @@ TEST(dm_scan_result_t_Test, NullKeyPointer) {
 
     const char* key = NULL;
     em_scan_result_id_t id{};
-    strncpy(reinterpret_cast<char*>(id.net_id), "initial", sizeof(id.net_id) - 1);
+    snprintf(reinterpret_cast<char*>(id.net_id), sizeof(id.net_id), "%s", "initial");
     id.net_id[sizeof(id.net_id) - 1] = '\0';
 
-    strncpy(reinterpret_cast<char*>(id.dev_mac), "initial", sizeof(id.dev_mac) - 1);
+    snprintf(reinterpret_cast<char*>(id.dev_mac), sizeof(id.dev_mac), "%s", "initial");
     id.dev_mac[sizeof(id.dev_mac) - 1] = '\0';
 
-    strncpy(reinterpret_cast<char*>(id.scanner_mac), "initial", sizeof(id.scanner_mac) - 1);
+    snprintf(reinterpret_cast<char*>(id.scanner_mac), sizeof(id.scanner_mac), "%s", "initial");
     id.scanner_mac[sizeof(id.scanner_mac) - 1] = '\0';
 
     id.op_class = 0;
@@ -3584,13 +3574,13 @@ TEST(dm_scan_result_t_Test, InvalidKeyFormat) {
     em_scan_result_id_t id{};
 
     // Pre-fill id with known value to compare that it remains unchanged in failure case
-    strncpy(reinterpret_cast<char*>(id.net_id), "unchanged", sizeof(id.net_id) - 1);
+    snprintf(reinterpret_cast<char*>(id.net_id), sizeof(id.net_id), "%s", "unchanged");
     id.net_id[sizeof(id.net_id) - 1] = '\0';
 
-    strncpy(reinterpret_cast<char*>(id.dev_mac), "unchanged", sizeof(id.dev_mac) - 1);
+    snprintf(reinterpret_cast<char*>(id.dev_mac), sizeof(id.dev_mac), "%s", "unchanged");
     id.dev_mac[sizeof(id.dev_mac) - 1] = '\0';
 
-    strncpy(reinterpret_cast<char*>(id.scanner_mac), "unchanged", sizeof(id.scanner_mac) - 1);
+    snprintf(reinterpret_cast<char*>(id.scanner_mac), sizeof(id.scanner_mac), "%s", "unchanged");
     id.scanner_mac[sizeof(id.scanner_mac) - 1] = '\0';
 
     id.op_class = 99;
@@ -3651,8 +3641,7 @@ TEST(dm_scan_result_t_Test, EmptyKeyString) {
     const char key[] = "";
     em_scan_result_id_t id{};
 
-    strncpy(id.net_id, "initial", sizeof(id.net_id) - 1);
-    id.net_id[sizeof(id.net_id) - 1] = '\0';
+    snprintf(id.net_id, sizeof(id.net_id), "%s", "initial");
 
     const char* initStr = "initial";
     memcpy(id.dev_mac, initStr, strlen(initStr));
@@ -3711,8 +3700,7 @@ TEST(dm_scan_result_t_Test, Destruction_WithValidScanPointer) {
     em_scan_result_t* validScanResult = new em_scan_result_t();
 
     const char sampleValue[] = "ValidScanResult";
-    strncpy(validScanResult->timestamp, sampleValue, sizeof(validScanResult->timestamp) - 1);
-    validScanResult->timestamp[sizeof(validScanResult->timestamp) - 1] = '\0';
+    snprintf(validScanResult->timestamp, sizeof(validScanResult->timestamp), "%s", sampleValue);
 
     std::cout << "Created em_scan_result_t with timestamp: " << validScanResult->timestamp << std::endl;
 

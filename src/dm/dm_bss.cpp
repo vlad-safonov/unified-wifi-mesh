@@ -194,23 +194,23 @@ void dm_bss_t::encode(cJSON *obj, bool summary)
 	//TBD: Currently using default hard-coded values of VLAN-ID, need to integrate so that DM is updated from DB/CLI/Agent
 	switch (m_bss_info.id.haul_type) {
 		case em_haul_type_fronthaul:
-			strncpy(haul_type_str, "Fronthaul", strlen("Fronthaul") + 1);
+			snprintf(haul_type_str, sizeof("Fronthaul"), "%s", "Fronthaul");
 			break;
 
 		case em_haul_type_backhaul:
-			strncpy(haul_type_str, "Backhaul", strlen("Backhaul") + 1);
+			snprintf(haul_type_str, sizeof("Backhaul"), "%s", "Backhaul");
 			break;
 
 		case em_haul_type_iot:
-			strncpy(haul_type_str, "IoT", strlen("IoT") + 1);
+			snprintf(haul_type_str, sizeof("IoT"), "%s", "IoT");
 			break;
 
 		case em_haul_type_configurator:
-			strncpy(haul_type_str, "Configurator", strlen("Configurator") + 1);
+			snprintf(haul_type_str, sizeof("Configurator"), "%s", "Configurator");
 			break;
 
 		case em_haul_type_hotspot:
-			strncpy(haul_type_str, "Hotspot", strlen("Hotspot") + 1);
+			snprintf(haul_type_str, sizeof("Hotspot"), "%s", "Hotspot");
 			break;
 
 		default:
@@ -278,7 +278,7 @@ void dm_bss_t::operator = (const dm_bss_t& obj)
 {
 	if (this == &obj) { return; }
     this->m_bss_info.vap_index = obj.m_bss_info.vap_index;
-	strncpy(this->m_bss_info.id.net_id, obj.m_bss_info.id.net_id, sizeof(em_long_string_t));
+	snprintf(this->m_bss_info.id.net_id, sizeof(em_long_string_t), "%s", obj.m_bss_info.id.net_id);
 	memcpy(this->m_bss_info.id.dev_mac, obj.m_bss_info.id.dev_mac, sizeof(mac_address_t));
 	memcpy(this->m_bss_info.id.ruid, obj.m_bss_info.id.ruid, sizeof(mac_address_t));
 	memcpy(this->m_bss_info.id.bssid, obj.m_bss_info.id.bssid, sizeof(mac_address_t));
@@ -392,12 +392,12 @@ int dm_bss_t::parse_bss_id_from_key(const char *key, em_bss_id_t *id)
     char *tmp, *remain;
     unsigned int i = 0;
 
-    strncpy(str, key, strlen(key) + 1);
+    snprintf(str, sizeof(str), "%s", key);
     remain = str;
     while ((tmp = strchr(remain, '@')) != NULL) {
         if (i == 0) {
             *tmp = 0;
-            strncpy(id->net_id, remain, strlen(remain) + 1);
+            snprintf(id->net_id, sizeof(id->net_id), "%s", remain);
             tmp++;
             remain = tmp;
         } else if (i == 1) {

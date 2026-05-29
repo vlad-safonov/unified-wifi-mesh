@@ -314,7 +314,7 @@ int dm_scan_result_list_t::sync_db(db_client_t& db_client, void *ctx)
 		scan_result.scan_status = static_cast<unsigned char>(db_client.get_number(ctx, 2));
 		
 		db_client.get_string(ctx, str, 3);
-		strncpy(scan_result.timestamp, str, sizeof(em_long_string_t));
+		snprintf(scan_result.timestamp, sizeof(em_long_string_t), "%s", str);
 
 		scan_result.util = static_cast<unsigned char>(db_client.get_number(ctx, 4));
 		scan_result.noise = static_cast<unsigned char>(db_client.get_number(ctx, 5));

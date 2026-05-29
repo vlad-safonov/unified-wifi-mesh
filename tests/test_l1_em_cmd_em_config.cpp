@@ -52,11 +52,10 @@ TEST(em_cmd_em_config_t, em_cmd_em_config_t_full_valid) {
     const char* arg0 = "ArgValue1";
     const char* arg1 = "ArgValue2";
     em_cmd_params_t params{};
-    strncpy(params.u.args.fixed_args, testNetwork,
-            sizeof(params.u.args.fixed_args) - 1);
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", testNetwork);
     params.u.args.num_args = 2;
-    strncpy(params.u.args.args[0], arg0, sizeof(params.u.args.args[0]) - 1);
-    strncpy(params.u.args.args[1], arg1, sizeof(params.u.args.args[1]) - 1);
+    snprintf(params.u.args.args[0], sizeof(params.u.args.args[0]), "%s", arg0);
+    snprintf(params.u.args.args[1], sizeof(params.u.args.args[1]), "%s", arg1);
     dm_easy_mesh_t dm{};
     em_cmd_em_config_t configCmd(params, dm);
     EXPECT_EQ(configCmd.m_type, em_cmd_type_em_config);
@@ -148,13 +147,10 @@ TEST(em_cmd_em_config_t, em_cmd_em_config_t_max_boundary) {
     maxArg[sizeof(maxArg) - 1] = '\0';
     em_cmd_params_t params{};
     std::cout << "Preparing max-length arguments\n";
-    strncpy(params.u.args.fixed_args, maxFixed, sizeof(params.u.args.fixed_args) - 1);
-    params.u.args.fixed_args[sizeof(params.u.args.fixed_args) - 1] = '\0';
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", maxFixed);
     params.u.args.num_args = 2;
-    strncpy(params.u.args.args[0], maxArg, sizeof(params.u.args.args[0]) - 1);
-    params.u.args.args[0][sizeof(params.u.args.args[0]) - 1] = '\0';
-    strncpy(params.u.args.args[1], maxArg, sizeof(params.u.args.args[1]) - 1);
-    params.u.args.args[1][sizeof(params.u.args.args[1]) - 1] = '\0';
+    snprintf(params.u.args.args[0], sizeof(params.u.args.args[0]), "%s", maxArg);
+    snprintf(params.u.args.args[1], sizeof(params.u.args.args[1]), "%s", maxArg);
     dm_easy_mesh_t dm{};
     em_cmd_em_config_t configCmd(params, dm);
     EXPECT_EQ(configCmd.m_type, em_cmd_type_em_config);

@@ -49,7 +49,7 @@ em_cmd_topo_sync_t::em_cmd_topo_sync_t(em_cmd_params_t param, dm_easy_mesh_t& dm
     m_orch_desc[0].op = dm_orch_type_topo_sync;
     m_orch_desc[0].submit = true;
 
-    strncpy(m_name, "topo_sync", strlen("topo_sync") + 1);
+    snprintf(m_name, sizeof("topo_sync"), "%s", "topo_sync");
     m_svc = em_service_type_ctrl;
     init(dm);
 

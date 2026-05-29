@@ -49,11 +49,11 @@
 TEST(em_cmd_get_mld_config_t, ctor_full_populated) {
     std::cout << "Entering em_cmd_get_mld_config_t_ctor_full_populated test" << std::endl;
     em_cmd_params_t param;
-    strncpy(param.u.args.fixed_args, "FullPopulatedFixedArg", sizeof(param.u.args.fixed_args));
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", "FullPopulatedFixedArg");
     param.u.args.num_args = 3;
-    strncpy(param.u.args.args[0], "Arg0", sizeof(param.u.args.args[0]));
-    strncpy(param.u.args.args[1], "Arg1", sizeof(param.u.args.args[1]));
-    strncpy(param.u.args.args[2], "Arg2", sizeof(param.u.args.args[2]));
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", "Arg0");
+    snprintf(param.u.args.args[1], sizeof(param.u.args.args[1]), "%s", "Arg1");
+    snprintf(param.u.args.args[2], sizeof(param.u.args.args[2]), "%s", "Arg2");
     std::cout << "Param fixed_args: " << param.u.args.fixed_args << std::endl;
     std::cout << "Param num_args: " << param.u.args.num_args << std::endl;
     std::cout << "Param arg[0]: " << param.u.args.args[0] << std::endl;
@@ -102,14 +102,12 @@ TEST(em_cmd_get_mld_config_t, ctor_max_fixed_args) {
     char maxStr[128];
     memset(maxStr, 'X', sizeof(maxStr) - 1);
     maxStr[sizeof(maxStr) - 1] = '\0';
-    strncpy(param.u.args.fixed_args, maxStr, sizeof(param.u.args.fixed_args) - 1);
-    param.u.args.fixed_args[sizeof(param.u.args.fixed_args) - 1] = '\0';
+    snprintf(param.u.args.fixed_args, sizeof(param.u.args.fixed_args), "%s", maxStr);
     param.u.args.num_args = 5;
     char maxArg[128];
     memset(maxArg, 'Y', sizeof(maxArg) - 1);
     maxArg[sizeof(maxArg) - 1] = '\0';
-    strncpy(param.u.args.args[0], maxArg, sizeof(param.u.args.args[0]) - 1);
-    param.u.args.args[0][sizeof(param.u.args.args[0]) - 1] = '\0';
+    snprintf(param.u.args.args[0], sizeof(param.u.args.args[0]), "%s", maxArg);
     dm_easy_mesh_t dm;
     em_cmd_get_mld_config_t cmd(param, dm);
     EXPECT_EQ(cmd.m_type, em_cmd_type_get_mld_config);

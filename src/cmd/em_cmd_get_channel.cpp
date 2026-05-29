@@ -47,7 +47,7 @@ em_cmd_get_channel_t::em_cmd_get_channel_t(em_cmd_params_t param, dm_easy_mesh_t
     m_orch_op_idx = 0;
     m_num_orch_desc = 0;
 
-    strncpy(m_name, "get_channel", strlen("get_channel") + 1);
+    snprintf(m_name, sizeof("get_channel"), "%s", "get_channel");
     m_svc = em_service_type_ctrl;
     init(dm);
 

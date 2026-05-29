@@ -51,10 +51,9 @@ TEST(em_cmd_reset_t, em_cmd_reset_t_valid_construction) {
     em_cmd_params_t testParam;
     memset(&testParam, 0, sizeof(testParam));
     const char *fixedArgs = "ResetCommand";
-    strncpy(testParam.u.args.fixed_args, fixedArgs, sizeof(testParam.u.args.fixed_args) - 1);
-    testParam.u.args.fixed_args[sizeof(testParam.u.args.fixed_args) - 1] = '\0';
+    snprintf(testParam.u.args.fixed_args, sizeof(testParam.u.args.fixed_args), "%s", fixedArgs);
     testParam.u.args.num_args = 1;
-    strncpy(testParam.u.args.args[0], "Arg0", sizeof(testParam.u.args.args[0]));
+    snprintf(testParam.u.args.args[0], sizeof(testParam.u.args.args[0]), "%s", "Arg0");
     std::cout << "Preparing em_cmd_params_t with fixed_args: " << testParam.u.args.fixed_args << " and num_args: " << testParam.u.args.num_args << std::endl;
     dm_easy_mesh_t dm; 
     em_cmd_reset_t cmd(testParam, dm);
@@ -155,16 +154,16 @@ TEST(em_cmd_reset_t, em_cmd_reset_t_max_params)
     em_cmd_params_t params;
     memset(&params, 0, sizeof(params));
     const char* resetDeviceStr = "reset";
-    strncpy(params.u.args.fixed_args, resetDeviceStr, sizeof(params.u.args.fixed_args)-1);
+    snprintf(params.u.args.fixed_args, sizeof(params.u.args.fixed_args), "%s", resetDeviceStr);
     params.u.args.num_args = EM_CLI_MAX_ARGS;
     for (unsigned int i = 0; i < params.u.args.num_args; i++) {
         char longId[128];
         memset(longId, 'X', sizeof(longId)-1);
         longId[127] = '\0';
         if(i == 0) {
-            strncpy(longId, "RESET", 10);
+            snprintf(longId, 10, "%s", "RESET");
         }
-        strncpy(params.u.args.args[i], longId, sizeof(params.u.args.args[i])-1);
+        snprintf(params.u.args.args[i], sizeof(params.u.args.args[i]), "%s", longId);
     }
     dm_easy_mesh_t dm;
     em_cmd_reset_t cmd(params, dm);
