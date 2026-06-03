@@ -59,10 +59,12 @@ jobs:
     - name: Clone OneWiFi repository
       run: |
         mkdir -p easymesh_project
-        git clone --depth=5 https://github.com/rdkcentral/OneWifi.git easymesh_project/OneWifi
+        # git clone --depth=5 https://github.com/rdkcentral/OneWifi.git easymesh_project/OneWifi
+        git clone https://github.com/vlad-safonov/OneWifi.git easymesh_project/OneWifi
 
         # Freeze OneWifi revision in order to build Easymesh (need to update on rebase)
         # git -C easymesh_project/OneWifi checkout e950dfb8fd1809a4e07cffbad43b8b8a46a2a32a
+        git -C easymesh_project/OneWifi checkout RDKBWIFI-445-wrong-vaps-in-ap-metric-report
 
         mv unified-wifi-mesh easymesh_project/unified-wifi-mesh
 
