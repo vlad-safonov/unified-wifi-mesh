@@ -98,7 +98,7 @@ int dm_easy_mesh_agent_t::analyze_dev_init(em_bus_event_t *evt, em_cmd_t *pcmd[]
     }
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -133,6 +133,9 @@ int dm_easy_mesh_agent_t::analyze_sta_list(em_bus_event_t *evt, em_cmd_t *pcmd[]
         webconfig_subdoc_type_associated_clients, "Assoc clients");
 
     for ( i = 0; i < num_radios; i++) {
+        if (num >= EM_MAX_CMD) {
+            break;
+        }
         evt->params.u.args.num_args = 1;
         dm_easy_mesh_t::macbytes_to_string(get_radio_by_ref(i).get_radio_interface_mac(), radio_str);
         snprintf(evt->params.u.args.args[0], sizeof(evt->params.u.args.args[0]), "%s", radio_str);
@@ -172,10 +175,13 @@ int dm_easy_mesh_agent_t::analyze_sta_list(em_bus_event_t *evt, em_cmd_t *pcmd[]
         tmp = pcmd[num];
         num++;
 
-        while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+        while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
             dm.clone_hash_maps(*pcmd[num]->get_data_model());
             tmp = pcmd[num];
             num++;
+        }
+        if (num >= EM_MAX_CMD) {
+            break;
         }
     }
 
@@ -200,7 +206,7 @@ int dm_easy_mesh_agent_t::analyze_autoconfig_renew(em_bus_event_t *evt, em_cmd_t
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -332,7 +338,7 @@ int dm_easy_mesh_agent_t::analyze_onewifi_vap_cb(em_bus_event_t *evt, em_cmd_t *
 	pcmd[num] = new em_cmd_ow_cb_t(evt->params, dm);
 	tmp = pcmd[num];
 	num++;
-	while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+	while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
 		tmp = pcmd[num];
 		num++;
 	}
@@ -379,7 +385,7 @@ int dm_easy_mesh_agent_t::analyze_onewifi_radio_cb(em_bus_event_t *evt, em_cmd_t
 	tmp = pcmd[num];
 	num++;
 
-	while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+	while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
 		tmp = pcmd[num];
 		num++;
 	}
@@ -740,7 +746,7 @@ int dm_easy_mesh_agent_t::analyze_sta_link_metrics(em_bus_event_t *evt, em_cmd_t
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -842,7 +848,7 @@ int dm_easy_mesh_agent_t::analyze_btm_response_action_frame(em_bus_event_t *evt,
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -899,7 +905,7 @@ int dm_easy_mesh_agent_t::analyze_scan_result(em_bus_event_t *evt, em_cmd_t *pcm
     tmp = pcmd[num];
     num++;
     
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -952,7 +958,7 @@ int dm_easy_mesh_agent_t::analyze_beacon_report(em_bus_event_t *evt, em_cmd_t *p
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -1023,7 +1029,7 @@ int dm_easy_mesh_agent_t::analyze_ap_metrics_report(em_bus_event_t *evt, em_cmd_
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -1078,7 +1084,7 @@ int dm_easy_mesh_agent_t::analyze_link_report(em_bus_event_t *evt, em_cmd_t *pcm
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }

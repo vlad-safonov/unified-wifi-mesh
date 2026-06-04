@@ -1600,7 +1600,7 @@ int dm_easy_mesh_ctrl_t::analyze_sta_link_metrics(em_cmd_t *pcmd[])
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -1633,7 +1633,7 @@ int dm_easy_mesh_ctrl_t::analyze_config_renew(em_bus_event_t *evt, em_cmd_t *pcm
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -1727,7 +1727,7 @@ int dm_easy_mesh_ctrl_t::analyze_sta_assoc_event(em_bus_event_t *evt, em_cmd_t *
         pcmd[num - 1]->override_op(0, &desc);
     }
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -1760,7 +1760,7 @@ int dm_easy_mesh_ctrl_t::analyze_m2_tx(em_bus_event_t *evt, em_cmd_t *pcmd[])
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -1789,7 +1789,7 @@ int dm_easy_mesh_ctrl_t::analyze_dev_test(em_bus_event_t *evt, em_cmd_t *pcmd[])
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
 		tmp = pcmd[num];
 		num++;
     }
@@ -1819,7 +1819,7 @@ int dm_easy_mesh_ctrl_t::analyze_reset(em_bus_event_t *evt, em_cmd_t *pcmd[])
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
 		tmp = pcmd[num];
 		num++;
     }
@@ -1837,7 +1837,7 @@ int dm_easy_mesh_ctrl_t::analyze_sta_steer(em_cmd_steer_params_t &params, em_cmd
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -1971,7 +1971,7 @@ int dm_easy_mesh_ctrl_t::analyze_sta_disassoc(em_cmd_disassoc_params_t &params, 
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -2189,6 +2189,10 @@ int dm_easy_mesh_ctrl_t::analyze_set_policy(em_bus_event_t *evt, em_cmd_t *pcmd[
             radio = m_data_model_list.get_next_radio(dm.m_network.m_net_info.id, dm.m_device.m_device_info.intf.mac, radio);
         }
         dm.set_db_cfg_param(db_cfg_type_policy_list_update, "");
+        if (num >= EM_MAX_CMD) {
+            em_printfout("ERROR: Too many policy commands, truncating at %d", EM_MAX_CMD);
+            break;
+        }
         pcmd[num] = new em_cmd_set_policy_t(evt->params, dm);
         num++;
 
@@ -2232,7 +2236,7 @@ int dm_easy_mesh_ctrl_t::analyze_scan_channel(em_bus_event_t *evt, em_cmd_t *pcm
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -2379,7 +2383,7 @@ int dm_easy_mesh_ctrl_t::analyze_set_channel(em_bus_event_t *evt, em_cmd_t *pcmd
    	tmp = pcmd[num];
    	num++;
 
-   	while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+   	while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
        	tmp = pcmd[num];
        	num++;
    	}
@@ -2444,11 +2448,15 @@ int dm_easy_mesh_ctrl_t::analyze_set_radio(em_bus_event_t *evt, em_cmd_t *pcmd[]
 			}
 		}	
 
+        if (num >= EM_MAX_CMD) {
+            em_printfout("ERROR: Too many radio commands, truncating at %d", EM_MAX_CMD);
+            break;
+        }
         pcmd[num] = new em_cmd_set_radio_t(evt->params, tgt);
         tmp = pcmd[num];
         num++;
 
-        while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+        while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
             tmp = pcmd[num];
             num++;
         }
@@ -2504,7 +2512,7 @@ int dm_easy_mesh_ctrl_t::analyze_set_ssid(em_bus_event_t *evt, em_cmd_t *pcmd[])
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
@@ -2587,6 +2595,10 @@ int dm_easy_mesh_ctrl_t::analyze_remove_device(em_bus_event_t *evt, em_cmd_t *pc
 	}
 
 	for (i = 0; i < num_devs_to_delete; i++) {
+		if (num >= EM_MAX_CMD) {
+			em_printfout("ERROR: Too many remove_device commands, truncating at %d", EM_MAX_CMD);
+			break;
+		}
 		device = devices_to_delete[i];
 		dm_easy_mesh_t::macbytes_to_string(device->m_device_info.intf.mac, mac_str);
 		printf("%s:%d: Device: %s should be deleted\n", __func__, __LINE__, mac_str);	
@@ -2596,7 +2608,7 @@ int dm_easy_mesh_ctrl_t::analyze_remove_device(em_bus_event_t *evt, em_cmd_t *pc
     		tmp_cmd = pcmd[num];
     		num++;
 
-    		while ((pcmd[num] = tmp_cmd->clone_for_next()) != NULL) {
+    		while (num < EM_MAX_CMD && (pcmd[num] = tmp_cmd->clone_for_next()) != NULL) {
         		tmp_cmd = pcmd[num];
         		num++;
     		}
@@ -2615,7 +2627,7 @@ int dm_easy_mesh_ctrl_t::analyze_mld_reconfig(em_cmd_t *pcmd[])
     tmp = pcmd[num];
     num++;
 
-    while ((pcmd[num] = tmp->clone_for_next()) != NULL) {
+    while (num < EM_MAX_CMD && (pcmd[num] = tmp->clone_for_next()) != NULL) {
         tmp = pcmd[num];
         num++;
     }
