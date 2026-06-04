@@ -2263,7 +2263,8 @@ int dm_easy_mesh_ctrl_t::analyze_set_channel(em_bus_event_t *evt, em_cmd_t *pcmd
 	subdoc = &evt->u.subdoc;
 
    	if ((ret = dm.decode_config(subdoc, "SetAnticipatedChannelPreference", i, &num_devices)) < 0) {
-       	return ret;
+        em_printfout("ERROR: Decode config for SetAnticipatedChannelPreference failed, ret %d", ret);
+        return ret;
    	}
 
 	assert(dm.get_num_op_class() == EM_MAX_BANDS);
@@ -2388,6 +2389,8 @@ int dm_easy_mesh_ctrl_t::analyze_set_channel(em_bus_event_t *evt, em_cmd_t *pcmd
        	num++;
    	}
 
+    em_printfout("Number of commands: %u", num);
+
 	return static_cast<int> (num);
 }
 
@@ -2408,6 +2411,7 @@ int dm_easy_mesh_ctrl_t::analyze_set_radio(em_bus_event_t *evt, em_cmd_t *pcmd[]
         dm.reset();
 
         if ((ret = dm.decode_config(subdoc, "RadioEnable", i, &num_devices)) < 0) {
+            em_printfout("ERROR: Decode config for RadioEnable failed for device number-%d", i);
             return ret;
         }
 
@@ -2464,8 +2468,9 @@ int dm_easy_mesh_ctrl_t::analyze_set_radio(em_bus_event_t *evt, em_cmd_t *pcmd[]
         i++;
     } while (i < num_devices);
 
-    return static_cast<int> (num);
+    em_printfout("Number of commands: %u", num);
 
+    return static_cast<int> (num);
 }
 
 int dm_easy_mesh_ctrl_t::analyze_set_ssid(em_bus_event_t *evt, em_cmd_t *pcmd[])
@@ -2480,12 +2485,14 @@ int dm_easy_mesh_ctrl_t::analyze_set_ssid(em_bus_event_t *evt, em_cmd_t *pcmd[])
 
     subdoc = &evt->u.subdoc;
 	if ((ret = dm.decode_config(subdoc, "SetSSID")) < 0) {
+        em_printfout("ERROR: Decode config for SetSSID failed");
 		return ret;
 	}
 
 	pdm = m_data_model_list.get_first_dm();
 	if (pdm == NULL) {
 		assert(pdm != NULL);
+        em_printfout("ERROR: No data model found");
 		return EM_PARSE_ERR_CONFIG;
 	}
 
@@ -2502,7 +2509,7 @@ int dm_easy_mesh_ctrl_t::analyze_set_ssid(em_bus_event_t *evt, em_cmd_t *pcmd[])
 	}
 
 	if (bit_mask == (pow(2, EM_MAX_NET_SSIDS) - 1)) {
-		em_printfout("No change detected");
+		em_printfout("ERROR: No change detected");
 		return EM_PARSE_ERR_NO_CHANGE;
 	}
 
@@ -2516,8 +2523,8 @@ int dm_easy_mesh_ctrl_t::analyze_set_ssid(em_bus_event_t *evt, em_cmd_t *pcmd[])
         tmp = pcmd[num];
         num++;
     }
-    em_printfout("Number of commands:%d", num);
 
+    em_printfout("Number of commands: %u", num);
 
     return num;
 }
@@ -2549,19 +2556,19 @@ int dm_easy_mesh_ctrl_t::analyze_remove_device(em_bus_event_t *evt, em_cmd_t *pc
 	snprintf(wfa, sizeof(wfa), "wfa-dataelements:RemoveDevice");
 
 	if ((wfa_obj = cJSON_GetObjectItem(obj, wfa)) == NULL) {
-        printf("%s:%d: Failed to parse: %s\n", __func__, __LINE__, subdoc->buff);
+        em_printfout("ERROR: Failed to parse: %s", subdoc->buff);
     	cJSON_free(obj);
         return 0;
 	}
 
 	if ((net_obj = cJSON_GetObjectItem(wfa_obj, "Network")) == NULL) {
-        printf("%s:%d: Failed to parse: %s\n", __func__, __LINE__, subdoc->buff);
+        em_printfout("ERROR: Failed to parse: %s", subdoc->buff);
     	cJSON_free(obj);
         return 0;
 	}
 
 	if ((dev_list_obj = cJSON_GetObjectItem(net_obj, "DeviceList")) == NULL) {
-        printf("%s:%d: Failed to parse: %s\n", __func__, __LINE__, subdoc->buff);
+        em_printfout("ERROR: Failed to parse: %s", subdoc->buff);
     	cJSON_free(obj);
         return 0;
 	}
@@ -2615,6 +2622,8 @@ int dm_easy_mesh_ctrl_t::analyze_remove_device(em_bus_event_t *evt, em_cmd_t *pc
 		}	
 	}
 
+    em_printfout("Number of commands: %d", num);
+
     return num;
 }
 
@@ -2631,6 +2640,8 @@ int dm_easy_mesh_ctrl_t::analyze_mld_reconfig(em_cmd_t *pcmd[])
         tmp = pcmd[num];
         num++;
     }
+
+    em_printfout("Number of commands: %d", num);
 
     return num;
 }
