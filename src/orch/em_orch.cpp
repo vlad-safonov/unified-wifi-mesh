@@ -46,6 +46,9 @@ unsigned int em_orch_t::submit_commands(em_cmd_t *pcmd[], unsigned int num)
     bool submit = true;
 
     for (i = 0; i < num; i++) {
+        if (pcmd[i] == NULL) {
+            continue;
+        }
         if ((submit = pre_process_orch_op(pcmd[i])) == false) {
             // complete the command
             destroy_command(pcmd[i]);	
