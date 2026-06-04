@@ -175,6 +175,16 @@ int dm_bss_t::decode(const cJSON *obj, void *parent_id)
             m_bss_info.vlan_id = static_cast<unsigned short>(tmp->valuedouble);
         }
     }
+
+    if ((tmp = cJSON_GetObjectItem(obj, "VapMode")) != NULL) {
+        int raw_vap_mode = static_cast<int>(tmp->valuedouble);
+        if (raw_vap_mode >= em_vap_mode_ap && raw_vap_mode <= em_vap_mode_sta) {
+            m_bss_info.vap_mode = static_cast<em_vap_mode_t>(raw_vap_mode);
+        } else {
+            em_printfout("WARN: vap_mode value %d is out of range, defaulting to em_vap_mode_ap", raw_vap_mode);
+            m_bss_info.vap_mode = em_vap_mode_ap;
+        }
+    }
     return 0;
 
 }
@@ -221,7 +231,7 @@ void dm_bss_t::encode(cJSON *obj, bool summary)
     cJSON_AddStringToObject(obj, "SSID", m_bss_info.ssid);
     cJSON_AddBoolToObject(obj, "Enabled", m_bss_info.enabled);
     cJSON_AddStringToObject(obj, "TimeStamp", m_bss_info.timestamp);
-    cJSON_AddNumberToObject(obj, "VapMode", m_bss_info.vap_mode);
+    cJSON_AddNumberToObject(obj, "VapMode", static_cast<int>(m_bss_info.vap_mode));
     
 	if (summary == true) {
         return;

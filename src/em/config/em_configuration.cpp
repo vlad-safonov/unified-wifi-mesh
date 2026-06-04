@@ -862,7 +862,15 @@ void em_configuration_t::handle_ap_vendor_operational_bss(unsigned char *value, 
 			memcpy(dm_bss->m_bss_info.ruid.mac, radio->ruid, sizeof(mac_address_t));
 			memcpy(dm_bss->m_bss_info.bssid.mac, bss->bssid, sizeof(mac_address_t));
 			dm_bss->m_bss_info.id.haul_type = static_cast<em_haul_type_t> (bss->haultype);
-			dm_bss->m_bss_info.vap_mode = static_cast<em_vap_mode_t> (bss->vap_mode);
+			{
+				unsigned short raw_vap = bss->vap_mode;
+				if (raw_vap <= static_cast<unsigned short>(em_vap_mode_sta)) {
+					dm_bss->m_bss_info.vap_mode = static_cast<em_vap_mode_t>(raw_vap);
+				} else {
+                    em_printfout("WARN: vap_mode value %u is out of range, defaulting to em_vap_mode_ap", raw_vap);
+					dm_bss->m_bss_info.vap_mode = em_vap_mode_ap;
+				}
+			}
 
 			bss = reinterpret_cast<em_ap_vendor_operational_bss_t *>(reinterpret_cast<unsigned char *> (bss) + sizeof(em_ap_vendor_operational_bss_t));
 			all_bss_len += sizeof(em_ap_vendor_operational_bss_t);
