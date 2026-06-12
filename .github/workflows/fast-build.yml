@@ -315,11 +315,16 @@ jobs:
       working-directory: easymesh_project/unified-wifi-mesh
       run: |
         # Example: cppcheck --std=c++17 --inline-suppr --enable=all --xml --xml-version=2 src/ 2>cppcheck-report.xml
-        cppcheck --std=c++17 --inline-suppr --enable=all \
+
+        # 'all' for everything
+        ENABLED_CHECKS="warning,performance,portability"
+        SRC_DIRS="src"
+        echo : "Running cppcheck with checks: ${ENABLED_CHECKS} on directories: ${SRC_DIRS}" > cppcheck-report.txt
+        cppcheck --std=c++17 --inline-suppr --enable=${ENABLED_CHECKS} \
           --suppress=missingIncludeSystem \
           -I inc/ \
-          -I ../OneWifi/include/ \
-          src/ctrl src/agent src/dm src/em 2>cppcheck-report.txt
+          -I ../OneWifi/include/ -I ../OneWifi/source/utils/ -I ../OneWifi/source/platform/rdkb/ \
+          ${SRC_DIRS} 2>> cppcheck-report.txt
 
     - name: Upload cppcheck report
       #if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.openssl-version == '3.0' && always()
