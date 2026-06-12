@@ -301,3 +301,28 @@ jobs:
     - name: ccache stats
       run: ccache --show-stats
 
+    # ------------------------------------------------------------------ #
+    # cppcheck — static analysis
+    # Runs only on scheduled builds and manual workflow_dispatch triggers.
+    # To run manually: Actions → Fast Build Check → Run workflow.
+    # ------------------------------------------------------------------ #
+    - name: Install cppcheck
+      if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.openssl-version == '3.0'
+      run: apt-get install -y cppcheck
+
+    - name: Run cppcheck
+      if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.openssl-version == '3.0'
+      working-directory: easymesh_project/unified-wifi-mesh
+      run: |
+        # Example: cppcheck --std=c++17 --inline-suppr --enable=all --xml --xml-version=2 src/ 2>cppcheck-report.xml
+        cppcheck --std=c++17 --inline-suppr --enable=all --xml --xml-version=2 src/ inc/ 2>cppcheck-report.xml
+
+    - name: Upload cppcheck report
+      if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.openssl-version == '3.0' && always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: cppcheck-report-openssl-${{ matrix.openssl-version }}
+        path: easymesh_project/unified-wifi-mesh/cppcheck-report.xml
+        if-no-files-found: warn
+        retention-days: 7
+
