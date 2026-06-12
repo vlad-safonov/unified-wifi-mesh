@@ -315,14 +315,19 @@ jobs:
       working-directory: easymesh_project/unified-wifi-mesh
       run: |
         # Example: cppcheck --std=c++17 --inline-suppr --enable=all --xml --xml-version=2 src/ 2>cppcheck-report.xml
-        cppcheck --std=c++17 --inline-suppr --enable=all --xml --xml-version=2 src/ inc/ 2>cppcheck-report.xml
+        cppcheck --std=c++17 --inline-suppr --enable=all \
+          --suppress=missingIncludeSystem \
+          -I inc/ \
+          -I ../OneWifi/include/ \
+          src/ 2>cppcheck-report.txt
 
     - name: Upload cppcheck report
       #if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.openssl-version == '3.0' && always()
       uses: actions/upload-artifact@v7
       with:
         name: cppcheck-report-openssl-${{ matrix.openssl-version }}
-        path: easymesh_project/unified-wifi-mesh/cppcheck-report.xml
+        archive: false
+        path: easymesh_project/unified-wifi-mesh/cppcheck-report.txt
         if-no-files-found: warn
-        retention-days: 7
+        retention-days: 3
 
