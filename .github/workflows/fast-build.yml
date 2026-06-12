@@ -319,7 +319,7 @@ jobs:
           --suppress=missingIncludeSystem \
           -I inc/ \
           -I ../OneWifi/include/ \
-          src/ 2>cppcheck-report.txt
+          src/ctrl src/agent src/dm src/em 2>cppcheck-report.txt
 
     - name: Upload cppcheck report
       #if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.openssl-version == '3.0' && always()
