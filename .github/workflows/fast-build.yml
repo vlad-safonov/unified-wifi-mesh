@@ -301,3 +301,38 @@ jobs:
     - name: ccache stats
       run: ccache --show-stats
 
+    # ------------------------------------------------------------------ #
+    # cppcheck — static analysis
+    # Runs only on scheduled builds and manual workflow_dispatch triggers.
+    # To run manually: Actions → Fast Build Check → Run workflow.
+    # ------------------------------------------------------------------ #
+    - name: Install cppcheck
+      #if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.openssl-version == '3.0'
+      run: apt-get install -y cppcheck
+
+    - name: Run cppcheck
+      #if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.openssl-version == '3.0'
+      working-directory: easymesh_project/unified-wifi-mesh
+      run: |
+        # Example: cppcheck --std=c++17 --inline-suppr --enable=all --xml --xml-version=2 src/ 2>cppcheck-report.xml
+
+        # 'all' for everything
+        ENABLED_CHECKS="warning,performance,portability"
+        SRC_DIRS="src"
+        echo : "Running cppcheck with checks: ${ENABLED_CHECKS} on directories: ${SRC_DIRS}" > cppcheck-report.txt
+        cppcheck --std=c++17 --inline-suppr --enable=${ENABLED_CHECKS} \
+          --suppress=missingIncludeSystem \
+          -I inc/ \
+          -I ../OneWifi/include/ -I ../OneWifi/source/utils/ -I ../OneWifi/source/platform/rdkb/ \
+          ${SRC_DIRS} 2>> cppcheck-report.txt
+
+    - name: Upload cppcheck report
+      #if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.openssl-version == '3.0' && always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: cppcheck-report-openssl-${{ matrix.openssl-version }}
+        archive: false
+        path: easymesh_project/unified-wifi-mesh/cppcheck-report.txt
+        if-no-files-found: warn
+        retention-days: 3
+
