@@ -88,8 +88,7 @@
 	  *
 	  * @returns Pointer to result context on success, NULL on failure.
 	  *
-	  * @note Caller is responsible for handling the returned result context.
-	  *       The context will be automatically freed when next_result() returns false.
+	  * @note Caller must free the returned context by calling close_result() when done.
 	  */
 	 void *execute(const char *query);
 
@@ -106,9 +105,25 @@
 	  *
 	  * @returns True if there is another result available, false otherwise.
 	  *
-	  * @note When this function returns false, it automatically frees the result context.
+	  * @note As before, the MySQL result set is freed automatically when this
+	  *       function returns false. The result context itself is not deleted
+	  *       though - call close_result() when done to release it, whether or
+	  *       not all rows were consumed.
 	  */
 	 bool next_result(void *ctx);
+
+
+	 /**!
+	  * @brief Free a result context returned by execute().
+	  *
+	  * Deletes the context object, freeing the MySQL result set first if
+	  * next_result() has not already done so. Safe to call at any point
+	  * after execute() — whether all rows have been consumed or iteration
+	  * was stopped early.
+	  *
+	  * @param[in] ctx Result context to free, or NULL (no-op).
+	  */
+	 void close_result(void *ctx);
 
 
 	 /**!
