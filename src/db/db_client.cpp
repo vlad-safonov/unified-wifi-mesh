@@ -89,16 +89,35 @@
      }
 
      result_context_t *res_ctx = static_cast<result_context_t *>(ctx);
-     res_ctx->row = mysql_fetch_row(res_ctx->result);
+     if (res_ctx->result == NULL) {
+         // already exhausted (or closed) - nothing left to fetch
+         return false;
+     }
 
+     res_ctx->row = mysql_fetch_row(res_ctx->result);
      if (res_ctx->row == NULL) {
-         // No more rows - clean up
+         // No more rows - free the MariaDB result set now, as before.
+         // result is left NULL so close_result() knows not to free it again.
          mysql_free_result(res_ctx->result);
-         delete res_ctx;
+         res_ctx->result = NULL;
          return false;
      }
 
      return true;
+ }
+
+ void db_client_t::close_result(void *ctx)
+ {
+     if (ctx == NULL) {
+         return;
+     }
+
+     result_context_t *res_ctx = static_cast<result_context_t *>(ctx);
+     if (res_ctx->result != NULL) {
+         // only free if next_result() hasn't already done so on exhaustion
+         mysql_free_result(res_ctx->result);
+     }
+     delete res_ctx;
  }
 
  char *db_client_t::get_string(void *ctx, char *str, unsigned int col)

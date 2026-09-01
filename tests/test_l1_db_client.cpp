@@ -596,11 +596,12 @@ TEST_F(db_client_crud_Test, NextResultNoMoreRows) {
 }
 
 /**
- * @brief Test to verify `next_result` behavior on an invalid/freed context
+ * @brief Test to verify `next_result` behavior once a context is fully exhausted
  *
- * This test ensures that calling `next_result` on a context that has already been fully
- * iterated (and freed) triggers a program crash (use-after-free), which is caught using
- * `EXPECT_DEATH`.
+ * `next_result()` still frees the MySQL result set automatically on exhaustion,
+ * but no longer deletes the context itself, so calling it again on an exhausted
+ * context is safe and simply returns false. The context can still be released
+ * afterwards via `close_result()` without a double free.
  *
  * **Test Group ID:** Basic: 01@n
  * **Test Case ID:** 017@n
@@ -616,11 +617,12 @@ TEST_F(db_client_crud_Test, NextResultNoMoreRows) {
  * | 01 | Execute a SELECT query returning two rows | query = "SELECT username FROM users ORDER BY id ASC LIMIT 2;" | Result context is not null | Should Pass |
  * | 02 | Call `next_result` to advance to first row | ctx | Returns true | Row exists |
  * | 03 | Call `next_result` to advance to second row | ctx | Returns true | Row exists |
- * | 04 | Call `next_result` when no more rows | ctx | Returns false | Context freed |
- * | 05 | Call `next_result` on freed context | ctx | Program terminates / assertion triggers | Checked using EXPECT_DEATH |
+ * | 04 | Call `next_result` when no more rows | ctx | Returns false | Result set freed, context kept alive |
+ * | 05 | Call `next_result` again on the exhausted context | ctx | Returns false | No crash |
+ * | 06 | Call `close_result` on the exhausted context | ctx | Context released | No double free |
  */
-TEST_F(db_client_crud_Test, NextResultInvalidContext) {
-    std::cout << "Entering NextResultInvalidContext test" << std::endl;
+TEST_F(db_client_crud_Test, NextResultExhaustedContextIsReusableAndClosable) {
+    std::cout << "Entering NextResultExhaustedContextIsReusableAndClosable test" << std::endl;
     void* result = dbClient->execute("SELECT username FROM users ORDER BY id ASC LIMIT 2;");
     ASSERT_NE(result, nullptr) << "execute() returned null — query failed";
     bool first = dbClient->next_result(result);
@@ -628,12 +630,11 @@ TEST_F(db_client_crud_Test, NextResultInvalidContext) {
     bool second = dbClient->next_result(result);
     EXPECT_TRUE(second) << "Expected second row to be available";
     bool third = dbClient->next_result(result);
-    EXPECT_FALSE(third) << "Expected no more rows; context should now be freed";
-    EXPECT_DEATH({
-        dbClient->next_result(result);
-    }, ".*");
-
-    std::cout << "Exiting NextResultInvalidContext test" << std::endl;
+    EXPECT_FALSE(third) << "Expected no more rows; MySQL result set freed";
+    bool fourth = dbClient->next_result(result);
+    EXPECT_FALSE(fourth) << "Calling next_result() again on an exhausted context should be safe";
+    dbClient->close_result(result);
+    std::cout << "Exiting NextResultExhaustedContextIsReusableAndClosable test" << std::endl;
 }
 
 /**

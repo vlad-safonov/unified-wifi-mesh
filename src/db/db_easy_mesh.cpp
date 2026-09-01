@@ -241,27 +241,32 @@ int db_easy_mesh_t::sync_table(db_client_t& db_client)
 {
     db_query_t    query;
     void *ctx;
+    int ret;
 
     memset(query, 0, sizeof(db_query_t));
     snprintf(query, sizeof(db_query_t), "select * from %s", m_table_name);
 
     ctx = db_client.execute(query);
+    ret = sync_db(db_client, ctx);
+    db_client.close_result(ctx);
 
-    return sync_db(db_client, ctx);
-
+    return ret;
 }
 
 bool db_easy_mesh_t::entry_exists_in_table(db_client_t& db_client, void *key)
 {
     db_query_t    query;
     void *ctx;
-    
+    bool found;
+
     memset(query, 0, sizeof(db_query_t));
     snprintf(query, sizeof(db_query_t), "select * from %s", m_table_name);
 
     ctx = db_client.execute(query);
+    found = search_db(db_client, ctx, key);
+    db_client.close_result(ctx);
 
-    return search_db(db_client, ctx, key);
+    return found;
 }
 
 void db_easy_mesh_t::delete_table(db_client_t& db_client)
