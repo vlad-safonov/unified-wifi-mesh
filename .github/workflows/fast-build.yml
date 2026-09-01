@@ -134,8 +134,16 @@ jobs:
     - name: Build and install - ucode
       run: |
         if [ "${{ steps.cache-ucode.outputs.cache-hit }}" != "true" ]; then
-          git clone --depth=1 https://github.com/jow-/ucode.git /tmp/ucode-src
+          git clone https://github.com/jow-/ucode.git /tmp/ucode-src
           cd /tmp/ucode-src
+          # Pin ucode: PR#398 (LibFFI module) merged to master 2026-08-27 and broke the bpi
+          # build (ucode's `unused` macro collides with OpenSSL's ossl_unused in HAL TUs).
+          # 655ca6d = a0ca7b1^1 = last master BEFORE the FFI merge = last known-good state
+          # (it is literally what the last green build cloned). The colliding `unused` macro
+          # was added by abb80c6 ON the PR#398 branch, so any commit on that branch -- incl.
+          # 19ffa8a, the earlier (wrong) pin -- still ships the poisoned util.h. Use first-
+          # parent (a0ca7b1^1), NOT plain `git log`, when moving this pin; bump deliberately.
+          git checkout 655ca6d
           mkdir build && cd build
           cmake -DUBUS_SUPPORT=OFF -DUCI_SUPPORT=OFF -DULOOP_SUPPORT=OFF ..
           make -j$(nproc)
