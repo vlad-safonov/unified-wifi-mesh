@@ -89,21 +89,43 @@ GENERIC_OBJECTS = $(GENERIC_SOURCES:.c=.o)
 EMCLIOBJECTS = $(CLI_OBJECTS) $(GENERIC_OBJECTS)
 MAIN_OBJECT = $(MAIN_SOURCE:.c=.o) 
 
+# Per-target build directory — keeps cli objects isolated from ctrl objects
+# so each target compiles with its own flags independently
+CLI_BUILDDIR        = $(ONEWIFI_EM_HOME)/build/cli/obj
+CLI_OBJDIR_GENERIC  = $(CLI_BUILDDIR)/generic
+
+CLI_OBJECTS    := $(patsubst $(ONEWIFI_EM_SRC)/%.cpp, $(CLI_BUILDDIR)/%.o, $(CLI_SOURCES))
+GENERIC_OBJECTS := $(addprefix $(CLI_OBJDIR_GENERIC)/, \
+                    $(patsubst %.c, %.o, $(notdir $(GENERIC_SOURCES))))
+MAIN_OBJECT    := $(CLI_BUILDDIR)/main.o
+EMCLIOBJECTS   := $(CLI_OBJECTS) $(GENERIC_OBJECTS)
+
 all: $(EM_CLI_LIBRARY) $(PROGRAM) $(CERT_TARGETS)
 
 $(EM_CLI_LIBRARY): $(EMCLIOBJECTS)
 	$(CXX) -shared -o $@ $(EMCLIOBJECTS) $(LDFLAGS)
 
-$(GENERIC_OBJECTS): %.o: %.c
-	$(CC) $(CXXFLAGS) -o $@ -c $<
-
-$(CLI_OBJECTS): %.o: %.cpp
+# CLI source objects — mirror src directory structure under CLI_BUILDDIR
+$(CLI_BUILDDIR)/%.o: $(ONEWIFI_EM_SRC)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-$(MAIN_OBJECT): %.o: %.c
+# main.c — compiled separately (C file, not C++)
+$(CLI_BUILDDIR)/main.o: $(MAIN_SOURCE)
+	@mkdir -p $(dir $@)
 	$(CXX) $(CFLAGS) -o $@ -c $<
 
-$(PROGRAM):
+# Generic source objects — flat layout under CLI_OBJDIR_GENERIC
+$(CLI_OBJDIR_GENERIC):
+	mkdir -p $@
+
+define COMPILE_CLI_GENERIC_C
+$(CLI_OBJDIR_GENERIC)/$(patsubst %.c,%.o,$(notdir $(1))): $(1) | $(CLI_OBJDIR_GENERIC)
+	$(CC) $(CXXFLAGS) -o $$@ -c $$<
+endef
+$(foreach src,$(GENERIC_SOURCES),$(eval $(call COMPILE_CLI_GENERIC_C,$(src))))
+
+$(PROGRAM): $(EM_CLI_LIBRARY)
 # use go 1.19 or above to build
 ifeq ($(CC), aarch64-linux-gnu-gcc-11)
 	CGO_ENABLED=1 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w -extldflags '-L$(INSTALLDIR)/lib -lcrypto -lssl -luuid'" -o $(PROGRAM) $(ONEWIFI_EM_SRC)/cli/*.go
@@ -128,7 +150,7 @@ $(NVRAM_DIR)/test_cert.key: $(EM_KEY_SRC) | $(NVRAM_DIR)
 #
 
 clean:
-	$(RM) $(MAIN_OBJECT) $(EMCLIOBJECTS) $(EM_CLI_LIBRARY) $(PROGRAM) $(PROGRAM)
+	$(RM) $(CLI_BUILDDIR) $(EM_CLI_LIBRARY) $(PROGRAM)
 
 #
 # Run target: "make -f Makefile.Linux run" to execute the application
