@@ -146,7 +146,7 @@ jobs:
           # was added by abb80c6 ON the PR#398 branch, so any commit on that branch -- incl.
           # 19ffa8a, the earlier (wrong) pin -- still ships the poisoned util.h. Use first-
           # parent (a0ca7b1^1), NOT plain `git log`, when moving this pin; bump deliberately.
-          git checkout 655ca6d
+          git checkout e20fd910aac96d52665be79285c818226bf79bb3
           mkdir build && cd build
           cmake -DUBUS_SUPPORT=OFF -DUCI_SUPPORT=OFF -DULOOP_SUPPORT=OFF ..
           make -j$(nproc)
