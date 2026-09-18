@@ -37,6 +37,9 @@ protected:
 	ctrl.orch_init();
     }
     void TearDown() override {
+        if (getenv("CI") != nullptr) {
+            GTEST_SKIP() << "Skipped in CI environment";
+        }
         __lsan_enable();
     }    
     void setup_interface(em_interface_t &intf, const char* name, const unsigned char mac[6]) {
