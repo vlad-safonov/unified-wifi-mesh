@@ -173,6 +173,8 @@ EXCLUDE_TESTS = \
     $(TEST_DIR)/test_l1_em_orch_agent.cpp \
     $(TEST_DIR)/test_l1_em_cmd_scan_result.cpp \
     $(TEST_DIR)/test_l1_em_cmd_ap_metrics_report.cpp \
+    $(TEST_DIR)/test_l1_dm_easy_mesh.cpp \
+    $(TEST_DIR)/test_l1_dm_easy_mesh_list.cpp \
     $(TEST_DIR)/test_l1_em_cmd_btm_report.cpp
 COMMON_TEST_SOURCES = $(filter-out $(EXCLUDE_TESTS), $(wildcard $(TEST_DIR)/*.cpp))
 
