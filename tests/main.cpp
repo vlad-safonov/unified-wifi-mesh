@@ -21,6 +21,12 @@
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
 
+	std::string cur_filter = ::testing::GTEST_FLAG(filter);
+// Apply default filter if ther is no filter from user
+if (!cur_filter.empty()) {
+	 std::cout << "Running with user filter: " << ::testing::GTEST_FLAG(filter) << std::endl;
+}
+else
 ::testing::GTEST_FLAG(filter) =
     "-dm_ap_mld_t_Test.DecodeValidJsonObjectWithNullParentID:"
     "dm_ap_mld_t_Test.DecodeNullJsonObjectWithValidParentID:"
@@ -245,6 +251,7 @@ int main(int argc, char **argv) {
     "db_client_crud_Test.NextResultValidContextHasRows:"
     "db_client_crud_Test.NextResultNoMoreRows:"
     "db_client_crud_Test.NextResultInvalidContext:"
+    "db_client_crud_Test.FreeResultEarlyExitAllowsSubsequentQueries:"
     "db_client_t_Test.RecreateDatabaseWithValidConnection:"
     "db_client_tTest.ConnectWithValidDatabasePath:"
     "db_client_t_Test.ExecuteNullQuery:"

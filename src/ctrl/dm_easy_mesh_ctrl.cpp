@@ -1701,6 +1701,237 @@ finish:
     return rc;
 }
 
+bus_error_t em_ctrl_t::cmd_clientassocctrlrequest(const char *method_name, const bus_data_prop_t *input_params, bus_data_prop_t **output_params, void *async_handle)
+{
+    (void)async_handle;
+    const char *name = method_name;
+    const char *param;
+    char instance[MAX_INSTANCE_LEN] = { 0 };
+    bool is_num;
+    const bus_data_prop_t *prop = NULL;
+    char stalist[TR181_STALIST_MAX_LEN + 1] = { 0 };
+    bool block = false, block_set = false;
+    int period = -1;
+    em_subdoc_info_t *subdoc = NULL;
+    unsigned char buff[sizeof(em_subdoc_info_t) + EM_IO_BUFF_SZ];
+    cJSON *root = NULL, *json = NULL;
+    cJSON *stalist_arr = NULL, *stalist_obj = NULL;
+    mac_addr_str_t mac_str;
+    char *json_buff = NULL;
+    size_t json_len = 0;
+    bus_error_t rc;
+
+    param = (name ? strrchr(name, '.') : NULL);
+    if (param == NULL) {
+        em_printfout("Invalid method name");
+        if (output_params) {
+            *output_params = tr_181_t::tr181_set_status_output_prop("Failure");
+        }
+        return bus_error_invalid_input;
+    }
+    ++param;
+    if (strcmp("X_AIRTIES_ClientAssocControl()", param) != 0) {
+        em_printfout("Invalid method");
+        if (output_params) {
+            *output_params = tr_181_t::tr181_set_status_output_prop("Failure");
+        }
+        return bus_error_invalid_method;
+    }
+
+    em_ctrl_t *em_ctrl = em_ctrl_t::get_em_ctrl_instance();
+    if (!em_ctrl) {
+        em_printfout("Controller not found");
+        if (output_params) {
+            *output_params = tr_181_t::tr181_set_status_output_prop("Failure");
+        }
+        return bus_error_general;
+    }
+    dm_easy_mesh_ctrl_t *dm_ctrl = em_ctrl->get_dm_ctrl();
+
+    /* Extract device instance (numeric or alias) and find the dm object for
+     * that device instance */
+    name += sizeof(DATAELEMS_NETWORK);
+    name = dm_ctrl->get_table_instance(name, instance, MAX_INSTANCE_LEN, &is_num);
+    dm_easy_mesh_t *dm = dm_ctrl->get_dm_easy_mesh(instance, is_num);
+    if (dm == NULL) {
+        em_printfout("Device not found");
+        if (output_params) {
+            *output_params = tr_181_t::tr181_set_status_output_prop("Failure");
+        }
+        return bus_error_invalid_namespace;
+    }
+
+    /* Extract radio instance (numeric or alias), find the radio dm object
+     * for that instance, and finally get info struct for radio dm object */
+    name = dm_ctrl->get_table_instance(name, instance, MAX_INSTANCE_LEN, &is_num);
+    dm_radio_t *radio = dm_ctrl->get_dm_radio(dm, instance, is_num);
+    if (radio == NULL) {
+        em_printfout("Radio not found");
+        if (output_params) {
+            *output_params = tr_181_t::tr181_set_status_output_prop("Failure");
+        }
+        return bus_error_invalid_namespace;
+    }
+    em_radio_info_t *ri = radio->get_radio_info();
+
+    /* Extract bss instance (numeric or alias), find the bss dm object
+     * for that instance, and finally get info struct for bss dm object */
+    name = dm_ctrl->get_table_instance(name, instance, MAX_INSTANCE_LEN, &is_num);
+    dm_bss_t *bss = dm_ctrl->get_dm_bss(dm, ri, instance, is_num);
+    if (bss == NULL) {
+        em_printfout("BSS not found");
+        if (output_params) {
+            *output_params = tr_181_t::tr181_set_status_output_prop("Failure");
+        }
+        return bus_error_invalid_namespace;
+    }
+    em_bss_info_t *bi = bss->get_bss_info();
+
+    /* Most of the parameters are mandatory, parse them */
+    for (prop = input_params; prop; prop = prop->next_data) {
+        if (strcmp(prop->name, "StationsList") == 0) {
+            if (prop->value.raw_data_len > sizeof(stalist) ||
+                !tr_181_t::tr181_copy_prop_string(prop, stalist, sizeof(stalist))) {
+                goto invalid;
+            }
+        } else if (strcmp(prop->name, "Block") == 0) {
+            if (!tr_181_t::tr181_get_prop_bool(prop, &block)) {
+                goto invalid;
+            }
+            block_set = true;
+        } else if (strcmp(prop->name, "Period") == 0) {
+            if (!tr_181_t::tr181_get_prop_int(prop, &period)) {
+                goto invalid;
+            }
+        } else {
+invalid:
+            em_printfout("Invalid parameter: %s", prop->name);
+            if (output_params) {
+                *output_params = tr_181_t::tr181_set_status_output_prop("Failure");
+            }
+            return bus_error_invalid_input;
+        }
+    }
+    /* Mandatory parameters: StationsList, Block, Period */
+    if (!stalist[0] || !block_set || period < 0) {
+        em_printfout("Mandatory parameters missing");
+        if (output_params) {
+            *output_params = tr_181_t::tr181_set_status_output_prop("Failure");
+        }
+        return bus_error_invalid_input;
+    }
+    if (static_cast<unsigned int>(period) > USHRT_MAX) {
+        em_printfout("Period is out of bounds");
+        if (output_params) {
+            *output_params = tr_181_t::tr181_set_status_output_prop("Failure");
+        }
+        return bus_error_invalid_input;
+    }
+
+    /* Prepare subdoc to be processed with command */
+    subdoc = reinterpret_cast<em_subdoc_info_t *>(buff);
+    memset(subdoc, 0, sizeof(em_subdoc_info_t));
+    strncpy(subdoc->name, "ClientAssocCtrlRequest", sizeof(subdoc->name) - 1);
+
+    /* Create json with root "wfa-dataelements:ClientAssocCtrlRequest" and fill
+     * with necessary parameters we extract from path */
+    rc = bus_error_out_of_resources;
+    root = cJSON_CreateObject();
+    json = cJSON_CreateObject();
+    if (!root || !json) {
+        em_printfout("Create object failed");
+        cJSON_Delete(json);
+        goto cleanup;
+    }
+    if (!cJSON_AddItemToObject(root, "wfa-dataelements:ClientAssocCtrlRequest", json)) {
+        em_printfout("Add item failed");
+        cJSON_Delete(json);
+        goto cleanup;
+    }
+    dm_easy_mesh_t::macbytes_to_string(bi->bssid.mac, mac_str);
+    if (!cJSON_AddStringToObject(json, "BSSID", mac_str)) {
+        em_printfout("Add BSSID failed");
+        goto cleanup;
+    }
+    stalist_arr = cJSON_AddArrayToObject(json, "StaMacList");
+    if (!stalist_arr) {
+        em_printfout("Add StationsList failed");
+        goto cleanup;
+    }
+    do {
+        std::string stalist_str = stalist;
+        std::vector<std::string> stas = util::split_by_delim(stalist_str, ',');
+        for (unsigned int i = 0; i < stas.size(); i++) {
+            stalist_obj = cJSON_CreateString(stas[i].c_str());
+            if (!stalist_obj) {
+                em_printfout("Create string failed");
+                goto cleanup;
+            }
+            if (!cJSON_AddItemToArray(stalist_arr, stalist_obj)) {
+                em_printfout("Add item failed");
+                cJSON_Delete(stalist_obj);
+                goto cleanup;
+            }
+        }
+    } while (0);
+    if (!cJSON_AddNumberToObject(json, "AssocControl", block ? 0 : 1)) {
+        em_printfout("Add Block failed");
+        goto cleanup;
+    }
+    if (!cJSON_AddNumberToObject(json, "ValidityPeriod", period)) {
+        em_printfout("Add Period failed");
+        goto cleanup;
+    }
+
+    /* Convert JSON back to string and store in subdoc buffer. */
+    json_buff = cJSON_PrintUnformatted(root);
+    if (!json_buff) {
+        em_printfout("Create output buffer failed");
+        rc = bus_error_out_of_resources;
+        goto cleanup;
+    }
+    /* Ensure updated JSON fits in buffer. */
+    json_len = strlen(json_buff) + 1;
+    if (json_len > EM_IO_BUFF_SZ) {
+        em_printfout("Buffer too big for subdoc");
+        free(json_buff);
+        rc = bus_error_invalid_input;
+        goto cleanup;
+    }
+    memcpy(subdoc->buff, json_buff, json_len);
+
+    // uncomment below lines to log the updated JSON before sending to DM; can be helpful for debugging.
+    /*
+    cJSON *json_obj;
+    json_obj = cJSON_Parse(subdoc->buff);
+    if (json_obj) {
+        char *new_json = cJSON_Print(json_obj);
+        em_printfout("Updated and formatted JSON:\n%s", new_json);
+        free(new_json);
+        cJSON_Delete(json_obj);
+    } else {
+        em_printfout("Invalid JSON in subdoc->buff");
+    }
+    */
+
+    em_ctrl->io_process(em_bus_event_type_client_assoc_ctrl_req, subdoc->buff, static_cast<unsigned int>(json_len));
+    free(json_buff);
+    cJSON_Delete(root);
+
+    if (output_params) {
+        *output_params = tr_181_t::tr181_set_status_output_prop("Success");
+    }
+
+    return bus_error_success;
+
+cleanup:
+    cJSON_Delete(root);
+    if (output_params) {
+        *output_params = tr_181_t::tr181_set_status_output_prop("Failure");
+    }
+    return rc;
+}
+
 bus_error_t em_ctrl_t::cmd_clientsteer(const char *method_name, const bus_data_prop_t *input_params, bus_data_prop_t **output_params, void *async_handle)
 {
     (void)async_handle;
@@ -2504,6 +2735,8 @@ int dm_easy_mesh_ctrl_t::analyze_unassoc_sta_metrics_query(em_bus_event_t *evt, 
 
     dm_easy_mesh_t::string_to_macbytes(al_mac_buf, params.u.unassoc_sta_query_params.al_mac);
 
+    // dm_easy_mesh_ctrl_t is not a dm_easy_mesh_t; this constructs one via
+    // the dm_network_t converting constructor, not the (deleted) copy ctor
     dm_easy_mesh_t dm = *this;
 
     em_unassoc_query_list_t query;
@@ -2613,6 +2846,8 @@ int dm_easy_mesh_ctrl_t::analyze_sta_link_metrics(em_cmd_t *pcmd[])
     int num = 0;
     em_cmd_t *tmp;
 
+    // dm_easy_mesh_ctrl_t is not a dm_easy_mesh_t; this constructs one via
+    // the dm_network_t converting constructor, not the (deleted) copy ctor
     dm_easy_mesh_t dm = *this;
 
     pcmd[num] = new em_cmd_sta_link_metrics_t(dm);
@@ -3074,6 +3309,8 @@ int dm_easy_mesh_ctrl_t::analyze_client_assoc(em_bus_event_t *evt, em_cmd_t *pcm
     em_subdoc_info_t *subdoc;
     em_long_string_t wfa;
     em_cmd_client_assoc_params_t assoc_param;
+    // dm_easy_mesh_ctrl_t is not a dm_easy_mesh_t; this constructs one via
+    // the dm_network_t converting constructor, not the (deleted) copy ctor
     dm_easy_mesh_t dm = *this;
 
     subdoc = &evt->u.subdoc;
@@ -3093,14 +3330,14 @@ int dm_easy_mesh_ctrl_t::analyze_client_assoc(em_bus_event_t *evt, em_cmd_t *pcm
 
     memset(&assoc_param, 0, sizeof(em_cmd_client_assoc_params_t));
 
-    if ((bssid_obj = cJSON_GetObjectItem(wfa_obj, "Bssid")) == NULL) {
-        em_printfout("%s:%d: Failed to get Bssid", __func__, __LINE__);
+    if ((bssid_obj = cJSON_GetObjectItem(wfa_obj, "BSSID")) == NULL) {
+        em_printfout("%s:%d: Failed to get BSSID", __func__, __LINE__);
         cJSON_Delete(obj);
         return 0;
     }
     const char *bssid_str = cJSON_GetStringValue(bssid_obj);
     if (bssid_str == NULL) {
-        em_printfout("%s:%d: Bssid is not a string", __func__, __LINE__);
+        em_printfout("%s:%d: BSSID is not a string", __func__, __LINE__);
         cJSON_Delete(obj);
         return 0;
     }
@@ -3109,7 +3346,7 @@ int dm_easy_mesh_ctrl_t::analyze_client_assoc(em_bus_event_t *evt, em_cmd_t *pcm
         ? sscanf(bssid_str, "%02x:%02x:%02x:%02x:%02x:%02x", &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5])
         : sscanf(bssid_str, "%02x%02x%02x%02x%02x%02x", &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
     if (parsed != 6) {
-        em_printfout("%s:%d: Invalid Bssid MAC string: %s", __func__, __LINE__, bssid_str);
+        em_printfout("%s:%d: Invalid BSSID MAC string: %s", __func__, __LINE__, bssid_str);
         cJSON_Delete(obj);
         return 0;
     }
@@ -3391,81 +3628,110 @@ int dm_easy_mesh_ctrl_t::analyze_set_policy(em_bus_event_t *evt, em_cmd_t *pcmd[
     subdoc = &evt->u.subdoc;
     dm.init();
 
-    em_printfout("Received SetPolicy event: \n%s", subdoc->buff);
+    em_printfout("[SetPolicy] Received event. payload_len=%zu", strlen(subdoc->buff));
+#ifdef DEBUG_MODE
+    em_printfout("[SetPolicy] Payload:\n%s", subdoc->buff);
+#endif
     do {
         dm.reset();
         policy_changed = 0;
 
+        em_printfout("[SetPolicy] -------- device_index=%u --------", i);
+
         if ((ret = dm.decode_config(subdoc, "SetPolicy", i, &num_devices)) < 0) {
-            em_printfout("Failed to decode SetPolicy config: %d", ret);
+            em_printfout("[SetPolicy] decode_config failed: ret=%d index=%u", ret, i);
             return ret;
         }
 
-        //em_printfout("Decoded SetPolicy for device number-%d", i);
         dm_easy_mesh_t::macbytes_to_string(dm.m_device.m_device_info.intf.mac, mac_str);
-        em_printfout("Network: %s\tDevice MAC: %s", dm.m_network.m_net_info.id, mac_str);
+        em_printfout("[SetPolicy] Decoded device. network=%s dev_mac=%s total_devices_in_payload=%u decoded_num_policy=%u",
+            dm.m_network.m_net_info.id, mac_str, num_devices, dm.get_num_policy());
 
         dev_dm = get_data_model(GLOBAL_NET_ID, dm.m_device.m_device_info.intf.mac);
         if (dev_dm != NULL) {
-            // Expand broadcast radio MAC (ff:ff:ff:ff:ff:ff) in per-radio policy entries
-            // (radio_metrics_rep and steering_param) into one entry per actual radio.
             static const mac_address_t bcast_mac = {0xff,0xff,0xff,0xff,0xff,0xff};
-            unsigned int orig_num = dm.get_num_policy();
-            for (unsigned int k = 0; k < orig_num; k++) {
-                if (dm.m_policy[k].m_policy.id.type != em_policy_id_type_radio_metrics_rep &&
-                    dm.m_policy[k].m_policy.id.type != em_policy_id_type_steering_param) continue;
-                if (memcmp(dm.m_policy[k].m_policy.id.radio_mac, bcast_mac, sizeof(mac_address_t)) != 0) continue;
-                // Replace this broadcast entry with per-radio copies
-                em_policy_t tmpl;
-                memcpy(&tmpl, &dm.m_policy[k].m_policy, sizeof(em_policy_t));
-                // Overwrite index k with first radio, append remaining radios at end
-                bool first = true;
-                for (unsigned int r = 0; r < dev_dm->get_num_radios(); r++) {
-                    if (first) {
-                        memcpy(dm.m_policy[k].m_policy.id.radio_mac,
-                               dev_dm->m_radio[r].m_radio_info.intf.mac, sizeof(mac_address_t));
-                        first = false;
-                    } else {
-                        unsigned int index = dm.get_num_policy();
-                        if (index >= EM_MAX_POLICIES) {
-                            em_printfout("Warning: policy array full (%u), skipping per-radio expansion for radio %u",
-                                EM_MAX_POLICIES, r);
-                            break;
-                        }
-                        memcpy(&dm.m_policy[index].m_policy, &tmpl, sizeof(em_policy_t));
-                        memcpy(dm.m_policy[index].m_policy.id.radio_mac,
-                               dev_dm->m_radio[r].m_radio_info.intf.mac, sizeof(mac_address_t));
-                        dm.set_num_policy(index + 1);
-                    }
+
+            em_printfout("[SetPolicy] Existing DM found. existing_num_policy=%u existing_num_radios=%u",
+                dev_dm->get_num_policy(), dev_dm->get_num_radios());
+
+            // Collect broadcast per-radio policies, remove them, then re-add one copy per radio.
+            std::vector<em_policy_t> bcast_templates;
+            dm_policy_t *pol = static_cast<dm_policy_t *>(hash_map_get_first(dm.m_policy_map));
+            while (pol != NULL) {
+                dm_policy_t *next = static_cast<dm_policy_t *>(hash_map_get_next(dm.m_policy_map, pol));
+                em_2xlong_string_t pkey;
+                dm_easy_mesh_t::get_policy_key(pol->m_policy.id, pkey, sizeof(pkey));
+                em_printfout("[SetPolicy] Incoming policy key=%s type=%u radio=%s",
+                    pkey,
+                    static_cast<unsigned int>(pol->m_policy.id.type),
+                    util::mac_to_string(pol->m_policy.id.radio_mac).c_str());
+
+                if ((pol->m_policy.id.type == em_policy_id_type_radio_metrics_rep ||
+                     pol->m_policy.id.type == em_policy_id_type_steering_param) &&
+                    memcmp(pol->m_policy.id.radio_mac, bcast_mac, sizeof(mac_address_t)) == 0) {
+                    bcast_templates.push_back(pol->m_policy);
+                    em_2xlong_string_t bkey;
+                    dm_easy_mesh_t::get_policy_key(pol->m_policy.id, bkey, sizeof(bkey));
+                    em_printfout("[SetPolicy] Broadcast policy template found. removing key=%s (from temporary decoded map only)", bkey);
+                    delete static_cast<dm_policy_t *>(hash_map_remove(dm.m_policy_map, bkey));
                 }
-                // Don't break - there may be broadcast entries of both types
+                pol = next;
             }
 
-            // Compare each incoming policy by type against the existing dm.
-            // Compact dm.m_policy[] in-place to only keep changed/new entries so
-            // that the command carries only what actually changed
-            unsigned int write_idx = 0;
-            for (unsigned int k = 0; k < dm.get_num_policy(); k++) {
-                // Use full equality (operator== does memcmp on em_policy_t) so this works
-                // generically for all policy types, including multi-entry types like
-                // backhaul_bss_config and radio metrics that are keyed by BSSID/radio MAC.
+            em_printfout("[SetPolicy] Broadcast templates collected=%zu", bcast_templates.size());
+
+            for (size_t t = 0; t < bcast_templates.size(); t++) {
+                for (unsigned int r = 0; r < dev_dm->get_num_radios(); r++) {
+                    dm_policy_t np(bcast_templates[t]);
+                    memcpy(np.m_policy.id.radio_mac,
+                           dev_dm->m_radio[r].m_radio_info.intf.mac, sizeof(mac_address_t));
+                    em_printfout("[SetPolicy] Expanding template[%zu] type=%u -> radio[%u]=%s",
+                        t,
+                        static_cast<unsigned int>(np.m_policy.id.type),
+                        r,
+                        util::mac_to_string(dev_dm->m_radio[r].m_radio_info.intf.mac).c_str());
+                    dm.set_policy(np);
+                }
+            }
+
+            // Keep only changed policies in dm.m_policy_map
+            pol = dm.m_policy_map ? static_cast<dm_policy_t *>(hash_map_get_first(dm.m_policy_map)) : NULL;
+            while (pol != NULL) {
+                dm_policy_t *next = static_cast<dm_policy_t *>(hash_map_get_next(dm.m_policy_map, pol));
                 bool changed = true;
-                for (unsigned int j = 0; j < dev_dm->get_num_policy(); j++) {
-                    if (dev_dm->m_policy[j] == dm.m_policy[k]) {
+                dm_policy_t *dp = dev_dm->m_policy_map ? static_cast<dm_policy_t *>(hash_map_get_first(dev_dm->m_policy_map)) : NULL;
+                while (dp != NULL) {
+                    if (*dp == *pol) {
                         changed = false;
                         break;
                     }
+                    dp = static_cast<dm_policy_t *>(hash_map_get_next(dev_dm->m_policy_map, dp));
                 }
+
+                em_2xlong_string_t ckey;
+                dm_easy_mesh_t::get_policy_key(pol->m_policy.id, ckey, sizeof(ckey));
+
                 if (changed) {
-                    if (write_idx != k) {
-                        dm.m_policy[write_idx] = dm.m_policy[k];
-                    }
-                    write_idx++;
                     policy_changed++;
+                    em_printfout("[SetPolicy] CHANGED policy retained key=%s policy_changed=%d", ckey, policy_changed);
+                } else {
+                    em_printfout("[SetPolicy] UNCHANGED policy removed key=%s", ckey);
+                    delete static_cast<dm_policy_t *>(hash_map_remove(dm.m_policy_map, ckey));
                 }
+                pol = next;
             }
-            dm.set_num_policy(write_idx);
-            if (write_idx > 0) {
+
+            unsigned int map_count = 0;
+            for (dm_policy_t *cp = static_cast<dm_policy_t *>(hash_map_get_first(dm.m_policy_map));
+                 cp != NULL; cp = static_cast<dm_policy_t *>(hash_map_get_next(dm.m_policy_map, cp))) {
+                map_count++;
+            }
+
+            unsigned int write_idx = dm.get_num_policy();
+            em_printfout("[SetPolicy] Post-delta summary: policy_changed=%d map_count=%u dm.get_num_policy()=%u",
+                policy_changed, map_count, write_idx);
+
+            if (map_count > 0) {
                 static const char * const s_policy_type_names[] = {
                     "steering_local", "steering_btm", "steering_param",
                     "ap_metrics_rep", "radio_metrics_rep", "default_8021q_settings",
@@ -3473,62 +3739,72 @@ int dm_easy_mesh_ctrl_t::analyze_set_policy(em_bus_event_t *evt, em_cmd_t *pcmd[
                     "backhaul_bss_config", "qos_mgt", "alarm_threshold",
                     "client_filters", "unknown"
                 };
-                em_printfout("Changed policies for device %s (%u):", mac_str, write_idx);
-                for (unsigned int p = 0; p < write_idx; p++) {
-                    em_policy_id_type_t t = dm.m_policy[p].m_policy.id.type;
+                em_printfout("[SetPolicy] Changed policies for device %s (%u):", mac_str, map_count);
+                unsigned int p = 0;
+                for (dm_policy_t *cp = static_cast<dm_policy_t *>(hash_map_get_first(dm.m_policy_map));
+                     cp != NULL; cp = static_cast<dm_policy_t *>(hash_map_get_next(dm.m_policy_map, cp))) {
+                    em_policy_id_type_t t = cp->m_policy.id.type;
                     unsigned int ti = (static_cast<unsigned int>(t) < static_cast<unsigned int>(em_policy_id_type_unknown))
                                       ? static_cast<unsigned int>(t) : static_cast<unsigned int>(em_policy_id_type_unknown);
-                    em_printfout("  [%u] %s", p, s_policy_type_names[ti]);
+                    em_printfout("[SetPolicy]   [%u] %s key_type=%u radio=%s",
+                        p, s_policy_type_names[ti], static_cast<unsigned int>(t),
+                        util::mac_to_string(cp->m_policy.id.radio_mac).c_str());
+                    p++;
                 }
             }
         } else {
-            em_printfout("Device with MAC: %s not found in data model, so considering as policy changed", mac_str);
+            em_printfout("[SetPolicy] Device not found in current DM. dev_mac=%s", mac_str);
             return 0;
         }
 
-        if(dev_dm->is_controller() == true) {
-            em_printfout("Controller dm(%s), skipping....", mac_str);
+        if (dev_dm->is_controller() == true) {
+            em_printfout("[SetPolicy] Device %s is controller; skipping command generation", mac_str);
             i++;
             continue;
         }
 
         if (policy_changed == 0) {
-            em_printfout("No Policy change detected for device with MAC: %s", mac_str);
+            em_printfout("[SetPolicy] No policy change detected for dev=%s", mac_str);
             i++;
             continue;
         } else {
-            em_printfout("Policy change detected for device with MAC: %s", mac_str);
+            em_printfout("[SetPolicy] Policy change detected for dev=%s", mac_str);
         }
+
         radio = m_data_model_list.get_first_radio(dm.m_network.m_net_info.id, dm.m_device.m_device_info.intf.mac);
         while (radio != NULL) {
             if (dm.m_num_radios >= EM_MAX_RADIO_PER_AGENT) {
-                em_printfout("SetPolicy Radio overflow guard triggered | device=%s num_radios=%u max_allowed=%u",
+                em_printfout("[SetPolicy] Radio overflow guard. dev=%s num_radios=%u max=%u",
                     mac_str, dm.m_num_radios, EM_MAX_RADIO_PER_AGENT);
                 break;
             }
             memcpy(dm.m_radio[dm.m_num_radios].m_radio_info.intf.mac,
                 radio->m_radio_info.intf.mac, sizeof(mac_address_t));
+            em_printfout("[SetPolicy] Attached radio[%u]=%s to command dm",
+                dm.m_num_radios, util::mac_to_string(radio->m_radio_info.intf.mac).c_str());
             dm.m_num_radios++;
             radio = m_data_model_list.get_next_radio(dm.m_network.m_net_info.id,
                 dm.m_device.m_device_info.intf.mac, radio);
         }
 
         if (dm.m_num_radios == 0) {
-            em_printfout("No radios found for device %s while processing set_policy", mac_str);
+            em_printfout("[SetPolicy] No radios found for dev=%s", mac_str);
+        } else {
+            em_printfout("[SetPolicy] Total radios attached for dev=%s: %u", mac_str, dm.m_num_radios);
         }
 
         dm.set_db_cfg_param(db_cfg_type_policy_list_update, "");
         pcmd[num] = new em_cmd_set_policy_t(evt->params, dm);
         num++;
 
-        em_printfout("Setting policy for Device number-%d with MAC: %s", i, mac_str);
+        em_printfout("[SetPolicy] Command queued for device_index=%u dev=%s current_cmd_count=%u",
+            i, mac_str, num);
 
         i++;
     } while (i < num_devices);
 
-    //em_printfout("Total cmnds formed for policy change is : %d", num);
-
-    return static_cast<int> (num);
+    em_printfout("[SetPolicy] analyze_set_policy complete. total_cmds=%u", num);
+    return static_cast<int>(num);
 }
 
 int dm_easy_mesh_ctrl_t::analyze_scan_channel(em_bus_event_t *evt, em_cmd_t *pcmd[])
@@ -3544,7 +3820,7 @@ int dm_easy_mesh_ctrl_t::analyze_scan_channel(em_bus_event_t *evt, em_cmd_t *pcm
     if ((ret = dm.decode_config(subdoc, "ChannelScanRequest", i, &num_devices)) < 0) {
         em_printfout("Decode config for channel scan failed");
         return ret;
-    } 
+    }
 
     //methods don't have multiple op_classes (yet)
     //assert(dm.get_num_op_class() == EM_MAX_BANDS);
@@ -4079,6 +4355,8 @@ int dm_easy_mesh_ctrl_t::analyze_mld_reconfig(em_cmd_t *pcmd[])
 int dm_easy_mesh_ctrl_t::analyze_bsta_cap_req(em_bus_event_t *evt, em_cmd_t *pcmd[])
 {
     int num = 0;
+    // dm_easy_mesh_ctrl_t is not a dm_easy_mesh_t; this constructs one via
+    // the dm_network_t converting constructor, not the (deleted) copy ctor
     dm_easy_mesh_t dm = *this;
 
     em_printfout("analyze radio mac '%s' for bsta cap request", evt->u.raw_buff);
@@ -5031,14 +5309,14 @@ int dm_easy_mesh_ctrl_t::update_tables(dm_easy_mesh_t *dm)
     }
 
     if (dm->db_cfg_type_is_set(db_cfg_type_policy_list_update)) {
-        for (i = 0; i < dm->get_num_policy(); i++) {
-			policy = dm->get_policy_by_ref(i);
-			dm_easy_mesh_t::macbytes_to_string(policy.m_policy.id.dev_mac, dev_mac_str);
-			dm_easy_mesh_t::macbytes_to_string(policy.m_policy.id.radio_mac, radio_mac_str);
-            snprintf(parent, sizeof(em_2xlong_string_t), "%s@%s@%s@%d", GLOBAL_NET_ID, dev_mac_str, radio_mac_str, policy.m_policy.id.type);
-            //printf("%s:%d: Key: %s\n", __func__, __LINE__, parent);
+        for (dm_policy_t *pol_ptr = dm->m_policy_map ? static_cast<dm_policy_t *>(hash_map_get_first(dm->m_policy_map)) : NULL;
+             pol_ptr != NULL;
+             pol_ptr = static_cast<dm_policy_t *>(hash_map_get_next(dm->m_policy_map, pol_ptr))) {
+			dm_easy_mesh_t::macbytes_to_string(pol_ptr->m_policy.id.dev_mac, dev_mac_str);
+			dm_easy_mesh_t::macbytes_to_string(pol_ptr->m_policy.id.radio_mac, radio_mac_str);
+            snprintf(parent, sizeof(em_2xlong_string_t), "%s@%s@%s@%d", GLOBAL_NET_ID, dev_mac_str, radio_mac_str, pol_ptr->m_policy.id.type);
 			criteria = dm->db_cfg_type_get_criteria(db_cfg_type_policy_list_update);
-            if (dm_policy_list_t::set_config(m_db_client, dm->get_policy_by_ref(i), parent) != 0) {
+            if (dm_policy_list_t::set_config(m_db_client, *pol_ptr, parent) != 0) {
                 at_least_one_failed = true;
             }
         }
@@ -5635,9 +5913,9 @@ bus_error_t dm_easy_mesh_ctrl_t::device_get_inner(char *event_name, raw_data_t *
     } else if (strcmp(param, "LocalSteeringDisallowedSTAList") == 0) {
         //rc = dm_ctrl->raw_data_set(p_data, );
     } else if (strcmp(param, "BTMSteeringDisallowedSTAList") == 0) {
-        unsigned int count = 0;
-        dm_policy_t *pi = &dm->m_policy[count];
-        while (pi != NULL && count < dm->m_num_policy) {
+        for (dm_policy_t *pi = dm->m_policy_map ? static_cast<dm_policy_t *>(hash_map_get_first(dm->m_policy_map)) : NULL;
+             pi != NULL;
+             pi = static_cast<dm_policy_t *>(hash_map_get_next(dm->m_policy_map, pi))) {
             if(pi->m_policy.id.type == em_policy_id_type_steering_btm) {
                 const size_t n = static_cast<size_t>(pi->m_policy.num_sta);
                 std::vector<em_short_string_t> BTMSteeringDisallowed(n);
@@ -5649,8 +5927,6 @@ bus_error_t dm_easy_mesh_ctrl_t::device_get_inner(char *event_name, raw_data_t *
                 rc = dm_ctrl->raw_data_set(p_data, val_str);
                 break;
             }
-            count++;
-            pi = &dm->m_policy[count];
         }
     } else if (strcmp(param, "MaxVIDs") == 0) {
         rc = dm_ctrl->raw_data_set(p_data, di->max_vids);
@@ -5738,6 +6014,18 @@ bus_error_t dm_easy_mesh_ctrl_t::device_get_inner(char *event_name, raw_data_t *
         rc = dm_ctrl->raw_data_set(p_data, 0U);
     } else if (strcmp(param, "BackhaulDownNumberOfEntries") == 0) {
         rc = dm_ctrl->raw_data_set(p_data, di->num_backhaul_down_mac);
+    } else if (strcmp(param, "Uptime") == 0) {
+        rc = dm_ctrl->raw_data_set(p_data, di->uptime);
+    } else if (strcmp(param, "Total") == 0) {
+        rc = dm_ctrl->raw_data_set(p_data, di->total_mem);
+    } else if (strcmp(param, "Free") == 0) {
+        rc = dm_ctrl->raw_data_set(p_data, di->free_mem);
+    } else if (strcmp(param, "Cached") == 0) {
+        rc = dm_ctrl->raw_data_set(p_data, di->cached_mem);
+    } else if (strcmp(param, "CPUUsage") == 0) {
+        rc = dm_ctrl->raw_data_set(p_data, di->cpu_load);
+    } else if (strcmp(param, "CPUTemperature") == 0) {
+        rc = dm_ctrl->raw_data_set(p_data, di->cpu_temp);
     } else if (strcmp(param, "OnboardingProtocol") == 0) {
         rc = dm_ctrl->raw_data_set(p_data, sec_cap ? sec_cap->onboarding_proto : 0);
     } else if (strcmp(param, "IntegrityAlgorithm") == 0) {
@@ -5878,6 +6166,12 @@ bus_error_t dm_easy_mesh_ctrl_t::device_tget_inner(char *event_name, raw_data_t 
         dm_ctrl->property_append_tail(&property, root, idx, "OnboardingProtocol", sec_cap ? sec_cap->onboarding_proto : 0);
         dm_ctrl->property_append_tail(&property, root, idx, "IntegrityAlgorithm", sec_cap ? sec_cap->integrity_algo : 0);
         dm_ctrl->property_append_tail(&property, root, idx, "EncryptionAlgorithm", sec_cap ? sec_cap->encryption_algo : 0);
+        dm_ctrl->property_append_tail(&property, root, idx, "X_AIRTIES_DeviceInfo.Uptime", di->uptime);
+        dm_ctrl->property_append_tail(&property, root, idx, "X_AIRTIES_DeviceInfo.MemoryStatus.Total", di->total_mem);
+        dm_ctrl->property_append_tail(&property, root, idx, "X_AIRTIES_DeviceInfo.MemoryStatus.Free", di->free_mem);
+        dm_ctrl->property_append_tail(&property, root, idx, "X_AIRTIES_DeviceInfo.MemoryStatus.Cached", di->cached_mem);
+        dm_ctrl->property_append_tail(&property, root, idx, "X_AIRTIES_DeviceInfo.ProcessStatus.CPUUsage", di->cpu_load);
+        dm_ctrl->property_append_tail(&property, root, idx, "X_AIRTIES_DeviceInfo.ProcessStatus.CPUTemperature", di->cpu_temp);
 
         snprintf(path, sizeof(path) - 1, "%s%d.Radio.", root, idx);
         dm_ctrl->radio_tget_params(dm, path, &property);
@@ -5917,7 +6211,6 @@ bus_error_t dm_easy_mesh_ctrl_t::policy_get_inner(char *event_name, raw_data_t *
     (void) user_data;
     const char *name = event_name;
     const char *param;
-    unsigned int count = 0;
     char instance[MAX_INSTANCE_LEN] = { 0 };
     bool is_num;
     bus_error_t rc = bus_error_success;
@@ -5944,12 +6237,19 @@ bus_error_t dm_easy_mesh_ctrl_t::policy_get_inner(char *event_name, raw_data_t *
         return bus_error_invalid_namespace;
     }
 
-    dm_policy_t *pi = &dm->m_policy[count];
-    em_printfout("num_policy:%d", dm->m_num_policy);
-    while (pi == NULL && count < dm->m_num_policy) {
-        em_printfout("policy is NULL, checking next:%d", count);
-        count++;
-        pi = &dm->m_policy[count];
+    em_printfout("num_policy:%u", dm->get_num_policy());
+    if (dm->m_policy_map == NULL) {
+        em_printfout("policy_map is NULL");
+        return bus_error_invalid_input;
+    }
+    dm_policy_t *pi = NULL;
+    for (dm_policy_t *p = static_cast<dm_policy_t *>(hash_map_get_first(dm->m_policy_map));
+         p != NULL;
+         p = static_cast<dm_policy_t *>(hash_map_get_next(dm->m_policy_map, p))) {
+        if (p->m_policy.id.type == em_policy_id_type_default_8021q_settings) {
+            pi = p;
+            break;
+        }
     }
 
     if(pi == NULL) {
@@ -6440,6 +6740,8 @@ bus_error_t dm_easy_mesh_ctrl_t::radio_get_inner(char *event_name, raw_data_t *p
         rc = dm_ctrl->raw_data_set(p_data, curop_count);
     } else if (strcmp(param, "BSSNumberOfEntries") == 0) {
         rc = dm_ctrl->raw_data_set(p_data, ri->number_of_bss);
+    } else if (strcmp(param, "X_AIRTIES_Temperature") == 0) {
+        rc = dm_ctrl->raw_data_set(p_data, ri->radio_temp);
     } else {
         em_printfout("Invalid param: %s\n", param);
         rc = bus_error_invalid_input;
@@ -6512,6 +6814,7 @@ bus_error_t dm_easy_mesh_ctrl_t::radio_tget_params(dm_easy_mesh_t *dm, const cha
         dm_ctrl->property_append_tail(property, root, idx, "ReceiveSelf", static_cast<unsigned int> (ri->receive_self));
         dm_ctrl->property_append_tail(property, root, idx, "ReceiveOther", static_cast<unsigned int> (ri->receive_other));
         dm_ctrl->property_append_tail(property, root, idx, "ChipsetVendor", ri->chip_vendor);
+        dm_ctrl->property_append_tail(property, root, idx, "X_AIRTIES_Temperature", ri->radio_temp);
         unsigned int curop_count = 0;
         for (unsigned int i = 0; i < dm->get_num_op_class(); i++) {
             dm_op_class_t *op_class = dm->get_op_class(i);

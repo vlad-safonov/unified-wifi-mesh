@@ -1,0 +1,248 @@
+name: Fast Unit Tests
+
+on:
+  #push:
+  #  branches: [ "develop-II" ]
+  #pull_request:
+  #  branches: [ "develop-II" ]
+  # Trigger automatically when the 'Fast Build Check' workflow completes successfully
+  workflow_run:
+    workflows: ["Fast Build Check"]
+    types: [completed]
+  # Allow manual triggering with a specific build run ID
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Build Check workflow run ID to download test artifacts from'
+        required: true
+      gtest_filter:
+        description: 'Set optional --gtest_filter param to run only neccessary tests'
+        required: false
+        #default: '*'
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  fast-unit-tests:
+    name: Fast Unit Tests (OpenSSL ${{ matrix.openssl-version }})
+    # For workflow_run: only run if the triggering build succeeded.
+    # For workflow_dispatch: always run (user selects the run manually).
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    strategy:
+      matrix:
+        openssl-version: ['1.1', '3.0']
+        include:
+          - openssl-version: '1.1'
+            container: 'ubuntu:20.04'
+            setup-cmd: 'apt-get update && apt-get install -y libssl1.1 libssl-dev'
+          - openssl-version: '3.0'
+            container: 'ubuntu:24.04' #'ubuntu:latest'
+            setup-cmd: 'apt-get update && apt-get install -y libssl-dev'
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.container }}
+
+    steps:
+    - name: Show tested revision
+      env:
+        WR_HEAD_MSG: ${{ github.event.workflow_run.head_commit.message }}
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_run" ]; then
+          echo "Triggered by: Build Check workflow"
+          echo "Branch:       ${{ github.event.workflow_run.head_branch }}"
+          echo "Commit SHA:   ${{ github.event.workflow_run.head_sha }}"
+          echo "Commit msg:   $WR_HEAD_MSG"
+          echo "Author:       ${{ github.event.workflow_run.head_commit.author.name }}"
+          echo "Build run:    ${{ github.event.workflow_run.html_url }}"
+        else
+          echo "Triggered manually (workflow_dispatch)"
+          echo "Artifact from build run ID: ${{ inputs.run_id }}, --gtest-filter=${{ inputs.gtest_filter }}"
+          echo "Build run:    https://github.com/${{ github.repository }}/actions/runs/${{ inputs.run_id }}"
+        fi
+
+    - name: Setup container environment
+      run: |
+        export DEBIAN_FRONTEND=noninteractive
+
+        apt-get update
+        apt-get install -y git
+
+        # Create a fake sudo command
+        echo '#!/bin/bash' > /usr/bin/sudo
+        echo 'export DEBIAN_FRONTEND=noninteractive; exec "$@"' >> /usr/bin/sudo
+        chmod +x /usr/bin/sudo
+
+        ${{ matrix.setup-cmd }}
+
+    - name: Install runtime dependencies
+      run: |
+        export DEBIAN_FRONTEND=noninteractive
+        sudo apt-get update
+        sudo apt-get install -y \
+          cmake \
+          git \
+          wget \
+          libev-dev \
+          libjansson-dev \
+          libjson-c-dev \
+          zlib1g-dev \
+          libnl-3-dev \
+          libnl-genl-3-dev \
+          libnl-route-3-dev \
+          libavro-dev \
+          uuid-dev \
+          libmysqlcppconn-dev \
+          libreadline-dev \
+          mariadb-server \
+          libmariadb3 \
+          libmariadb-dev
+
+    - name: Cache tools build - cJSON 1.7.18
+      id: cache-cjson
+      uses: actions/cache@v5
+      with:
+        path: /tmp/cjson
+        key: cjson-1.7.18-${{ matrix.openssl-version }}
+
+    - name: Build and install - cJSON 1.7.18
+      run: |
+        if [ "${{ steps.cache-cjson.outputs.cache-hit }}" != "true" ]; then
+          mkdir -p /tmp/cjson && cd /tmp/cjson
+          wget https://github.com/DaveGamble/cJSON/archive/refs/tags/v1.7.18.tar.gz
+          tar -xzf v1.7.18.tar.gz
+          cd cJSON-1.7.18
+          mkdir build && cd build
+          cmake .. -DENABLE_CJSON_UTILS=On -DENABLE_CJSON_TEST=Off -DCMAKE_INSTALL_PREFIX=/usr
+          make
+        fi
+        cd /tmp/cjson/cJSON-1.7.18/build
+        make install
+        # Update dynamic linker run-time bindings
+        ldconfig
+
+    - name: Checkout repository
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 1
+
+    - name: Download test artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: test-binary-openssl-${{ matrix.openssl-version }}
+        # For workflow_run use the triggering run's ID; for workflow_dispatch use the input
+        run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path: test-artifact
+
+    - name: Run tests
+      continue-on-error: true
+      env:
+        CI: "true"
+      run: |
+        # Required for  Test Reporter
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+        # Populate ASAN_LOG name for next tasks
+        ASAN_LOG="em_ctrl_test-ASAN-log-${{ matrix.openssl-version }}.txt"
+        echo "ASAN_LOG=${ASAN_LOG}" >> $GITHUB_ENV
+        > ${ASAN_LOG}
+
+        TEST_ARGS="--gtest_output=xml:test-report.xml"
+        # Add --gtest_filter if provided by user
+        if [ -n "${{ inputs.gtest_filter }}" ]; then
+            TEST_ARGS="${TEST_ARGS} --gtest_filter=${{ inputs.gtest_filter }}"
+        else
+            # If there is no --gtest_filter from user set it empty and test app will run default tests
+            # if skip this option test app will run everything like with '*'
+            TEST_ARGS="${TEST_ARGS} --gtest_filter="
+        fi
+
+        TEST_BINARY="$GITHUB_WORKSPACE/test-artifact/onewifi_em_ctrl_test"
+        LIB_DIR="$GITHUB_WORKSPACE/test-artifact/lib"
+
+        chmod +x "$TEST_BINARY"
+
+        export LD_LIBRARY_PATH="$LIB_DIR:$LD_LIBRARY_PATH"
+        # export ASAN_OPTIONS="detect_leaks=1:fast_unwind_on_malloc=0:leak_check_at_exit=1:symbolize=1:print_stacktrace=1:print_legend=1"
+        # export ASAN_OPTIONS="detect_leaks=1:fast_unwind_on_malloc=0:leak_check_at_exit=1:symbolize=1:allow_user_poisoning=0"
+        # export LSAN_OPTIONS="report_objects=1:max_leaks=0:verbosity=1"
+
+        # Print ASAN log test banner
+        echo "${ASAN_LOG}: [$(date)] onewifi_em_ctrl_test with ASAN output" >> ${ASAN_LOG}
+        echo "From: ${{ github.sha }} Branch: ${{ github.ref_name }} Run by: ${{ github.event_name }}" >> ${ASAN_LOG}
+        echo "export ASAN_OPTIONS=${ASAN_OPTIONS}" >> ${ASAN_LOG}
+        echo "${TEST_BINARY} ${TEST_ARGS}" >> ${ASAN_LOG}
+
+        echo "===================================================================================================" >> ${ASAN_LOG}
+
+        # Run test binary and capture ASAN output. This step always succeds, and the next steps make the decision.
+        "$TEST_BINARY" $TEST_ARGS 2>&1 | tee -a ${ASAN_LOG}
+
+    - name: Upload ASAN log report
+      id: upload-asan-log
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: ASAN-log-${{ matrix.openssl-version }}
+        #em_ctrl_test-ASAN-${{ matrix.openssl-version }}-log.txt
+        path: ${{ env.ASAN_LOG }}
+        archive: false
+        if-no-files-found: warn
+        retention-days: 3
+
+    - name: Check ASAN output
+      run: |
+        #ASAN_LOG="em_ctrl_test-ASAN-${{ matrix.openssl-version }}-log.txt"
+
+        echo "Checking run-time errors from ASAN in ${ASAN_LOG}"
+        error_str="runtime error"
+        grep --text "${error_str}" ${ASAN_LOG} >> 'asan.log' || echo "No '${error_str}' errors found by ASAN"
+        error_str="AddressSanitizer"
+        grep --text "${error_str}" ${ASAN_LOG} >> 'asan.log' || echo "No '${error_str}' errors found by ASAN"
+
+        res=0
+        if [ ! -f test-report.xml ]; then
+            res=$((res + 10))
+            echo "::error:: test-report.xml is not generated, likely test app is crashed"
+        fi
+
+        if [ -s 'asan.log' ]; then
+            res=$((res + 1))
+            echo "[Review ASAN errors](${{ steps.upload-asan-log.outputs.artifact-url }})" >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::There are ASAN errors during the test! Check full ${ASAN_LOG} in artifacts."
+            cat asan.log
+            # If gtest report generated, but we want to focus on ASAN errors skip it creation
+            if [ -f test-report.xml ]; then
+                echo "::warning:: test-report.xml is generated, however there are ASAN errors"
+                #mv test-report.xml test-report-with-asan.xml
+                #echo "::warning:: test-report.xml renamed to test-report-with-asan.xml and 'Test Report Generation' will be skipped."
+                #exit 1
+            else
+                # No report, test app crashes, fails workflow
+                # exit 10
+                echo "::error:: test-report.xml is not generated and there are ASAN errors"
+            fi
+        fi
+        exit $res
+
+    - name: Upload test report
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: uwm-gtest-report-${{ matrix.openssl-version }}
+        path: test-report*.xml
+        #if-no-files-found: warn
+        retention-days: 3
+
+    - name: Test Report Generation
+      # Run test report generation only if test-report.xml exists (there no ASAN errors)
+      if:  ${{ hashFiles('test-report.xml') != '' }}
+      uses: dorny/test-reporter@v3
+      with:
+         name: Test results
+         path: test-report.xml
+         reporter: java-junit
