@@ -28,6 +28,7 @@
 /* SetSSID AKMsAllowed parsing: empty string is Open, invalid values are rejected. */
 
 TEST(tr_181_akms_Test, EmptyStringIsEmptyArrayAndOpen) {
+    std::cout << "Entering tr_181_akms_Test EmptyStringIsEmptyArrayAndOpen test" << std::endl;
     cJSON *arr = tr_181_t::create_akms_array("");
     ASSERT_NE(arr, nullptr);
     EXPECT_EQ(cJSON_GetArraySize(arr), 0);
@@ -36,6 +37,7 @@ TEST(tr_181_akms_Test, EmptyStringIsEmptyArrayAndOpen) {
 }
 
 TEST(tr_181_akms_Test, SingleAkmValues) {
+    std::cout << "Entering tr_181_akms_Test SingleAkmValues test" << std::endl;
     struct { const char *akms; const char *auth; } cases[] = {
         { "psk",     "WPA2 Personal"   },
         { "sae",     "WPA3 Personal"   },
@@ -52,6 +54,7 @@ TEST(tr_181_akms_Test, SingleAkmValues) {
 }
 
 TEST(tr_181_akms_Test, InvalidValuesAreRejected) {
+    std::cout << "Entering tr_181_akms_Test InvalidValuesAreRejected test" << std::endl;
     EXPECT_EQ(tr_181_t::create_akms_array(NULL), nullptr);
     EXPECT_EQ(tr_181_t::create_akms_array("wep"), nullptr);
     EXPECT_EQ(tr_181_t::create_akms_array("psk,sae"), nullptr);
@@ -92,6 +95,7 @@ protected:
 };
 
 TEST_F(akms_allowed_Test, FormatStoredSuites) {
+    std::cout << "Entering akms_allowed_Test FormatStoredSuites test" << std::endl;
     em_short_string_t akms[3] = { "wpa2-psk", "sae", "" };
     em_short_string_t wpa1[1] = { "wpa-psk" };
 
@@ -109,6 +113,8 @@ TEST_F(akms_allowed_Test, FormatStoredSuites) {
 }
 
 TEST_F(akms_allowed_Test, FronthaulProfileModes) {
+    std::cout << "Entering akms_allowed_Test FronthaulProfileModes test" << std::endl;
+
     struct { const char *auth; const char *akms; } cases[] = {
         { "Open",            ""        },
         { "WPA2 Personal",   "psk"     },
@@ -131,6 +137,8 @@ TEST_F(akms_allowed_Test, FronthaulProfileModes) {
 }
 
 TEST_F(akms_allowed_Test, BackhaulProfileFillsBackhaulSideOnly) {
+    std::cout << "Entering akms_allowed_Test BackhaulProfileFillsBackhaulSideOnly test" << std::endl;
+
     set_profile("WPA3 Personal", em_haul_type_backhaul);
     bi.id.haul_type = em_haul_type_backhaul;
 
@@ -146,6 +154,8 @@ TEST_F(akms_allowed_Test, BackhaulProfileFillsBackhaulSideOnly) {
 }
 
 TEST_F(akms_allowed_Test, SixGhzOverrideForcesSae) {
+    std::cout << "Entering akms_allowed_Test SixGhzOverrideForcesSae test" << std::endl;
+
     const unsigned char mac[6] = { 0x02, 0x11, 0x22, 0x33, 0x44, 0x55 };
 
     set_profile("WPA2 Personal", em_haul_type_fronthaul);
@@ -162,6 +172,8 @@ TEST_F(akms_allowed_Test, SixGhzOverrideForcesSae) {
 }
 
 TEST_F(akms_allowed_Test, UnknownAuthTypeFallsBackToStoredSuites) {
+    std::cout << "Entering akms_allowed_Test UnknownAuthTypeFallsBackToStoredSuites test" << std::endl;
+
     set_profile("Not A Mode", em_haul_type_fronthaul);
     bi.id.haul_type = em_haul_type_fronthaul;
     bi.num_fronthaul_akms = 2;
@@ -217,6 +229,8 @@ protected:
 };
 
 TEST_F(akm_suite_cap_Test, OpenBssIsNotAdvertised) {
+    std::cout << "Entering tr_181_akms_Test OpenBssIsNotAdvertised test!" << std::endl;
+
     add_bss("", NULL);          /* open fronthaul */
     add_bss("wpa2-psk", NULL);
     add_bss(NULL, "sae");
@@ -232,6 +246,8 @@ TEST_F(akm_suite_cap_Test, OpenBssIsNotAdvertised) {
 }
 
 TEST_F(akm_suite_cap_Test, AllOpenAdvertisesNoSuites) {
+    std::cout << "Entering tr_181_akms_Test AllOpenAdvertisesNoSuites test" << std::endl;
+
     add_bss("", "");
     add_bss("", NULL);
 
@@ -243,6 +259,8 @@ TEST_F(akm_suite_cap_Test, AllOpenAdvertisesNoSuites) {
 }
 
 TEST_F(akm_suite_cap_Test, SuiteIsAdvertisedOncePerHaul) {
+    std::cout << "Entering tr_181_akms_Test SuiteIsAdvertisedOncePerHaul test" << std::endl;
+
     add_bss("wpa2-psk", NULL);
     add_bss("wpa2-psk", NULL);
 
@@ -331,6 +349,8 @@ protected:
 };
 
 TEST_F(akm_suite_store_Test, SameNetworkProfileIsUsed) {
+    std::cout << "Entering akm_suite_store_Test SameNetworkProfileIsUsed test" << std::endl;
+
     set_profile(other_net, "Open");
     set_profile(same_net, "WPA2 Personal");
     mgr.dms = { &other_net, &same_net };
@@ -344,6 +364,8 @@ TEST_F(akm_suite_store_Test, SameNetworkProfileIsUsed) {
 }
 
 TEST_F(akm_suite_store_Test, OtherNetworkProfileIsIgnored) {
+    std::cout << "Entering akm_suite_store_Test OtherNetworkProfileIsIgnored test" << std::endl;
+
     set_profile(other_net, "Open");
     mgr.dms = { &other_net };
 
@@ -356,6 +378,8 @@ TEST_F(akm_suite_store_Test, OtherNetworkProfileIsIgnored) {
 }
 
 TEST_F(akm_suite_store_Test, FallbackKeepsOtherHaulSideEmpty) {
+    std::cout << "Entering akm_suite_store_Test FallbackKeepsOtherHaulSideEmpty test" << std::endl;
+
     /* TLV advertising one backhaul sae suite and one fronthaul psk suite, no profile. */
     unsigned char tlv[] = { 1, 0x00, 0x0f, 0xac, 0x08, 1, 0x00, 0x0f, 0xac, 0x02 };
     em_configuration_t::store_akm_suite_cap(&target, tlv, sizeof(tlv), &mgr);
