@@ -807,6 +807,7 @@ public:
 	void process_agent_state();
 	void process_agent_state(em_cmd_event_type_t type);
 
+        friend class EmMetricsTest;
     
 	/**!
 	 * @brief Constructor for the em_metrics_t class.
