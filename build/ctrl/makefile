@@ -220,7 +220,7 @@ ifeq ($(WITH_SAP), 1)
 	@$(MAKE) -C $(AL_SAP_HOME)
 endif
 	@echo "Building test executable with same link order as main build..."
-	$(CXX) -o $(TEST_EXEC) $(TEST_OBJECTS) $(TEST_ALLOBJECTS) $(LIBDIRS) $(LIBS) -lgtest -lgtest_main -pthread -fsanitize=address -fsanitize=undefined
+	$(CXX) -o $(TEST_EXEC) $(TEST_OBJECTS) $(TEST_ALLOBJECTS) $(LIBDIRS) $(LIBS) -lgmock -lgtest -lgtest_main -pthread -fsanitize=address -fsanitize=undefined
 
 # Run test executable only (must be built first with build_test)
 run_test:
