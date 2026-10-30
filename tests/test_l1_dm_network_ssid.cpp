@@ -20,7 +20,76 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <stdio.h>
+#include <memory>
+#include <string>
 #include "dm_network_ssid.h"
+
+class NetworkSsidLengthTest : public testing::TestWithParam<size_t> {};
+
+TEST_P(NetworkSsidLengthTest, DecodePreservesUpTo32BytesWithoutOverflow)
+{
+    std::string input_ssid(GetParam(), 's');
+    if (!input_ssid.empty()) {
+        input_ssid.back() = 'Z';
+    }
+    const size_t expected_length = input_ssid.size() > sizeof(ssid_t)
+        ? sizeof(ssid_t) : input_ssid.size();
+    ssid_t expected_ssid = {0};
+    memcpy(expected_ssid, input_ssid.data(), expected_length);
+
+    std::unique_ptr<cJSON, decltype(&cJSON_Delete)> input(cJSON_CreateObject(), cJSON_Delete);
+    ASSERT_NE(input, nullptr);
+    ASSERT_NE(cJSON_AddStringToObject(input.get(), "SSID", input_ssid.c_str()), nullptr);
+    char parent_id[] = "test-network";
+    struct {
+        unsigned char before[16];
+        dm_network_ssid_t model;
+        unsigned char after[16];
+    } guarded;
+    memset(guarded.before, 0xa5, sizeof(guarded.before));
+    memset(guarded.after, 0x5a, sizeof(guarded.after));
+
+    ASSERT_EQ(guarded.model.decode(input.get(), parent_id), 0);
+    EXPECT_EQ(memcmp(guarded.model.m_network_ssid_info.ssid, expected_ssid, sizeof(ssid_t)), 0);
+    const auto &info = guarded.model.m_network_ssid_info;
+    for (size_t index = 0; index < sizeof(info.pass_phrase); index++) {
+        EXPECT_EQ(info.pass_phrase[index], '\0') << "Passphrase byte " << index;
+    }
+    for (size_t index = 0; index < sizeof(guarded.before); index++) {
+        EXPECT_EQ(guarded.before[index], 0xa5) << "Leading guard byte " << index;
+        EXPECT_EQ(guarded.after[index], 0x5a) << "Trailing guard byte " << index;
+    }
+
+    std::unique_ptr<cJSON, decltype(&cJSON_Delete)> output(cJSON_CreateObject(), cJSON_Delete);
+    ASSERT_NE(output, nullptr);
+    guarded.model.encode(output.get());
+    const cJSON *encoded_ssid = cJSON_GetObjectItem(output.get(), "SSID");
+    ASSERT_TRUE(cJSON_IsString(encoded_ssid));
+    EXPECT_EQ(std::string(cJSON_GetStringValue(encoded_ssid)), input_ssid.substr(0, expected_length));
+}
+
+INSTANTIATE_TEST_SUITE_P(SsidBoundaries, NetworkSsidLengthTest,
+    testing::Values(size_t{0}, size_t{1}, size_t{31}, size_t{32}, size_t{33}, size_t{64}, size_t{256}));
+
+TEST(dm_network_ssid_t_Test, Encode32ByteSsidDoesNotReadPassphrase)
+{
+    const std::string input_ssid = "12345678901234567890123456789012";
+    static_assert(sizeof(ssid_t) == 32, "SSID must contain exactly 32 bytes");
+    dm_network_ssid_t model;
+    model.init();
+    memcpy(model.m_network_ssid_info.ssid, input_ssid.data(), sizeof(ssid_t));
+    memset(model.m_network_ssid_info.pass_phrase, 'p',
+        sizeof(model.m_network_ssid_info.pass_phrase) - 1);
+    std::unique_ptr<cJSON, decltype(&cJSON_Delete)> output(cJSON_CreateObject(), cJSON_Delete);
+    ASSERT_NE(output, nullptr);
+
+    model.encode(output.get());
+
+    const cJSON *encoded_ssid = cJSON_GetObjectItem(output.get(), "SSID");
+    ASSERT_TRUE(cJSON_IsString(encoded_ssid));
+    EXPECT_EQ(std::string(cJSON_GetStringValue(encoded_ssid)), input_ssid);
+    EXPECT_EQ(memcmp(model.m_network_ssid_info.ssid, input_ssid.data(), sizeof(ssid_t)), 0);
+}
 
 /**
  * @brief Test decoding of a valid JSON object with a valid parent ID

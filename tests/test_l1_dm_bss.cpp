@@ -21,7 +21,66 @@
  #include <gmock/gmock.h>
  #include <stdio.h>
  #include <cstddef>
+ #include <memory>
+ #include <string>
  #include "dm_bss.h"
+
+class BssSsidLengthTest : public testing::TestWithParam<size_t> {};
+
+TEST_P(BssSsidLengthTest, DecodePreservesUpTo32BytesWithoutChangingOtherFields)
+{
+     std::string input_ssid(GetParam(), 's');
+     if (!input_ssid.empty()) {
+          input_ssid.back() = 'Z';
+     }
+     const size_t expected_length = input_ssid.size() > sizeof(ssid_t)
+          ? sizeof(ssid_t) : input_ssid.size();
+     std::unique_ptr<cJSON, decltype(&cJSON_Delete)> input(cJSON_CreateObject(), cJSON_Delete);
+     ASSERT_NE(input, nullptr);
+     char parent_id[] = "02:11:22:33:44:55";
+     dm_bss_t baseline;
+     ASSERT_EQ(baseline.decode(input.get(), parent_id), 0);
+     em_bss_info_t expected_info;
+     memcpy(&expected_info, &baseline.m_bss_info, sizeof(expected_info));
+     memcpy(expected_info.ssid, input_ssid.data(), expected_length);
+     ASSERT_NE(cJSON_AddStringToObject(input.get(), "SSID", input_ssid.c_str()), nullptr);
+     dm_bss_t model;
+
+     ASSERT_EQ(model.decode(input.get(), parent_id), 0);
+
+     EXPECT_EQ(memcmp(model.m_bss_info.ssid, expected_info.ssid, sizeof(ssid_t)), 0);
+     EXPECT_EQ(memcmp(&model.m_bss_info, &expected_info, sizeof(expected_info)), 0);
+     model.m_bss_info.id.haul_type = em_haul_type_fronthaul;
+     std::unique_ptr<cJSON, decltype(&cJSON_Delete)> output(cJSON_CreateObject(), cJSON_Delete);
+     ASSERT_NE(output, nullptr);
+     model.encode(output.get(), true);
+     const cJSON *encoded_ssid = cJSON_GetObjectItem(output.get(), "SSID");
+     ASSERT_TRUE(cJSON_IsString(encoded_ssid));
+     EXPECT_EQ(std::string(cJSON_GetStringValue(encoded_ssid)), input_ssid.substr(0, expected_length));
+}
+
+INSTANTIATE_TEST_SUITE_P(SsidBoundaries, BssSsidLengthTest,
+     testing::Values(size_t{0}, size_t{1}, size_t{31}, size_t{32}, size_t{33}, size_t{64}, size_t{256}));
+
+TEST(dm_bss_t_Test, Encode32ByteSsidDoesNotReadEnabledField)
+{
+     const std::string input_ssid = "12345678901234567890123456789012";
+     dm_bss_t model;
+     model.init();
+     model.m_bss_info.id.haul_type = em_haul_type_fronthaul;
+     memcpy(model.m_bss_info.ssid, input_ssid.data(), sizeof(ssid_t));
+     model.m_bss_info.enabled = true;
+     std::unique_ptr<cJSON, decltype(&cJSON_Delete)> output(cJSON_CreateObject(), cJSON_Delete);
+     ASSERT_NE(output, nullptr);
+
+     model.encode(output.get(), true);
+
+     const cJSON *encoded_ssid = cJSON_GetObjectItem(output.get(), "SSID");
+     ASSERT_TRUE(cJSON_IsString(encoded_ssid));
+     EXPECT_EQ(std::string(cJSON_GetStringValue(encoded_ssid)), input_ssid);
+     EXPECT_TRUE(model.m_bss_info.enabled);
+     EXPECT_EQ(memcmp(model.m_bss_info.ssid, input_ssid.data(), sizeof(ssid_t)), 0);
+}
   
 /**
   * @brief TEST the addition of a valid Vendor IE to the instance.
