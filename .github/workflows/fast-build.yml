@@ -30,6 +30,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ${{ matrix.container }}
+    env:
+      BUILD_JOBS: '2'
 
     steps:
     - name: Setup container environment
@@ -145,7 +147,7 @@ jobs:
           cd /tmp/ucode-src
           mkdir build && cd build
           cmake -DUBUS_SUPPORT=OFF -DUCI_SUPPORT=OFF -DULOOP_SUPPORT=OFF ..
-          make -j$(nproc)
+          make -j${BUILD_JOBS}
         fi
         cd /tmp/ucode-src/build
         make install
@@ -190,7 +192,7 @@ jobs:
           cd /tmp/gtest-src
           mkdir build && cd build
           cmake .. -DCMAKE_CXX_STANDARD=17
-          make -j$(nproc)
+          make -j${BUILD_JOBS}
         fi
         cd /tmp/gtest-src/build
         make install
@@ -259,21 +261,21 @@ jobs:
 
     - name: Build - Controller
       working-directory: easymesh_project/unified-wifi-mesh/build/ctrl
-      run: make -j all
+      run: make -j${BUILD_JOBS} all
 
     - name: Ccache stats - Controller
       run: ccache --show-stats -z
 
     - name: Build - Agent
       working-directory: easymesh_project/unified-wifi-mesh/build/agent
-      run: make -j all
+      run: make -j${BUILD_JOBS} all
 
     - name: Ccache stats - Agent
       run: ccache --show-stats -z
 
     - name: Build - CLI
       working-directory: easymesh_project/unified-wifi-mesh/build/cli
-      run: make -j all
+      run: make -j${BUILD_JOBS} all
 
     - name: Ccache stats - CLI
       run: ccache --show-stats -z
@@ -282,7 +284,7 @@ jobs:
       #if: false  # Set to false to skip test binary build
       #continue-on-error: true
       working-directory: easymesh_project/unified-wifi-mesh/build/ctrl
-      run: make -j $(nproc) build_test
+      run: make -j${BUILD_JOBS} build_test
 
     - name: Ccache stats - Test Binary
       run: ccache --show-stats -z
