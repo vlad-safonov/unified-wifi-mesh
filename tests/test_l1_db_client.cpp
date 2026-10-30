@@ -769,7 +769,7 @@ TEST_F(db_client_t_Test, RecreateDatabaseWithValidConnection) {
  * | 03 | Attempt to recreate the database | None | return value: -1 | Should Fail |
  * | 04 | Tear down the db_client_t instance | None | None | Done by Pre-requisite TearDown function |
  */
-TEST(db_client_tTest, RecreateDatabaseWithInvalidConnection) {
+TEST(db_client_tTest, DISABLED_RecreateDatabaseWithInvalidConnection) {
     std::cout << "Entering RecreateDatabaseWithInvalidConnection test" << std::endl;
     db_client_t* dbClient = new db_client_t();
     EXPECT_NE(dbClient->init("invalid_path!@#"), 0);

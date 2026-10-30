@@ -21,7 +21,90 @@
 #include <gmock/gmock.h>
 #include <stdio.h>
 #include <cstring>
+#include <memory>
+#include <string>
 #include "dm_scan_result.h"
+
+class ScanSsidLengthTest : public testing::TestWithParam<size_t> {};
+
+TEST_P(ScanSsidLengthTest, DecodePreservesUpTo32BytesWithoutOverwritingNeighbors)
+{
+    std::string input_ssid(GetParam(), 's');
+    if (!input_ssid.empty()) {
+        input_ssid.back() = 'Z';
+    }
+    const size_t expected_length = input_ssid.size() > sizeof(ssid_t)
+        ? sizeof(ssid_t) : input_ssid.size();
+    em_neighbor_t expected_neighbors[EM_MAX_NEIGHBORS];
+    memset(expected_neighbors, 0, sizeof(expected_neighbors));
+    memcpy(expected_neighbors[0].ssid, input_ssid.data(), expected_length);
+    std::unique_ptr<cJSON, decltype(&cJSON_Delete)> input(cJSON_CreateObject(), cJSON_Delete);
+    ASSERT_NE(input, nullptr);
+    cJSON *neighbors = cJSON_AddArrayToObject(input.get(), "Neighbors");
+    ASSERT_NE(neighbors, nullptr);
+    cJSON *neighbor = cJSON_CreateObject();
+    ASSERT_NE(neighbor, nullptr);
+    ASSERT_TRUE(cJSON_AddItemToArray(neighbors, neighbor));
+    ASSERT_NE(cJSON_AddStringToObject(neighbor, "SSID", input_ssid.c_str()), nullptr);
+    char parent_id[] = "test-network";
+    dm_scan_result_t model;
+
+    ASSERT_EQ(model.decode(input.get(), parent_id), 0);
+
+    EXPECT_EQ(memcmp(model.m_scan_result.neighbor[0].ssid, expected_neighbors[0].ssid, sizeof(ssid_t)), 0);
+    ASSERT_EQ(memcmp(model.m_scan_result.neighbor, expected_neighbors, sizeof(expected_neighbors)), 0);
+    EXPECT_EQ(model.m_scan_result.aggr_scan_duration, 0U);
+    EXPECT_EQ(model.m_scan_result.scan_type, 0);
+
+    if (expected_length == sizeof(ssid_t)) {
+        EXPECT_EQ(memchr(model.m_scan_result.neighbor[0].ssid, '\0', sizeof(ssid_t)), nullptr);
+    }
+
+    model.m_scan_result.num_neighbors = 1;
+    model.m_scan_result.neighbor[0].bssid[0] = 0x02;
+    model.m_scan_result.neighbor[0].signal_strength = 'X';
+    std::unique_ptr<cJSON, decltype(&cJSON_Delete)> output(cJSON_CreateObject(), cJSON_Delete);
+    ASSERT_NE(output, nullptr);
+    model.encode(output.get());
+
+    const cJSON *encoded_neighbors = cJSON_GetObjectItem(output.get(), "Neighbors");
+    ASSERT_TRUE(cJSON_IsArray(encoded_neighbors));
+    ASSERT_EQ(cJSON_GetArraySize(encoded_neighbors), 1);
+    const cJSON *encoded_ssid = cJSON_GetObjectItem(cJSON_GetArrayItem(encoded_neighbors, 0), "SSID");
+    ASSERT_TRUE(cJSON_IsString(encoded_ssid));
+    EXPECT_EQ(std::string(cJSON_GetStringValue(encoded_ssid)), input_ssid.substr(0, expected_length));
+    EXPECT_EQ(model.m_scan_result.neighbor[0].signal_strength, 'X');
+}
+
+INSTANTIATE_TEST_SUITE_P(SsidBoundaries, ScanSsidLengthTest,
+    testing::Values(size_t{0}, size_t{1}, size_t{31}, size_t{32}, size_t{33}, size_t{64}, size_t{256}));
+
+TEST(dm_scan_result_t_Test, Encode32ByteSsidDoesNotReadSignalStrength)
+{
+    const std::string input_ssid = "12345678901234567890123456789012";
+    dm_scan_result_t model;
+    model.init();
+    model.m_scan_result.num_neighbors = 1;
+    auto &neighbor = model.m_scan_result.neighbor[0];
+    neighbor.bssid[0] = 0x02;
+    memcpy(neighbor.ssid, input_ssid.data(), sizeof(ssid_t));
+    neighbor.signal_strength = 'X';
+    ASSERT_EQ(memchr(neighbor.ssid, '\0', sizeof(ssid_t)), nullptr);
+    ASSERT_NE(neighbor.signal_strength, '\0');
+    std::unique_ptr<cJSON, decltype(&cJSON_Delete)> output(cJSON_CreateObject(), cJSON_Delete);
+    ASSERT_NE(output, nullptr);
+
+    model.encode(output.get());
+
+    const cJSON *neighbors = cJSON_GetObjectItem(output.get(), "Neighbors");
+    ASSERT_TRUE(cJSON_IsArray(neighbors));
+    ASSERT_EQ(cJSON_GetArraySize(neighbors), 1);
+    const cJSON *encoded_ssid = cJSON_GetObjectItem(cJSON_GetArrayItem(neighbors, 0), "SSID");
+    ASSERT_TRUE(cJSON_IsString(encoded_ssid));
+    EXPECT_EQ(std::string(cJSON_GetStringValue(encoded_ssid)), input_ssid);
+    EXPECT_EQ(neighbor.signal_strength, 'X');
+    EXPECT_EQ(memcmp(neighbor.ssid, input_ssid.data(), sizeof(ssid_t)), 0);
+}
 
 // Helper utility to populate dm_scan_result_t with valid data
 static void fill_common_scan_result_fields(dm_scan_result_t& obj)
