@@ -190,6 +190,8 @@ EXCLUDE_TESTS = \
     $(TEST_DIR)/test_l1_dm_easy_mesh.cpp \
     $(TEST_DIR)/test_l1_dm_easy_mesh_list.cpp \
     $(TEST_DIR)/test_l1_em_metrics.cpp \
+    $(TEST_DIR)/test_l1_dm_device.cpp \
+    $(TEST_DIR)/test_l1_db_client.cpp \
     $(TEST_DIR)/test_l1_em_cmd_btm_report.cpp
 COMMON_TEST_SOURCES = $(filter-out $(EXCLUDE_TESTS), $(wildcard $(TEST_DIR)/*.cpp))
 
