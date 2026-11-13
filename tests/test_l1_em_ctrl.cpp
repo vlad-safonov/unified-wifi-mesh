@@ -26,9 +26,17 @@
 #include <memory>
 #include <vector>
 
+class StationEventTestController : public em_ctrl_t {
+public:
+    int data_model_init(const char *path) override {
+        // Event dispatch needs the real data model, not the certificate-backed command listener.
+        return get_dm_ctrl()->init(path, this, db_client_type_local);
+    }
+};
+
 TEST(em_ctrl_t, StationCapabilityUpdatesOwnFrameBodies)
 {
-    em_ctrl_t ctrl;
+    StationEventTestController ctrl;
     em_interface_t agent = {};
     agent.mac[5] = 1;
     dm_easy_mesh_t *dm = nullptr;
@@ -86,7 +94,7 @@ TEST(em_ctrl_t, StationCapabilityUpdatesOwnFrameBodies)
 
 TEST(em_ctrl_t, CapabilityLinksResolveAfterQueuedMldReplacement)
 {
-    em_ctrl_t ctrl;
+    StationEventTestController ctrl;
     em_interface_t agent = {};
     agent.mac[5] = 1;
     dm_easy_mesh_t *dm = nullptr;
@@ -173,7 +181,7 @@ TEST(em_ctrl_t, CapabilityLinksResolveAfterQueuedMldReplacement)
 
 TEST(em_ctrl_t, StationMldUpdatesApplyOnControllerEventThread)
 {
-    em_ctrl_t ctrl;
+    StationEventTestController ctrl;
     em_interface_t agent = {};
     agent.mac[5] = 1;
     dm_easy_mesh_t *dm = nullptr;
