@@ -26,6 +26,18 @@
 #include <memory>
 #include <vector>
 
+/**
+ * @brief Verify the TR-181 bus handle starts uninitialized before bus setup.
+ *
+ * Client-side bus_init() does not set is_bus_init, so construction must provide
+ * a false flag before bus_open() reads it.
+ */
+TEST(em_ctrl_t, Tr181BusHandleStartsUninitialized)
+{
+    em_ctrl_t ctrl;
+    EXPECT_FALSE(ctrl.get_dm_ctrl()->get_bus_hdl()->is_bus_init);
+}
+
 class StationEventTestController : public em_ctrl_t {
 public:
     int data_model_init(const char *path) override {

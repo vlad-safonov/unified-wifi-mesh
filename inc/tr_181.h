@@ -550,7 +550,7 @@ class dm_easy_mesh_ctrl_t;
 
 class tr_181_t {
 private:
-    bus_handle_t m_bus_handle;
+    bus_handle_t m_bus_handle{};
 
 public:
 
