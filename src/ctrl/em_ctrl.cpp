@@ -1109,7 +1109,7 @@ int em_ctrl_t::data_model_init(const char *data_model_path)
     m_ctrl_cmd = new em_cmd_ctrl_t();
     if (m_ctrl_cmd->init() != 0) {
         printf("%s:%d: ctrl command init failed\n", __func__, __LINE__);
-        return -1;
+        return 0;
     }
     
     // Persistence backend is selectable via "--db-type" in the controller
