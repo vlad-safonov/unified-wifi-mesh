@@ -176,6 +176,28 @@ jobs:
         # Update dynamic linker run-time bindings
         ldconfig
 
+    - name: Cache tools build - protobuf-c 1.4.1
+      id: cache-protobuf-c
+      uses: actions/cache@v5
+      with:
+        path: /tmp/protobuf-c-src
+        key: protobuf-c-1.4.1-${{ matrix.openssl-version }}
+
+    # OneWiFi ships generated protobuf sources and only needs the runtime library and headers.
+    - name: Build and install - protobuf-c 1.4.1
+      run: |
+        if [ "${{ steps.cache-protobuf-c.outputs.cache-hit }}" != "true" ]; then
+          git clone --depth=1 --branch v1.4.1 https://github.com/protobuf-c/protobuf-c.git /tmp/protobuf-c-src
+          cd /tmp/protobuf-c-src
+          mkdir build && cd build
+          cmake ../build-cmake -DBUILD_PROTOC=OFF -DBUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib
+          make -j $(nproc)
+        fi
+        cd /tmp/protobuf-c-src/build
+        make install
+        # Update dynamic linker run-time bindings
+        ldconfig
+
     - name: Cache tools build - Gtest
       id: cache-gtest
       uses: actions/cache@v5
@@ -307,4 +329,3 @@ jobs:
 
     - name: ccache stats
       run: ccache --show-stats
-
