@@ -847,8 +847,9 @@ static void append_tlv(std::vector<unsigned char> &msg, unsigned char type,
 
 static std::vector<unsigned char> make_client_type_vendor_value(const ClientTypeEntry &entry)
 {
-    // vendor OUI (not Airties), number of attributes, attribute id, then the STA metrics
-    std::vector<unsigned char> value = {0x00, 0x00, 0x00, 0x01, 0x00};
+    std::vector<unsigned char> value(comcast_vendor_oui,
+                                     comcast_vendor_oui + sizeof(comcast_vendor_oui));
+    value.push_back(static_cast<unsigned char>(vendor_ext_attr_id_client_type));
     em_assoc_sta_vendor_link_metrics_t metrics;
     std::memset(&metrics, 0, sizeof(metrics));
     std::memcpy(metrics.sta_mac, entry.sta_mac, sizeof(mac_address_t));

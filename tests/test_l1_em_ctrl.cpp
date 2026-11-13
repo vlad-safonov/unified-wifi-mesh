@@ -51,6 +51,9 @@ TEST(em_ctrl_t, StationCapabilityUpdatesOwnFrameBodies)
 
     const unsigned int lengths[] = {EM_MAX_FRAME_BODY_LEN, 4, 0};
     for (unsigned int length : lengths) {
+        SCOPED_TRACE(::testing::Message() << "frame_body_len=" << length
+            << ", capability_header_size=" << sizeof(update));
+        ASSERT_EQ(ctrl.get_data_model(GLOBAL_NET_ID, agent.mac), dm);
         update.frame_body_len = length;
         std::vector<unsigned char> payload(sizeof(update) + length, 0x5a);
         memcpy(payload.data(), &update, sizeof(update));
@@ -61,6 +64,11 @@ TEST(em_ctrl_t, StationCapabilityUpdatesOwnFrameBodies)
 
         std::unique_ptr<em_event_t, decltype(&free)> event(ctrl.pop_from_queue(), &free);
         ASSERT_NE(event, nullptr);
+        ASSERT_EQ(event->type, em_event_type_bus);
+        ASSERT_EQ(event->u.bevt.type, em_bus_event_type_sta_cap_update);
+        ASSERT_EQ(event->u.bevt.data_len, sizeof(update) + length);
+        ASSERT_EQ(memcmp(event->u.bevt.u.raw_buff, &update, sizeof(update)), 0)
+            << "Queued capability header differs from the submitted header";
         ctrl.handle_event(event.get());
         event.reset();
         dm_sta_t *sta = static_cast<dm_sta_t *>(hash_map_get(dm->m_sta_assoc_map, key));
@@ -114,6 +122,9 @@ TEST(em_ctrl_t, CapabilityLinksResolveAfterQueuedMldReplacement)
     std::vector<unsigned char> payload(sizeof(cap) + cap.frame_body_len, 0x5a);
     memcpy(payload.data(), &cap, sizeof(cap));
     for (unsigned char links : {1, 0}) {
+        SCOPED_TRACE(::testing::Message() << "affiliated_links="
+            << static_cast<unsigned int>(links));
+        ASSERT_EQ(ctrl.get_data_model(GLOBAL_NET_ID, agent.mac), dm);
         mld.info.num_affiliated_sta = links;
         mld.info.affiliated_sta[0].bssid[5] = 4;
         ctrl.io_process(em_bus_event_type_sta_mld_update,
@@ -121,9 +132,30 @@ TEST(em_ctrl_t, CapabilityLinksResolveAfterQueuedMldReplacement)
         ctrl.io_process(em_bus_event_type_sta_cap_update, payload.data(),
             static_cast<unsigned int>(payload.size()));
         for (unsigned int i = 0; i < 2; i++) {
+            SCOPED_TRACE(::testing::Message() << "queued_event_index=" << i);
             std::unique_ptr<em_event_t, decltype(&free)> event(ctrl.pop_from_queue(), &free);
             ASSERT_NE(event, nullptr);
+            ASSERT_EQ(event->type, em_event_type_bus);
+            ASSERT_EQ(event->u.bevt.type, i == 0 ?
+                em_bus_event_type_sta_mld_update : em_bus_event_type_sta_cap_update);
+            if (i == 0) {
+                ASSERT_EQ(event->u.bevt.data_len, sizeof(mld));
+                ASSERT_EQ(memcmp(event->u.bevt.u.raw_buff, &mld, sizeof(mld)), 0)
+                    << "Queued MLD update differs from the submitted update";
+            } else {
+                ASSERT_EQ(event->u.bevt.data_len, payload.size());
+                ASSERT_EQ(memcmp(event->u.bevt.u.raw_buff, payload.data(), payload.size()), 0)
+                    << "Queued capability payload differs from the submitted payload";
+            }
             ctrl.handle_event(event.get());
+            if (i == 0) {
+                em_assoc_sta_mld_info_t rows[EM_MAX_ASSOC_STA_MLD];
+                ASSERT_EQ(dm->copy_assoc_sta_mld_info(rows), 1u);
+                ASSERT_EQ(rows[0].num_affiliated_sta, links)
+                    << "MLD handler did not replace the affiliated links";
+                ASSERT_EQ(rows[0].affiliated_sta[0].bssid[5], 4)
+                    << "MLD handler retained the old BSSID";
+            }
         }
         dm_sta_t *old_link = static_cast<dm_sta_t *>(hash_map_get(dm->m_sta_assoc_map,
             "00:00:00:00:00:02@00:00:00:00:00:03@00:00:00:00:00:04"));
@@ -161,6 +193,10 @@ TEST(em_ctrl_t, StationMldUpdatesApplyOnControllerEventThread)
     dm->get_bss(0)->m_bss_info.ruid.mac[5] = 4;
 
     for (unsigned char links : {1, 0}) {
+        SCOPED_TRACE(::testing::Message() << "affiliated_links="
+            << static_cast<unsigned int>(links)
+            << ", mld_update_size=" << sizeof(em_bus_event_type_sta_mld_update_params_t));
+        ASSERT_EQ(ctrl.get_data_model(GLOBAL_NET_ID, agent.mac), dm);
         em_bus_event_type_sta_mld_update_params_t update = {};
         memcpy(update.dev, agent.mac, sizeof(mac_address_t));
         update.info.mac_addr[5] = 2;
@@ -180,6 +216,15 @@ TEST(em_ctrl_t, StationMldUpdatesApplyOnControllerEventThread)
         }
         std::unique_ptr<em_event_t, decltype(&free)> event(ctrl.pop_from_queue(), &free);
         ASSERT_NE(event, nullptr);
+        ASSERT_EQ(event->type, em_event_type_bus);
+        ASSERT_EQ(event->u.bevt.type, em_bus_event_type_sta_mld_update);
+        ASSERT_EQ(event->u.bevt.data_len, sizeof(update));
+        em_bus_event_type_sta_mld_update_params_t queued_update = {};
+        memcpy(&queued_update, event->u.bevt.u.raw_buff, sizeof(queued_update));
+        ASSERT_EQ(memcmp(queued_update.dev, agent.mac, sizeof(mac_address_t)), 0);
+        ASSERT_EQ(queued_update.info.mac_addr[5], 2);
+        ASSERT_EQ(queued_update.info.num_affiliated_sta, links);
+        ASSERT_EQ(queued_update.info.affiliated_sta[0].bssid[5], 3);
         ctrl.handle_event(event.get());
         count = dm->copy_assoc_sta_mld_info(rows);
         ASSERT_EQ(count, 1u);
