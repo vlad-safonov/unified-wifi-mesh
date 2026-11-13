@@ -162,7 +162,7 @@ em_network_topo_t *em_network_topo_t::find_topology_by_bh_associated(dm_easy_mes
 		return NULL;
 	}
 	em_network_topo_t *parent = g_network_topology->find_topology_by_ap_bssid(bss_mac);
-	if (parent != NULL && parent->get_data_model()->is_colocated() &&
+	if (parent != NULL && parent->get_data_model()->get_colocated() &&
 		g_network_topology->get_data_model()->is_controller()) {
 		return g_network_topology;
 	}

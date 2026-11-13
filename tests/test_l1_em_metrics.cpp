@@ -931,6 +931,8 @@ protected:
  * and subsequent empty client type. Before each dispatch, clear the STA metrics update
  * flag and verify that the current response sets it. Also verify one publication after
  * the first nonempty value is stored, and no republish for later empty values.
+ * Vendor TLVs use the Comcast OUI followed by the client-type attribute ID and
+ * STA metrics, with no attribute-count byte.
  *
  * **Test Group ID:** Basic: 01@n
  * **Test Case ID:** 009@n
@@ -979,6 +981,8 @@ TEST_F(ClientTypeTopologyTest, ApMetricsPublishesOnlyForFirstNonEmptyClientType)
  * Dispatch one AP metrics response containing two new STA client types through
  * process_msg(). Verify that the response sets the STA metrics update flag, topology
  * is published once, and both values are already stored when the callback runs.
+ * Each vendor TLV uses the Comcast OUI and client-type attribute ID directly
+ * followed by STA metrics, without an attribute-count byte.
  *
  * **Test Group ID:** Basic: 01@n
  * **Test Case ID:** 010@n
@@ -1020,6 +1024,8 @@ TEST_F(ClientTypeTopologyTest, ApMetricsPublishesOnceForMultipleFirstClientTypes
  * first nonempty, repeated, and subsequent empty client types. Before each dispatch,
  * clear the STA metrics update flag and verify the current response sets it. Also
  * verify one publication and preservation of the first nonempty value afterward.
+ * Vendor TLVs use the Comcast OUI and client-type attribute ID directly followed
+ * by STA metrics, without an attribute-count byte.
  *
  * **Test Group ID:** Basic: 01@n
  * **Test Case ID:** 011@n
@@ -1067,6 +1073,8 @@ TEST_F(ClientTypeTopologyTest, AssocStaLinkMetricsPublishesOnlyForFirstNonEmptyC
  * containing the same STA client type through process_msg(). Verify that each response
  * sets the flag after it is cleared, the first response publishes topology, and the
  * second does not publish it again.
+ * Both response paths carry the same Comcast client-type vendor TLV layout:
+ * OUI, attribute ID, then STA metrics, without an attribute-count byte.
  *
  * **Test Group ID:** Basic: 01@n
  * **Test Case ID:** 012@n
@@ -1100,6 +1108,8 @@ TEST_F(ClientTypeTopologyTest, ClientTypeSeenByOneResponsePathDoesNotRepublishOn
  * through process_msg(). Verify that each response sets the flag after it is cleared,
  * both values are stored before the single publication, and repeating the response
  * does not trigger another publication.
+ * Each vendor TLV uses the Comcast OUI and client-type attribute ID directly
+ * followed by STA metrics, without an attribute-count byte.
  *
  * **Test Group ID:** Basic: 01@n
  * **Test Case ID:** 013@n

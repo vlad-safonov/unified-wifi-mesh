@@ -34,6 +34,14 @@ public:
     }
 };
 
+/**
+ * @brief Verify queued capability updates own their frame-body bytes.
+ *
+ * Initialize the real controller data model with in-memory SQLite, bypassing the
+ * certificate-backed command listener. Submit maximum-length, four-byte, and empty
+ * frame bodies, then overwrite the caller's payload before dispatch. Verify the
+ * queued header, deferred map update, owned frame contents, and association state.
+ */
 TEST(em_ctrl_t, StationCapabilityUpdatesOwnFrameBodies)
 {
     StationEventTestController ctrl;
@@ -92,6 +100,15 @@ TEST(em_ctrl_t, StationCapabilityUpdatesOwnFrameBodies)
     }
 }
 
+/**
+ * @brief Resolve queued capabilities against the latest MLD link replacement.
+ *
+ * Use the real data model without initializing the certificate-backed listener.
+ * Queue an MLD replacement before a capability update that reports the old BSSID.
+ * Verify FIFO event payloads and the replaced MLD row before capability dispatch.
+ * The new link receives the frame body; the old link does not. Replacing the links
+ * with an empty list must prevent the later capability update from using stale links.
+ */
 TEST(em_ctrl_t, CapabilityLinksResolveAfterQueuedMldReplacement)
 {
     StationEventTestController ctrl;
@@ -179,6 +196,15 @@ TEST(em_ctrl_t, CapabilityLinksResolveAfterQueuedMldReplacement)
     }
 }
 
+/**
+ * @brief Apply owned MLD updates only when the controller dispatches queued events.
+ *
+ * Initialize the real data model without the certificate-backed listener. Queue
+ * one-link and zero-link updates and clear the caller's storage. Verify that the
+ * MLD rows remain unchanged before dispatch and that the queued fields are intact.
+ * After dispatch, verify the stored link count and the STA's association state,
+ * including pending persistence entries.
+ */
 TEST(em_ctrl_t, StationMldUpdatesApplyOnControllerEventThread)
 {
     StationEventTestController ctrl;
