@@ -7614,9 +7614,9 @@ TEST(dm_easy_mesh_t, get_ap_mld_by_ref_index_out_of_range)
 }
 
 /**
- * @brief Validates retrieval of AP MLD info using a valid BSSID
+ * @brief Retrieve the AP MLD identified by its haul type.
  *
- * This test validates that the function get_ap_mld_frm_bssid correctly retrieves the AP MLD information when provided with a valid BSSID. It configures a mesh instance with one AP MLD entry containing two affiliated APs, one of which matches the target BSSID.
+ * Configure backhaul and fronthaul entries in that order. Query fronthaul and verify the exact second entry and its affiliated AP count; lookup must not depend on BSSID data.
  *
  * **Test Group ID:** Basic: 01
  * **Test Case ID:** 170@n
@@ -7628,41 +7628,31 @@ TEST(dm_easy_mesh_t, get_ap_mld_by_ref_index_out_of_range)
  *
  * **Test Procedure:**
  * | Variation / Step | Description | Test Data | Expected Result | Notes |
- * | :----: | --------- | ---------- |-------------- | ----- |
- * | 01 | Initialize dm_easy_mesh_t instance, set m_num_ap_mld to 1, and configure AP MLD info with 2 affiliated APs. | instance.m_num_ap_mld = 1, info.num_affiliated_ap = 2, affiliated_ap[0].mac_addr = {0x11,0x22,0x33,0x44,0x55,0x66}, affiliated_ap[1].mac_addr = {0xAA,0xBB,0xCC,0xDD,0xEE,0xFF} | Instance is correctly configured with one AP MLD and two affiliated AP entries. | Should be successful |
- * | 02 | Invoke get_ap_mld_frm_bssid with target_bssid that matches one of the affiliated AP addresses. | target_bssid = {0xAA,0xBB,0xCC,0xDD,0xEE,0xFF} | Returned pointer is not null. | Should Pass |
- * | 03 | Validate the retrieved AP MLD info for the correct number of affiliated APs. | result->num_affiliated_ap expected = 2 | The number of affiliated APs equals 2. | Should Pass |
+ * | :----: | ----------- | --------- | -------------- | ----- |
+ * | 01 | Configure two AP MLD entries with different haul types. | Entry 0: backhaul; entry 1: fronthaul with two affiliated APs | Both entries are available for lookup. | Should be successful |
+ * | 02 | Query get_ap_mld_frm_haul_type() for fronthaul. | em_haul_type_fronthaul | The exact second entry is returned and num_affiliated_ap equals 2. | Should Pass |
+ * | 03 | Query get_ap_mld_frm_haul_type() for backhaul. | em_haul_type_backhaul | The exact first entry is returned. | Should Pass |
  */
-TEST(dm_easy_mesh_t, get_ap_mld_frm_bssid_valid_ap_mld_info_retrieval)
+TEST(dm_easy_mesh_t, get_ap_mld_frm_haul_type_valid_ap_mld_info_retrieval)
 {
-    std::cout << "Entering get_ap_mld_frm_bssid_valid_ap_mld_info_retrieval test" << std::endl;
     dm_easy_mesh_t instance{};
-    instance.m_num_ap_mld = 1;
-    em_ap_mld_info_t &info = instance.m_ap_mld[0].m_ap_mld_info;
+    instance.m_num_ap_mld = 2;
+    instance.m_ap_mld[0].m_ap_mld_info.haul_type = em_haul_type_backhaul;
+    em_ap_mld_info_t &info = instance.m_ap_mld[1].m_ap_mld_info;
+    info.haul_type = em_haul_type_fronthaul;
     info.num_affiliated_ap = 2;
-    unsigned char target_bssid[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-    unsigned char other_bssid[6]  = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
-    info.affiliated_ap[0].mac_addr_valid = true;
-    info.affiliated_ap[1].mac_addr_valid = true;
-    memcpy(info.affiliated_ap[0].mac_addr, other_bssid, sizeof(mac_address_t));
-    memcpy(info.affiliated_ap[1].mac_addr, target_bssid, sizeof(mac_address_t));
-    std::cout << "Configured AP MLD with 2 affiliated APs" << std::endl;
-    std::cout << "Invoking get_ap_mld_frm_bssid" << std::endl;
-    em_ap_mld_info_t *result = instance.get_ap_mld_frm_bssid(target_bssid);
-    EXPECT_NE(result, nullptr);
-    if (result) {
-        std::cout << "Returned non-null AP MLD info" << std::endl;
-        EXPECT_EQ(result->num_affiliated_ap, 2);
-    }
-    std::cout << "Exiting get_ap_mld_frm_bssid_valid_ap_mld_info_retrieval test" << std::endl;
+
+    em_ap_mld_info_t *result = instance.get_ap_mld_frm_haul_type(em_haul_type_fronthaul);
+    ASSERT_EQ(result, &info);
+    EXPECT_EQ(result->num_affiliated_ap, 2);
+    EXPECT_EQ(instance.get_ap_mld_frm_haul_type(em_haul_type_backhaul),
+              &instance.m_ap_mld[0].m_ap_mld_info);
 }
 
 /**
- * @brief Verify that get_ap_mld_frm_bssid returns a null pointer for a non-existent BSSID
+ * @brief Return null when no AP MLD has the requested haul type.
  *
- * This test verifies that when get_ap_mld_frm_bssid is invoked with a BSSID that does not match any
- * of the affiliated AP MAC addresses stored in the instance, the function correctly returns a null pointer.
- * This behavior ensures that the API properly handles cases where no valid AP MLD information is found.
+ * Configure one fronthaul AP MLD, query backhaul, and verify that no entry is returned.
  *
  * **Test Group ID:** Basic: 01@n
  * **Test Case ID:** 171@n
@@ -7673,36 +7663,24 @@ TEST(dm_easy_mesh_t, get_ap_mld_frm_bssid_valid_ap_mld_info_retrieval)
  * **User Interaction:** None@n
  *
  * **Test Procedure:**@n
- * | Variation / Step | Description                                                                                          | Test Data                                                                                                              | Expected Result                                                                               | Notes            |
- * | :--------------: | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------- |
- * | 01               | Initialize dm_easy_mesh_t instance and set one AP MLD with an affiliated AP having an existing BSSID   | m_num_ap_mld = 1, num_affiliated_ap = 1, existing_bssid = 0xAA,0xBB,0xCC,0xDD,0xEE,0xFF                                   | Instance initializes with proper AP MLD configuration                                          | Should be successful |
- * | 02               | Define a non-existent BSSID that does not match the existing BSSID                                     | search_bssid = 0x10,0x20,0x30,0x40,0x50,0x60                                                                              | Non-existent BSSID is set correctly                                                            | Should be successful |
- * | 03               | Invoke get_ap_mld_frm_bssid with the non-existent BSSID and capture the result                         | Input: search_bssid = 0x10,0x20,0x30,0x40,0x50,0x60; Output: result pointer                                               | The function returns a null pointer indicating no matching AP data                             | Should Pass      |
- * | 04               | Verify the returned result using an assertion                                                        | result pointer as returned by the API                                                                                  | EXPECT_EQ(result, nullptr) assertion passes                                                    | Should be successful |
+ * | Variation / Step | Description | Test Data | Expected Result | Notes |
+ * | :----: | ----------- | --------- | -------------- | ----- |
+ * | 01 | Configure one fronthaul AP MLD entry. | m_num_ap_mld = 1, haul_type = em_haul_type_fronthaul | No backhaul entry exists. | Should be successful |
+ * | 02 | Query get_ap_mld_frm_haul_type() for backhaul. | em_haul_type_backhaul | The returned pointer is nullptr. | Should Pass |
  */
-TEST(dm_easy_mesh_t, get_ap_mld_frm_bssid_non_existent_bssid_returns_null)
+TEST(dm_easy_mesh_t, get_ap_mld_frm_haul_type_non_existent_haul_type_returns_null)
 {
-    std::cout << "Entering get_ap_mld_frm_bssid_non_existent_bssid_returns_null test" << std::endl;
     dm_easy_mesh_t instance{};
     instance.m_num_ap_mld = 1;
-    em_ap_mld_info_t &info = instance.m_ap_mld[0].m_ap_mld_info;
-    info.num_affiliated_ap = 1;
-    unsigned char existing_bssid[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-    info.affiliated_ap[0].mac_addr_valid = true;
-    memcpy(info.affiliated_ap[0].mac_addr, existing_bssid, sizeof(mac_address_t));
-    unsigned char search_bssid[6] = {0x10, 0x20, 0x30, 0x40, 0x50, 0x60};
-    std::cout << "Invoking get_ap_mld_frm_bssid with non-matching BSSID" << std::endl;
-    em_ap_mld_info_t *result = instance.get_ap_mld_frm_bssid(search_bssid);
-    EXPECT_EQ(result, nullptr);
-    std::cout << "Returned NULL as expected" << std::endl;
-    std::cout << "Exiting get_ap_mld_frm_bssid_non_existent_bssid_returns_null test" << std::endl;
+    instance.m_ap_mld[0].m_ap_mld_info.haul_type = em_haul_type_fronthaul;
+
+    EXPECT_EQ(instance.get_ap_mld_frm_haul_type(em_haul_type_backhaul), nullptr);
 }
 
 /**
- * @brief Test that verifies get_ap_mld_frm_bssid returns nullptr when AP MLD data is absent.
+ * @brief Return null for a haul-type lookup with no AP MLD data.
  *
- * This test checks the behavior of the get_ap_mld_frm_bssid API when the device instance is not populated with any AP MLD data.
- * It ensures that when a valid BSSID is provided and the AP MLD list is empty, the API correctly returns a nullptr.
+ * Leave the AP MLD list empty and verify that a fronthaul lookup returns null.
  *
  * **Test Group ID:** Basic: 01@n
  * **Test Case ID:** 172@n
@@ -7713,29 +7691,23 @@ TEST(dm_easy_mesh_t, get_ap_mld_frm_bssid_non_existent_bssid_returns_null)
  * **User Interaction:** None@n
  *
  * **Test Procedure:**
- * | Variation / Step | Description                                                                                       | Test Data                                                          | Expected Result                                                      | Notes       |
- * | :--------------: | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------- | ----------- |
- * | 01               | Initialize dm_easy_mesh_t instance and set m_num_ap_mld to 0                                     | m_num_ap_mld = 0                                                   | Instance created with no AP MLD data                                 | Should be successful |
- * | 02               | Define the BSSID and invoke get_ap_mld_frm_bssid on the instance with an empty AP MLD list         | any_bssid = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC}, instance.m_num_ap_mld = 0 | Returned value is nullptr and EXPECT_EQ check passes                 | Should Pass |
+ * | Variation / Step | Description | Test Data | Expected Result | Notes |
+ * | :----: | ----------- | --------- | -------------- | ----- |
+ * | 01 | Create a mesh instance with no AP MLD entries. | m_num_ap_mld = 0 | The AP MLD list is empty. | Should be successful |
+ * | 02 | Query get_ap_mld_frm_haul_type() for fronthaul. | em_haul_type_fronthaul | The returned pointer is nullptr. | Should Pass |
  */
-TEST(dm_easy_mesh_t, get_ap_mld_frm_bssid_default_instance_without_ap_mld_data)
+TEST(dm_easy_mesh_t, get_ap_mld_frm_haul_type_no_ap_mld_configured)
 {
-    std::cout << "Entering get_ap_mld_frm_bssid_default_instance_without_ap_mld_data test" << std::endl;
     dm_easy_mesh_t instance{};
     instance.m_num_ap_mld = 0;
-    unsigned char any_bssid[6] = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC};
-    std::cout << "Invoking get_ap_mld_frm_bssid with empty AP MLD list" << std::endl;
-    em_ap_mld_info_t *result = instance.get_ap_mld_frm_bssid(any_bssid);
-    EXPECT_EQ(result, nullptr);
-    std::cout << "Returned NULL as expected" << std::endl;
-    std::cout << "Exiting get_ap_mld_frm_bssid_default_instance_without_ap_mld_data test" << std::endl;
+
+    EXPECT_EQ(instance.get_ap_mld_frm_haul_type(em_haul_type_fronthaul), nullptr);
 }
 
 /**
- * @brief Test get_ap_mld_frm_bssid function with NULL bssid input to ensure proper handling of invalid argument
+ * @brief Reject the invalid haul-type sentinel.
  *
- * This test verifies that the get_ap_mld_frm_bssid API returns a null pointer when provided with a NULL bssid input.
- * It confirms that the function correctly detects an invalid input and behaves as expected without crashing or returning unexpected data.
+ * Configure a fronthaul AP MLD and query em_haul_type_max. Verify a null result. This replaces the removed BSSID API null-input case and retains its default exclusion.
  *
  * **Test Group ID:** Basic: 01@n
  * **Test Case ID:** 173@n
@@ -7746,30 +7718,24 @@ TEST(dm_easy_mesh_t, get_ap_mld_frm_bssid_default_instance_without_ap_mld_data)
  * **User Interaction:** None@n
  *
  * **Test Procedure:**
- * | Variation / Step | Description                                                                                                 | Test Data                                                                                                                        | Expected Result                                            | Notes      |
- * | :--------------: | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ---------- |
- * | 01               | Create a dm_easy_mesh_t instance, set up valid AP MLD info, and invoke get_ap_mld_frm_bssid with NULL input. | instance.m_num_ap_mld = 1, info.num_affiliated_ap = 1, affiliated_ap[0].mac_addr = 0xAA,0xBB,0xCC,0xDD,0xEE,0xFF; bssid = nullptr | API returns a nullptr; Assertion: EXPECT_EQ(result, nullptr) | Should Pass |
+ * | Variation / Step | Description | Test Data | Expected Result | Notes |
+ * | :----: | ----------- | --------- | -------------- | ----- |
+ * | 01 | Configure one fronthaul AP MLD entry. | m_num_ap_mld = 1, haul_type = em_haul_type_fronthaul | A valid entry exists. | Should be successful |
+ * | 02 | Query get_ap_mld_frm_haul_type() with the invalid sentinel. | em_haul_type_max | The returned pointer is nullptr. | Should Pass |
  */
-TEST(dm_easy_mesh_t, get_ap_mld_frm_bssid_null_bssid_input)
+TEST(dm_easy_mesh_t, get_ap_mld_frm_haul_type_invalid_haul_type)
 {
-    std::cout << "Entering get_ap_mld_frm_bssid_null_bssid_input test" << std::endl;
     dm_easy_mesh_t instance{};
     instance.m_num_ap_mld = 1;
-    em_ap_mld_info_t &info = instance.m_ap_mld[0].m_ap_mld_info;
-    info.num_affiliated_ap = 1;
-    unsigned char existing_bssid[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-    info.affiliated_ap[0].mac_addr_valid = true;
-    memcpy(info.affiliated_ap[0].mac_addr, existing_bssid, sizeof(mac_address_t));
-    std::cout << "Invoking get_ap_mld_frm_bssid with NULL bssid pointer" << std::endl;
-    em_ap_mld_info_t *result = instance.get_ap_mld_frm_bssid(nullptr);
-    EXPECT_EQ(result, nullptr);
-    std::cout << "Exiting get_ap_mld_frm_bssid_null_bssid_input test" << std::endl;
+    instance.m_ap_mld[0].m_ap_mld_info.haul_type = em_haul_type_fronthaul;
+
+    EXPECT_EQ(instance.get_ap_mld_frm_haul_type(em_haul_type_max), nullptr);
 }
 
 /**
- * @brief Validate that get_ap_mld_frm_bssid returns valid AP MLD info for matching BSSID
+ * @brief Retrieve an AP MLD through the static haul-type wrapper.
  *
- * This test verifies that when a dm_easy_mesh_t instance is properly configured with a single AP MLD and its affiliated AP's MAC address matches the provided BSSID, the static method get_ap_mld_frm_bssid correctly returns a non-null pointer with matching MAC address data.
+ * Configure a backhaul AP MLD and invoke the callback wrapper with the model pointer. Verify that it returns the exact configured entry.
  *
  * **Test Group ID:** Basic: 01
  * **Test Case ID:** 174@n
@@ -7780,37 +7746,26 @@ TEST(dm_easy_mesh_t, get_ap_mld_frm_bssid_null_bssid_input)
  * **User Interaction:** None
  *
  * **Test Procedure:**
- * | Variation / Step | Description                                                                                         | Test Data                                                                               | Expected Result                                                                                                 | Notes             |
- * | :--------------: | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------- |
- * | 01               | Initialize dm_easy_mesh_t instance and configure a single AP MLD with a matching affiliated AP BSSID. | instance.m_num_ap_mld = 1, info.num_affiliated_ap = 1, bssid = {0xAA,0xBB,0xCC,0xDD,0xEE,0xFF} | Instance is created with valid AP MLD info and the affiliated AP MAC address is set to the expected BSSID.       | Should be successful |
- * | 02               | Invoke get_ap_mld_frm_bssid API and validate that the returned pointer is non-null and contains matching MAC address. | API call: get_ap_mld_frm_bssid(static_cast<void *>(&instance), bssid)                      | The API returns a non-null pointer, and memcmp of the affiliated AP MAC address with the provided BSSID equals 0.   | Should Pass       |
+ * | Variation / Step | Description | Test Data | Expected Result | Notes |
+ * | :----: | ----------- | --------- | -------------- | ----- |
+ * | 01 | Configure one backhaul AP MLD entry. | m_num_ap_mld = 1, haul_type = em_haul_type_backhaul | A matching entry exists. | Should be successful |
+ * | 02 | Invoke the static get_ap_mld_frm_haul_type() wrapper. | Model pointer: &instance; haul type: em_haul_type_backhaul | The exact configured entry is returned. | Should Pass |
  */
-TEST(dm_easy_mesh_t, static_get_ap_mld_frm_bssid_valid_match)
+TEST(dm_easy_mesh_t, static_get_ap_mld_frm_haul_type_valid_match)
 {
-    std::cout << "Entering static_get_ap_mld_frm_bssid_valid_match test" << std::endl;
     dm_easy_mesh_t instance{};
     instance.m_num_ap_mld = 1;
     em_ap_mld_info_t &info = instance.m_ap_mld[0].m_ap_mld_info;
-    info.num_affiliated_ap = 1;
-    unsigned char bssid[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-    info.affiliated_ap[0].mac_addr_valid = true;
-    memcpy(info.affiliated_ap[0].mac_addr, bssid, sizeof(mac_address_t));
-    std::cout << "Invoking static get_ap_mld_frm_bssid with valid dm and matching bssid" << std::endl;
-    em_ap_mld_info_t *result = dm_easy_mesh_t::get_ap_mld_frm_bssid(static_cast<void *>(&instance), bssid);
-    EXPECT_NE(result, nullptr);
-    if (result) {
-        EXPECT_EQ(
-            memcmp(result->affiliated_ap[0].mac_addr, bssid, sizeof(mac_address_t)),
-            0
-        );
-    }
-    std::cout << "Exiting static_get_ap_mld_frm_bssid_valid_match test" << std::endl;
+    info.haul_type = em_haul_type_backhaul;
+
+    EXPECT_EQ(dm_easy_mesh_t::get_ap_mld_frm_haul_type(
+                  static_cast<void *>(&instance), em_haul_type_backhaul), &info);
 }
 
 /**
- * @brief Test static_get_ap_mld_frm_bssid API for handling non-matching BSSID
+ * @brief Return null through the static wrapper for an unmatched haul type.
  *
- * This test verifies that when the lookup BSSID does not match any stored affiliated AP BSSID in the dm_easy_mesh_t instance, the API returns a nullptr. This ensures that the function correctly identifies non-existent matches.
+ * Configure a fronthaul AP MLD and query backhaul through the callback wrapper. Verify a null result.
  *
  * **Test Group ID:** Basic: 01
  * **Test Case ID:** 175@n
@@ -7821,31 +7776,25 @@ TEST(dm_easy_mesh_t, static_get_ap_mld_frm_bssid_valid_match)
  * **User Interaction:** None
  *
  * **Test Procedure:**
- * | Variation / Step | Description                                                                                      | Test Data                                                                                     | Expected Result                                          | Notes       |
- * | :---------------:| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ----------- |
- * | 01               | Initialize dm_easy_mesh_t with one AP MLD and set its affiliated AP's BSSID to AA,BB,CC,DD,EE,FF; invoke static_get_ap_mld_frm_bssid with lookup BSSID 11,22,33,44,55,66 | instance.m_num_ap_mld=1, info.num_affiliated_ap=1, stored_bssid=AA,BB,CC,DD,EE,FF, lookup_bssid=11,22,33,44,55,66 | API returns nullptr and EXPECT_EQ(result, nullptr) passes | Should Pass |
+ * | Variation / Step | Description | Test Data | Expected Result | Notes |
+ * | :----: | ----------- | --------- | -------------- | ----- |
+ * | 01 | Configure one fronthaul AP MLD entry. | m_num_ap_mld = 1, haul_type = em_haul_type_fronthaul | No backhaul entry exists. | Should be successful |
+ * | 02 | Invoke the static get_ap_mld_frm_haul_type() wrapper for backhaul. | Model pointer: &instance; haul type: em_haul_type_backhaul | The returned pointer is nullptr. | Should Pass |
  */
-TEST(dm_easy_mesh_t, static_get_ap_mld_frm_bssid_no_match)
+TEST(dm_easy_mesh_t, static_get_ap_mld_frm_haul_type_no_match)
 {
-    std::cout << "Entering static_get_ap_mld_frm_bssid_no_match test" << std::endl;
     dm_easy_mesh_t instance{};
     instance.m_num_ap_mld = 1;
-    em_ap_mld_info_t &info = instance.m_ap_mld[0].m_ap_mld_info;
-    info.num_affiliated_ap = 1;
-    unsigned char stored_bssid[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-    unsigned char lookup_bssid[6] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
-    info.affiliated_ap[0].mac_addr_valid = true;
-    memcpy(info.affiliated_ap[0].mac_addr, stored_bssid, sizeof(mac_address_t));
-    std::cout << "Invoking static get_ap_mld_frm_bssid with non-matching bssid" << std::endl;
-    em_ap_mld_info_t *result = dm_easy_mesh_t::get_ap_mld_frm_bssid(static_cast<void *>(&instance), lookup_bssid);
-    EXPECT_EQ(result, nullptr);
-    std::cout << "Exiting static_get_ap_mld_frm_bssid_no_match test" << std::endl;
+    instance.m_ap_mld[0].m_ap_mld_info.haul_type = em_haul_type_fronthaul;
+
+    EXPECT_EQ(dm_easy_mesh_t::get_ap_mld_frm_haul_type(
+                  static_cast<void *>(&instance), em_haul_type_backhaul), nullptr);
 }
 
 /**
- * @brief Verify that get_ap_mld_frm_bssid returns nullptr when no AP MLD is configured
+ * @brief Return null through the static wrapper for an empty AP MLD list.
  *
- * This test case checks the behavior of the get_ap_mld_frm_bssid API in the scenario where no AP MLD configuration is present. It creates an instance with m_num_ap_mld set to 0, sets up a BSSID array, then invokes the API and verifies that a nullptr is returned. This ensures that the API correctly handles the absence of AP MLD configuration.
+ * Leave the AP MLD list empty and query backhaul through the callback wrapper. Verify a null result.
  *
  * **Test Group ID:** Basic: 01@n
  * **Test Case ID:** 176@n
@@ -7856,26 +7805,24 @@ TEST(dm_easy_mesh_t, static_get_ap_mld_frm_bssid_no_match)
  * **User Interaction:** None@n
  *
  * **Test Procedure:**@n
- * | Variation / Step | Description                                                                                                     | Test Data                                                                  | Expected Result                                         | Notes       |
- * | :--------------: | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------- | ----------- |
- * | 01               | Create an instance of dm_easy_mesh_t, set m_num_ap_mld to 0, define BSSID array, invoke get_ap_mld_frm_bssid | instance.m_num_ap_mld = 0, bssid = {0x10, 0x20, 0x30, 0x40, 0x50, 0x60} | API returns nullptr and EXPECT_EQ check passes          | Should Pass |
+ * | Variation / Step | Description | Test Data | Expected Result | Notes |
+ * | :----: | ----------- | --------- | -------------- | ----- |
+ * | 01 | Create a mesh instance with no AP MLD entries. | m_num_ap_mld = 0 | The AP MLD list is empty. | Should be successful |
+ * | 02 | Invoke the static get_ap_mld_frm_haul_type() wrapper for backhaul. | Model pointer: &instance; haul type: em_haul_type_backhaul | The returned pointer is nullptr. | Should Pass |
  */
-TEST(dm_easy_mesh_t, static_get_ap_mld_frm_bssid_no_ap_mld_configured)
+TEST(dm_easy_mesh_t, static_get_ap_mld_frm_haul_type_no_ap_mld_configured)
 {
-    std::cout << "Entering static_get_ap_mld_frm_bssid_no_ap_mld_configured test" << std::endl;
     dm_easy_mesh_t instance{};
     instance.m_num_ap_mld = 0;
-    unsigned char bssid[6] = {0x10, 0x20, 0x30, 0x40, 0x50, 0x60};
-    std::cout << "Invoking static get_ap_mld_frm_bssid with no AP MLD configured" << std::endl;
-    em_ap_mld_info_t *result = dm_easy_mesh_t::get_ap_mld_frm_bssid(static_cast<void *>(&instance), bssid);
-    EXPECT_EQ(result, nullptr);
-    std::cout << "Exiting static_get_ap_mld_frm_bssid_no_ap_mld_configured test" << std::endl;
+
+    EXPECT_EQ(dm_easy_mesh_t::get_ap_mld_frm_haul_type(
+                  static_cast<void *>(&instance), em_haul_type_backhaul), nullptr);
 }
 
 /**
- * @brief Test static_get_ap_mld_frm_bssid API with a NULL dm pointer
+ * @brief Document the static haul-type wrapper requirement for a non-null model.
  *
- * This test verifies that the static_get_ap_mld_frm_bssid function behaves correctly when provided with a NULL dm pointer. It ensures that the function returns a NULL pointer as expected when the dm pointer is invalid.
+ * The callback wrapper dereferences its model pointer without a null guard. Expect process termination for a null model; this unsupported-input case retains its default exclusion.
  *
  * **Test Group ID:** Basic: 01@n
  * **Test Case ID:** 177@n
@@ -7886,26 +7833,20 @@ TEST(dm_easy_mesh_t, static_get_ap_mld_frm_bssid_no_ap_mld_configured)
  * **User Interaction:** None@n
  *
  * **Test Procedure:**@n
- * | Variation / Step | Description                                                                                  | Test Data                                                           | Expected Result                                           | Notes      |
- * | :--------------: | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------- | ---------- |
- * | 01               | Invoke get_ap_mld_frm_bssid with dm pointer set to nullptr and a valid bssid array            | dm pointer = nullptr, bssid = 0xAA,0xBB,0xCC,0xDD,0xEE,0xFF        | API returns nullptr and EXPECT_EQ(result, nullptr) passes | Should Pass |
+ * | Variation / Step | Description | Test Data | Expected Result | Notes |
+ * | :----: | ----------- | --------- | -------------- | ----- |
+ * | 01 | Invoke the static get_ap_mld_frm_haul_type() wrapper inside EXPECT_DEATH. | Model pointer: nullptr; haul type: em_haul_type_backhaul | The child process terminates because the wrapper requires a non-null model. | Excluded from the default run |
  */
-TEST(dm_easy_mesh_t, static_get_ap_mld_frm_bssid_null_dm_pointer)
+TEST(dm_easy_mesh_t, static_get_ap_mld_frm_haul_type_null_dm_pointer)
 {
-    std::cout << "Entering static_get_ap_mld_frm_bssid_null_dm_pointer test" << std::endl;
-    unsigned char bssid[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-    std::cout << "Invoking static get_ap_mld_frm_bssid with NULL dm pointer" << std::endl;
-    em_ap_mld_info_t *result = dm_easy_mesh_t::get_ap_mld_frm_bssid(nullptr, bssid);
-    EXPECT_EQ(result, nullptr);
-    std::cout << "Exiting static_get_ap_mld_frm_bssid_null_dm_pointer test" << std::endl;
+    EXPECT_DEATH((void)dm_easy_mesh_t::get_ap_mld_frm_haul_type(
+                     nullptr, em_haul_type_backhaul), "");
 }
 
 /**
- * @brief Verify that get_ap_mld_frm_bssid returns nullptr when provided with a NULL bssid pointer.
+ * @brief Reject the invalid haul-type sentinel through the static wrapper.
  *
- * This test case verifies that the API dm_easy_mesh_t::get_ap_mld_frm_bssid correctly handles the scenario
- * where a NULL bssid pointer is passed. The function is expected to return a nullptr when the second parameter is NULL,
- * ensuring that the implementation properly checks for invalid input.
+ * Configure a backhaul AP MLD and query em_haul_type_max through the callback wrapper. Verify a null result. This replaces the removed BSSID API null-input case and retains its default exclusion.
  *
  * **Test Group ID:** Basic: 01@n
  * **Test Case ID:** 178@n
@@ -7917,24 +7858,18 @@ TEST(dm_easy_mesh_t, static_get_ap_mld_frm_bssid_null_dm_pointer)
  *
  * **Test Procedure:**
  * | Variation / Step | Description | Test Data | Expected Result | Notes |
- * | :----: | --------- | ---------- |-------------- | ----- |
- * | 01 | Initialize dm_easy_mesh_t instance and configure ap_mld information with a valid MAC address. | instance.m_num_ap_mld = 1, info.num_affiliated_ap = 1, valid_bssid = {0xAA,0xBB,0xCC,0xDD,0xEE,0xFF} copied into info.affiliated_ap[0].mac_addr | Instance is configured correctly with m_num_ap_mld set to 1 and ap_mld information having a valid MAC address. | Should be successful |
- * | 02 | Invoke static get_ap_mld_frm_bssid with a NULL bssid pointer. | instance pointer = address of instance, bssid = nullptr | API returns a nullptr indicating that the invalid NULL bssid pointer is handled appropriately. | Should Pass |
+ * | :----: | ----------- | --------- | -------------- | ----- |
+ * | 01 | Configure one backhaul AP MLD entry. | m_num_ap_mld = 1, haul_type = em_haul_type_backhaul | A valid entry exists. | Should be successful |
+ * | 02 | Invoke the static get_ap_mld_frm_haul_type() wrapper with the invalid sentinel. | Model pointer: &instance; haul type: em_haul_type_max | The returned pointer is nullptr. | Should Pass |
  */
-TEST(dm_easy_mesh_t, static_get_ap_mld_frm_bssid_null_bssid)
+TEST(dm_easy_mesh_t, static_get_ap_mld_frm_haul_type_invalid_haul_type)
 {
-    std::cout << "Entering static_get_ap_mld_frm_bssid_null_bssid test" << std::endl;
     dm_easy_mesh_t instance{};
     instance.m_num_ap_mld = 1;
-    em_ap_mld_info_t &info = instance.m_ap_mld[0].m_ap_mld_info;
-    info.num_affiliated_ap = 1;
-    unsigned char valid_bssid[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-    info.affiliated_ap[0].mac_addr_valid = true;
-    memcpy(info.affiliated_ap[0].mac_addr, valid_bssid, sizeof(mac_address_t));
-    std::cout << "Invoking static get_ap_mld_frm_bssid with NULL bssid pointer" << std::endl;
-    em_ap_mld_info_t *result = dm_easy_mesh_t::get_ap_mld_frm_bssid(static_cast<void *>(&instance), nullptr);
-    EXPECT_EQ(result, nullptr);
-    std::cout << "Exiting static_get_ap_mld_frm_bssid_null_bssid test" << std::endl;
+    instance.m_ap_mld[0].m_ap_mld_info.haul_type = em_haul_type_backhaul;
+
+    EXPECT_EQ(dm_easy_mesh_t::get_ap_mld_frm_haul_type(
+                  static_cast<void *>(&instance), em_haul_type_max), nullptr);
 }
 
 /**
