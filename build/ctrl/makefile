@@ -215,7 +215,7 @@ $(EM_CTRL_TEST_OBJ): $(EM_CTRL_SRC)
 TEST_ALLOBJECTS = $(filter-out $(EM_CTRL_MAIN_OBJ), $(ALLOBJECTS)) $(EM_CTRL_TEST_OBJ)
 
 # Build test executable only (no run)
-build_test: check_test_files install_gtest $(TEST_OBJECTS) $(EM_CTRL_TEST_OBJ)
+build_test: check_test_files install_gtest $(TEST_OBJECTS) $(TEST_ALLOBJECTS)
 ifeq ($(WITH_SAP), 1)
 	@$(MAKE) -C $(AL_SAP_HOME)
 endif
