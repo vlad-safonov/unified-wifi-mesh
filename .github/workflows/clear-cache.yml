@@ -1,0 +1,48 @@
+name: Remove Actions Cache
+on:
+  push:
+    branches: [ "develop-II" ]
+  schedule:
+  - cron: '12 2 * * *'
+  workflow_dispatch:
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  GH_REPO: ${{ github.repository }}
+
+jobs:
+    clear-cache:
+        runs-on: ubuntu-latest
+        permissions:
+            actions: write
+            contents: read
+        steps:
+          - name: Invalidate ccache on push
+            if: github.event_name == 'push'
+            run: |
+              echo "Remove old ccaches on push"
+              keys=$(gh cache list --limit 100 --json key --jq '.[].key')
+              #echo -e "All: $keys"
+              # Find only ccache caches, skip 2 newest (1 per matrix)
+              filtered_keys=$(printf '%s\n' "$keys" | grep '^ccache' | tail -n +3)
+              #echo -e "Filtered:\n$filtered_keys"
+
+              for key in $filtered_keys; do
+                  echo "Removing cache: $key"
+                  gh cache delete "$key"|| echo "Cache already removed"
+              done
+
+          - name: Clear All Caches
+            if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+            run: |
+                keys=$(gh cache list --limit 100 --json key --jq '.[].key')
+
+                if [ -z "$keys" ]; then
+                    echo "No caches found"
+                    exit 0
+                fi
+
+                for key in $keys; do
+                    echo "Deleting cache with Name: $key"
+                    gh cache delete "$key" || echo "Cache already removed"
+                done
