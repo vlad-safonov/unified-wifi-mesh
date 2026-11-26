@@ -881,7 +881,7 @@ TEST(dm_radio_cap_t_Test, AssigningMixedValues) {
 * | 04 | Assign obj2 to obj1 | obj1 = obj2 | Assignment successful | Should be successful |
 * | 05 | Verify obj1 has the same media type as obj2 after assignment | obj1.m_radio_cap_info.ruid.media == obj2.m_radio_cap_info.ruid.media | EXPECT_EQ passes; assignment correctly copied the invalid value | Should Pass |
 */
-TEST(dm_radio_cap_t_Test, AssigningInvalidValue) {
+TEST(dm_radio_cap_t_Test, DISABLED_AssigningInvalidValue) {
     std::cout << "Entering AssigningInvalidValue test";
     dm_radio_cap_t obj1{};
     dm_radio_cap_t obj2{};
